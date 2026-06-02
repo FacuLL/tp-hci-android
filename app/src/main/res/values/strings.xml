@@ -1,3 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TP3-HCI</string>
+    <string name="app_name">Lumina</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Inicio</string>
+    <string name="nav_devices">Dispositivos</string>
+    <string name="nav_rooms">Habitaciones</string>
+    <string name="nav_routines">Rutinas</string>
+    <string name="title_settings">Ajustes</string>
+    <string name="title_homes">Hogares</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_create">Crear</string>
+    <string name="action_retry">Reintentar</string>
+    <string name="action_close">Cerrar</string>
+    <string name="action_confirm">Confirmar</string>
+    <string name="action_ok">Aceptar</string>
+    <string name="cd_navigate_back">Volver</string>
+    <string name="cd_more_options">Más opciones</string>
+    <string name="cd_open_settings">Abrir ajustes</string>
+    <string name="cd_show_password">Mostrar contraseña</string>
+    <string name="cd_hide_password">Ocultar contraseña</string>
+    <string name="required_fields_hint">Los campos marcados con * son obligatorios</string>
+    <string name="optional_label">(opcional)</string>
+
+    <!-- Form validation -->
+    <string name="validation_required">Este campo es obligatorio</string>
+    <string name="validation_email">Ingresá un correo electrónico válido</string>
+    <string name="validation_password_length">La contraseña debe tener al menos 8 caracteres</string>
+    <string name="validation_password_uppercase">La contraseña debe incluir al menos una letra mayúscula</string>
+    <string name="validation_password_match">Las contraseñas no coinciden</string>
+    <string name="validation_name_length">El nombre debe tener al menos 3 caracteres</string>
+    <string name="validation_name_max">El nombre no puede superar los 100 caracteres</string>
+    <string name="validation_code_required">Ingresá el código que recibiste por correo</string>
+
+    <!-- API errors -->
+    <string name="error_network">No se pudo conectar al servidor. Revisá tu conexión y la dirección del API.</string>
+    <string name="error_invalid_credentials">Correo o contraseña incorrectos.</string>
+    <string name="error_not_verified">Tu cuenta aún no fue verificada.</string>
+    <string name="error_already_verified">Tu cuenta ya está verificada.</string>
+    <string name="error_email_taken">Este correo ya está registrado.</string>
+    <string name="error_user_not_found">No se encontró una cuenta con ese correo.</string>
+    <string name="error_invalid_code">Código incorrecto.</string>
+    <string name="error_code_expired">El código expiró. Pedí uno nuevo.</string>
+    <string name="error_wrong_old_password">La contraseña actual es incorrecta.</string>
+    <string name="error_password_short">La contraseña es demasiado corta.</string>
+    <string name="error_session_expired">Tu sesión expiró. Iniciá sesión de nuevo.</string>
+    <string name="error_forbidden">No tenés permiso para realizar esta acción.</string>
+    <string name="error_action_unavailable">Esta acción no está disponible para el dispositivo.</string>
+    <string name="error_device_not_found">No se encontró el dispositivo.</string>
+    <string name="error_room_not_found">No se encontró la habitación.</string>
+    <string name="error_home_not_found">No se encontró el hogar.</string>
+    <string name="error_routine_not_found">No se encontró la rutina.</string>
+    <string name="error_invalid_data">Los datos enviados no son válidos.</string>
+    <string name="error_server">Error del servidor. Intentá de nuevo en unos minutos.</string>
+    <string name="error_rate_limit">Demasiados intentos. Esperá un momento.</string>
+    <string name="error_generic">Ocurrió un error. Intentá de nuevo.</string>
+
+    <!-- Device types -->
+    <string name="device_type_ac">Aire acondicionado</string>
+    <string name="device_type_lamp">Lámpara</string>
+    <string name="device_type_alarm">Alarma</string>
+    <string name="device_type_blinds">Persiana</string>
+    <string name="device_type_door">Puerta</string>
+    <string name="device_type_faucet">Grifo</string>
+    <string name="device_type_oven">Horno</string>
+    <string name="device_type_refrigerator">Heladera</string>
+    <string name="device_type_speaker">Parlante</string>
+    <string name="device_type_vacuum">Aspiradora</string>
+
+    <!-- Device actions -->
+    <string name="device_action_turn_on">Encender</string>
+    <string name="device_action_turn_off">Apagar</string>
+    <string name="device_action_set_temperature">Temperatura</string>
+    <string name="device_action_set_freezer_temperature">Temperatura del freezer</string>
+    <string name="device_action_set_brightness">Intensidad</string>
+    <string name="device_action_set_color">Color</string>
+    <string name="device_action_set_level">Posición</string>
+    <string name="device_action_open">Abrir</string>
+    <string name="device_action_close">Cerrar</string>
+    <string name="device_action_lock">Bloquear</string>
+    <string name="device_action_unlock">Desbloquear</string>
+    <string name="device_action_arm_stay">Activar en casa</string>
+    <string name="device_action_arm_away">Activar ausente</string>
+    <string name="device_action_disarm">Desactivar</string>
+    <string name="device_action_change_security_code">Cambiar código</string>
+    <string name="device_action_set_mode">Modo</string>
+    <string name="device_action_set_fan_speed">Velocidad del ventilador</string>
+    <string name="device_action_set_vertical_swing">Oscilación vertical</string>
+    <string name="device_action_set_horizontal_swing">Oscilación horizontal</string>
+    <string name="device_action_set_convection">Convección</string>
+    <string name="device_action_set_grill">Grill</string>
+    <string name="device_action_set_heat">Calefacción</string>
+    <string name="device_action_play">Reproducir</string>
+    <string name="device_action_pause">Pausar</string>
+    <string name="device_action_stop">Detener</string>
+    <string name="device_action_resume">Reanudar</string>
+    <string name="device_action_next_song">Siguiente canción</string>
+    <string name="device_action_previous_song">Canción anterior</string>
+    <string name="device_action_set_volume">Volumen</string>
+    <string name="device_action_set_genre">Género</string>
+    <string name="device_action_start">Iniciar</string>
+    <string name="device_action_dock">Volver a la base</string>
+    <string name="device_action_dispense">Dispensar</string>
+    <string name="device_action_get_playlist">Ver lista de reproducción</string>
+
+    <!-- Device option values -->
+    <string name="device_value_cool">Frío</string>
+    <string name="device_value_heat">Calor</string>
+    <string name="device_value_fan">Ventilador</string>
+    <string name="device_value_dry">Seco</string>
+    <string name="device_value_auto">Automático</string>
+    <string name="device_value_conventional">Convencional</string>
+    <string name="device_value_bottom">Inferior</string>
+    <string name="device_value_top">Superior</string>
+    <string name="device_value_large">Grande</string>
+    <string name="device_value_off">Apagado</string>
+    <string name="device_value_normal">Normal</string>
+    <string name="device_value_eco">Eco</string>
+    <string name="device_value_default">Normal</string>
+    <string name="device_value_vacation">Vacaciones</string>
+    <string name="device_value_party">Fiesta</string>
+    <string name="device_value_vacuum">Aspirar</string>
+    <string name="device_value_mop">Trapear</string>
+    <string name="device_value_classical">Clásica</string>
+    <string name="device_value_country">Country</string>
+    <string name="device_value_dance">Dance</string>
+    <string name="device_value_latina">Latina</string>
+    <string name="device_value_pop">Pop</string>
+    <string name="device_value_rock">Rock</string>
+    <string name="device_value_low">Baja</string>
+    <string name="device_value_medium">Media</string>
+    <string name="device_value_high">Alta</string>
+
+    <!-- Device state descriptions -->
+    <string name="device_state_on">Encendido</string>
+    <string name="device_state_off">Apagado</string>
+    <string name="device_state_off_feminine">Apagada</string>
+    <string name="device_state_active">Activo</string>
+    <string name="device_state_armed_stay">Activada en casa</string>
+    <string name="device_state_armed_away">Activada ausente</string>
+    <string name="device_state_disarmed">Desactivada</string>
+    <string name="device_state_opened">Abierta</string>
+    <string name="device_state_closed">Cerrada</string>
+    <string name="device_state_locked">Bloqueada</string>
+    <string name="device_state_unlocked">Desbloqueada</string>
+    <string name="device_state_playing">Reproduciendo</string>
+    <string name="device_state_stopped">Detenido</string>
+    <string name="device_state_up">Arriba</string>
+    <string name="device_state_down">Abajo</string>
+    <string name="device_state_opened_level">Abierta · %1$d%%</string>
+    <string name="device_state_level_open">%1$d%% abierta</string>
+    <string name="device_state_brightness">%1$d%% de brillo</string>
+    <string name="device_state_temp">%1$s°C</string>
+    <string name="device_state_fridge">%1$s°C · Freezer %2$s°C</string>
+    <string name="device_state_oven_on">Encendido · %1$s°C</string>
+    <string name="device_state_temp_mode">%1$s°C · %2$s</string>
+    <string name="device_state_playing_volume">Reproduciendo · Volumen %1$d</string>
+    <string name="device_state_playing_genre_volume">Reproduciendo %1$s · Volumen %2$d</string>
+    <string name="device_state_active_mode">Activo · %1$s</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_devices">Eventos de dispositivos</string>
+    <string name="notification_channel_devices_description">Avisos sobre cambios en los dispositivos del hogar</string>
+    <string name="notification_channel_homes">Hogares compartidos</string>
+    <string name="notification_channel_homes_description">Avisos cuando alguien comparte un hogar con vos</string>
+    <string name="notif_device_created_title">Nuevo dispositivo</string>
+    <string name="notif_device_created_body">Se agregó %1$s al hogar</string>
+    <string name="notif_device_deleted_title">Dispositivo eliminado</string>
+    <string name="notif_device_deleted_body">Se eliminó %1$s del hogar</string>
+    <string name="notif_home_shared_title">Hogar compartido</string>
+    <string name="notif_home_shared_body">Te dieron acceso a un nuevo hogar</string>
+    <string name="notif_home_unshared_title">Acceso revocado</string>
+    <string name="notif_home_unshared_body">Ya no tenés acceso a un hogar compartido</string>
 </resources>

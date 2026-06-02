@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Lumina</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Home</string>
+    <string name="nav_devices">Devices</string>
+    <string name="nav_rooms">Rooms</string>
+    <string name="nav_routines">Routines</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_homes">Homes</string>
+
+    <!-- Generic actions -->
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_create">Create</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_close">Close</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_ok">OK</string>
+    <string name="cd_navigate_back">Back</string>
+    <string name="cd_more_options">More options</string>
+    <string name="cd_open_settings">Open settings</string>
+    <string name="cd_show_password">Show password</string>
+    <string name="cd_hide_password">Hide password</string>
+    <string name="required_fields_hint">Fields marked with * are required</string>
+    <string name="optional_label">(optional)</string>
+
+    <!-- Form validation -->
+    <string name="validation_required">This field is required</string>
+    <string name="validation_email">Enter a valid email address</string>
+    <string name="validation_password_length">The password must be at least 8 characters long</string>
+    <string name="validation_password_uppercase">The password must include at least one uppercase letter</string>
+    <string name="validation_password_match">Passwords do not match</string>
+    <string name="validation_name_length">The name must be at least 3 characters long</string>
+    <string name="validation_name_max">The name cannot exceed 100 characters</string>
+    <string name="validation_code_required">Enter the code you received by email</string>
+
+    <!-- API errors -->
+    <string name="error_network">Could not reach the server. Check your connection and the API address.</string>
+    <string name="error_invalid_credentials">Incorrect email or password.</string>
+    <string name="error_not_verified">Your account has not been verified yet.</string>
+    <string name="error_already_verified">Your account is already verified.</string>
+    <string name="error_email_taken">This email is already registered.</string>
+    <string name="error_user_not_found">No account was found with that email.</string>
+    <string name="error_invalid_code">Incorrect code.</string>
+    <string name="error_code_expired">The code expired. Request a new one.</string>
+    <string name="error_wrong_old_password">The current password is incorrect.</string>
+    <string name="error_password_short">The password is too short.</string>
+    <string name="error_session_expired">Your session expired. Sign in again.</string>
+    <string name="error_forbidden">You do not have permission to perform this action.</string>
+    <string name="error_action_unavailable">This action is not available for the device.</string>
+    <string name="error_device_not_found">The device was not found.</string>
+    <string name="error_room_not_found">The room was not found.</string>
+    <string name="error_home_not_found">The home was not found.</string>
+    <string name="error_routine_not_found">The routine was not found.</string>
+    <string name="error_invalid_data">The submitted data is not valid.</string>
+    <string name="error_server">Server error. Try again in a few minutes.</string>
+    <string name="error_rate_limit">Too many attempts. Wait a moment.</string>
+    <string name="error_generic">Something went wrong. Try again.</string>
+
+    <!-- Device types -->
+    <string name="device_type_ac">Air conditioner</string>
+    <string name="device_type_lamp">Lamp</string>
+    <string name="device_type_alarm">Alarm</string>
+    <string name="device_type_blinds">Blinds</string>
+    <string name="device_type_door">Door</string>
+    <string name="device_type_faucet">Faucet</string>
+    <string name="device_type_oven">Oven</string>
+    <string name="device_type_refrigerator">Refrigerator</string>
+    <string name="device_type_speaker">Speaker</string>
+    <string name="device_type_vacuum">Vacuum</string>
+
+    <!-- Device actions -->
+    <string name="device_action_turn_on">Turn on</string>
+    <string name="device_action_turn_off">Turn off</string>
+    <string name="device_action_set_temperature">Temperature</string>
+    <string name="device_action_set_freezer_temperature">Freezer temperature</string>
+    <string name="device_action_set_brightness">Brightness</string>
+    <string name="device_action_set_color">Color</string>
+    <string name="device_action_set_level">Position</string>
+    <string name="device_action_open">Open</string>
+    <string name="device_action_close">Close</string>
+    <string name="device_action_lock">Lock</string>
+    <string name="device_action_unlock">Unlock</string>
+    <string name="device_action_arm_stay">Arm (stay)</string>
+    <string name="device_action_arm_away">Arm (away)</string>
+    <string name="device_action_disarm">Disarm</string>
+    <string name="device_action_change_security_code">Change code</string>
+    <string name="device_action_set_mode">Mode</string>
+    <string name="device_action_set_fan_speed">Fan speed</string>
+    <string name="device_action_set_vertical_swing">Vertical swing</string>
+    <string name="device_action_set_horizontal_swing">Horizontal swing</string>
+    <string name="device_action_set_convection">Convection</string>
+    <string name="device_action_set_grill">Grill</string>
+    <string name="device_action_set_heat">Heat</string>
+    <string name="device_action_play">Play</string>
+    <string name="device_action_pause">Pause</string>
+    <string name="device_action_stop">Stop</string>
+    <string name="device_action_resume">Resume</string>
+    <string name="device_action_next_song">Next song</string>
+    <string name="device_action_previous_song">Previous song</string>
+    <string name="device_action_set_volume">Volume</string>
+    <string name="device_action_set_genre">Genre</string>
+    <string name="device_action_start">Start</string>
+    <string name="device_action_dock">Return to dock</string>
+    <string name="device_action_dispense">Dispense</string>
+    <string name="device_action_get_playlist">View playlist</string>
+
+    <!-- Device option values -->
+    <string name="device_value_cool">Cool</string>
+    <string name="device_value_heat">Heat</string>
+    <string name="device_value_fan">Fan</string>
+    <string name="device_value_dry">Dry</string>
+    <string name="device_value_auto">Auto</string>
+    <string name="device_value_conventional">Conventional</string>
+    <string name="device_value_bottom">Bottom</string>
+    <string name="device_value_top">Top</string>
+    <string name="device_value_large">Large</string>
+    <string name="device_value_off">Off</string>
+    <string name="device_value_normal">Normal</string>
+    <string name="device_value_eco">Eco</string>
+    <string name="device_value_default">Normal</string>
+    <string name="device_value_vacation">Vacation</string>
+    <string name="device_value_party">Party</string>
+    <string name="device_value_vacuum">Vacuum</string>
+    <string name="device_value_mop">Mop</string>
+    <string name="device_value_classical">Classical</string>
+    <string name="device_value_country">Country</string>
+    <string name="device_value_dance">Dance</string>
+    <string name="device_value_latina">Latin</string>
+    <string name="device_value_pop">Pop</string>
+    <string name="device_value_rock">Rock</string>
+    <string name="device_value_low">Low</string>
+    <string name="device_value_medium">Medium</string>
+    <string name="device_value_high">High</string>
+
+    <!-- Device state descriptions -->
+    <string name="device_state_on">On</string>
+    <string name="device_state_off">Off</string>
+    <string name="device_state_off_feminine">Off</string>
+    <string name="device_state_active">Active</string>
+    <string name="device_state_armed_stay">Armed (stay)</string>
+    <string name="device_state_armed_away">Armed (away)</string>
+    <string name="device_state_disarmed">Disarmed</string>
+    <string name="device_state_opened">Open</string>
+    <string name="device_state_closed">Closed</string>
+    <string name="device_state_locked">Locked</string>
+    <string name="device_state_unlocked">Unlocked</string>
+    <string name="device_state_playing">Playing</string>
+    <string name="device_state_stopped">Stopped</string>
+    <string name="device_state_up">Up</string>
+    <string name="device_state_down">Down</string>
+    <string name="device_state_opened_level">Open · %1$d%%</string>
+    <string name="device_state_level_open">%1$d%% open</string>
+    <string name="device_state_brightness">%1$d%% brightness</string>
+    <string name="device_state_temp">%1$s°C</string>
+    <string name="device_state_fridge">%1$s°C · Freezer %2$s°C</string>
+    <string name="device_state_oven_on">On · %1$s°C</string>
+    <string name="device_state_temp_mode">%1$s°C · %2$s</string>
+    <string name="device_state_playing_volume">Playing · Volume %1$d</string>
+    <string name="device_state_playing_genre_volume">Playing %1$s · Volume %2$d</string>
+    <string name="device_state_active_mode">Active · %1$s</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_devices">Device events</string>
+    <string name="notification_channel_devices_description">Alerts about changes to the devices in the home</string>
+    <string name="notification_channel_homes">Shared homes</string>
+    <string name="notification_channel_homes_description">Alerts when someone shares a home with you</string>
+    <string name="notif_device_created_title">New device</string>
+    <string name="notif_device_created_body">%1$s was added to the home</string>
+    <string name="notif_device_deleted_title">Device removed</string>
+    <string name="notif_device_deleted_body">%1$s was removed from the home</string>
+    <string name="notif_home_shared_title">Home shared</string>
+    <string name="notif_home_shared_body">You were given access to a new home</string>
+    <string name="notif_home_unshared_title">Access revoked</string>
+    <string name="notif_home_unshared_body">You no longer have access to a shared home</string>
+</resources>
