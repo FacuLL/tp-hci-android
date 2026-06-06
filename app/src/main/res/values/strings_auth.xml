@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand panel -->
+    <string name="auth_tagline">Controlá tu hogar desde cualquier lugar</string>
+    <string name="auth_brand_description">Gestioná todos tus dispositivos inteligentes en un solo lugar, de forma simple y segura.</string>
+    <string name="auth_feature_remote_control">Control remoto de todos tus dispositivos</string>
+    <string name="auth_feature_routines">Rutinas automáticas personalizadas</string>
+    <string name="auth_feature_energy">Monitoreo de consumo energético</string>
+    <string name="auth_feature_alerts">Alertas y notificaciones en tiempo real</string>
+    <string name="auth_copyright">© 2026 Lumina</string>
+
+    <!-- Shared fields -->
+    <string name="auth_email_label">Correo electrónico</string>
+    <string name="auth_password_label">Contraseña</string>
+    <string name="auth_confirm_password_label">Confirmar contraseña</string>
+    <string name="auth_password_requirements">Mínimo 8 caracteres y al menos una letra mayúscula</string>
+
+    <!-- Login -->
+    <string name="auth_login_title">Hola de nuevo</string>
+    <string name="auth_login_subtitle">Ingresá tus datos para acceder a tu hogar</string>
+    <string name="auth_remember_session">Mantener la sesión iniciada</string>
+    <string name="auth_login_button">Iniciar sesión</string>
+    <string name="auth_forgot_password_link">¿Olvidaste tu contraseña?</string>
+    <string name="auth_no_account">¿No tenés cuenta?</string>
+    <string name="auth_register_link">Registrate acá</string>
+
+    <!-- Register -->
+    <string name="auth_register_top_title">Crear cuenta</string>
+    <string name="auth_register_title">Creá tu cuenta</string>
+    <string name="auth_register_subtitle">Completá tus datos para empezar</string>
+    <string name="auth_name_label">Nombre</string>
+    <string name="auth_register_button">Crear cuenta</string>
+    <string name="auth_have_account">¿Ya tenés cuenta?</string>
+    <string name="auth_login_link">Iniciá sesión acá</string>
+
+    <!-- Verify account -->
+    <string name="auth_verify_top_title">Verificar cuenta</string>
+    <string name="auth_verify_title">Verificá tu cuenta</string>
+    <string name="auth_verify_message">Te enviamos un código de verificación a %1$s. Revisá tu correo.</string>
+    <string name="auth_code_label">Código de verificación</string>
+    <string name="auth_verify_button">Verificar cuenta</string>
+    <string name="auth_no_code_hint">¿No te llegó el código?</string>
+    <string name="auth_resend_button">Reenviar código</string>
+    <plurals name="auth_resend_countdown">
+        <item quantity="one">Reenviar en %1$d segundo</item>
+        <item quantity="many">Reenviar en %1$d segundos</item>
+        <item quantity="other">Reenviar en %1$d segundos</item>
+    </plurals>
+    <string name="auth_resend_success">Código reenviado correctamente</string>
+    <string name="auth_verify_success">Cuenta verificada. Iniciá sesión para continuar.</string>
+
+    <!-- Forgot password -->
+    <string name="auth_forgot_title">Recuperar contraseña</string>
+    <string name="auth_forgot_subtitle">Ingresá tu correo y te enviamos un código para restablecer tu contraseña.</string>
+    <string name="auth_step_indicator">Paso %1$d de %2$d</string>
+    <string name="auth_send_code_button">Enviar código</string>
+    <string name="auth_reset_title">Nueva contraseña</string>
+    <string name="auth_reset_message">Te enviamos un código a %1$s. Ingresalo junto con tu nueva contraseña.</string>
+    <string name="auth_reset_code_label">Código de recuperación</string>
+    <string name="auth_new_password_label">Nueva contraseña</string>
+    <string name="auth_reset_button">Guardar nueva contraseña</string>
+    <string name="auth_back_to_step_one">Volver al paso anterior</string>
+    <string name="auth_reset_success">Contraseña actualizada. Iniciá sesión con tu nueva contraseña.</string>
+
+    <!-- Server connection (reachable without session) -->
+    <string name="auth_cd_api_config">Configurar conexión con el servidor</string>
+    <string name="auth_api_config_title">Conexión con el servidor</string>
+    <string name="auth_api_config_description">Configurá la dirección del API de Lumina. Cambiala solo si usás un servidor propio.</string>
+    <string name="auth_api_url_label">Dirección del servidor</string>
+    <string name="auth_api_key_label">Clave de API</string>
+    <string name="auth_api_url_invalid">Ingresá una dirección válida que empiece con http:// o https://</string>
+    <string name="auth_api_defaults">Restaurar valores predeterminados</string>
+</resources>

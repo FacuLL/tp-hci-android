@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand panel -->
+    <string name="auth_tagline">Control your home from anywhere</string>
+    <string name="auth_brand_description">Manage all your smart devices in one place, simply and securely.</string>
+    <string name="auth_feature_remote_control">Remote control of all your devices</string>
+    <string name="auth_feature_routines">Custom automatic routines</string>
+    <string name="auth_feature_energy">Energy consumption monitoring</string>
+    <string name="auth_feature_alerts">Real-time alerts and notifications</string>
+    <string name="auth_copyright">© 2026 Lumina</string>
+
+    <!-- Shared fields -->
+    <string name="auth_email_label">Email</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_confirm_password_label">Confirm password</string>
+    <string name="auth_password_requirements">At least 8 characters and one uppercase letter</string>
+
+    <!-- Login -->
+    <string name="auth_login_title">Welcome back</string>
+    <string name="auth_login_subtitle">Enter your details to access your home</string>
+    <string name="auth_remember_session">Keep me signed in</string>
+    <string name="auth_login_button">Sign in</string>
+    <string name="auth_forgot_password_link">Forgot your password?</string>
+    <string name="auth_no_account">Don\'t have an account?</string>
+    <string name="auth_register_link">Sign up here</string>
+
+    <!-- Register -->
+    <string name="auth_register_top_title">Create account</string>
+    <string name="auth_register_title">Create your account</string>
+    <string name="auth_register_subtitle">Fill in your details to get started</string>
+    <string name="auth_name_label">Name</string>
+    <string name="auth_register_button">Create account</string>
+    <string name="auth_have_account">Already have an account?</string>
+    <string name="auth_login_link">Sign in here</string>
+
+    <!-- Verify account -->
+    <string name="auth_verify_top_title">Verify account</string>
+    <string name="auth_verify_title">Verify your account</string>
+    <string name="auth_verify_message">We sent a verification code to %1$s. Check your inbox.</string>
+    <string name="auth_code_label">Verification code</string>
+    <string name="auth_verify_button">Verify account</string>
+    <string name="auth_no_code_hint">Didn\'t receive the code?</string>
+    <string name="auth_resend_button">Resend code</string>
+    <plurals name="auth_resend_countdown">
+        <item quantity="one">Resend in %1$d second</item>
+        <item quantity="other">Resend in %1$d seconds</item>
+    </plurals>
+    <string name="auth_resend_success">Code resent successfully</string>
+    <string name="auth_verify_success">Account verified. Sign in to continue.</string>
+
+    <!-- Forgot password -->
+    <string name="auth_forgot_title">Recover password</string>
+    <string name="auth_forgot_subtitle">Enter your email and we will send you a code to reset your password.</string>
+    <string name="auth_step_indicator">Step %1$d of %2$d</string>
+    <string name="auth_send_code_button">Send code</string>
+    <string name="auth_reset_title">New password</string>
+    <string name="auth_reset_message">We sent a code to %1$s. Enter it along with your new password.</string>
+    <string name="auth_reset_code_label">Recovery code</string>
+    <string name="auth_new_password_label">New password</string>
+    <string name="auth_reset_button">Save new password</string>
+    <string name="auth_back_to_step_one">Back to previous step</string>
+    <string name="auth_reset_success">Password updated. Sign in with your new password.</string>
+
+    <!-- Server connection (reachable without session) -->
+    <string name="auth_cd_api_config">Configure server connection</string>
+    <string name="auth_api_config_title">Server connection</string>
+    <string name="auth_api_config_description">Set the address of the Lumina API. Change it only if you use your own server.</string>
+    <string name="auth_api_url_label">Server address</string>
+    <string name="auth_api_key_label">API key</string>
+    <string name="auth_api_url_invalid">Enter a valid address starting with http:// or https://</string>
+    <string name="auth_api_defaults">Restore default values</string>
+</resources>
