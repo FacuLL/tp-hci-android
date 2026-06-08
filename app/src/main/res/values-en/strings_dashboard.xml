@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dashboard (home tab) -->
+    <string name="dashboard_summary_active">%1$d of %2$d devices on</string>
+    <plurals name="dashboard_room_device_count">
+        <item quantity="one">%1$d device</item>
+        <item quantity="other">%1$d devices</item>
+    </plurals>
+    <string name="dashboard_no_rooms_hint">There are no rooms yet. You can create them from the Rooms tab.</string>
+    <string name="dashboard_no_devices_title">No devices in this home</string>
+    <string name="dashboard_no_devices_subtitle">Add them from the Devices tab.</string>
+    <string name="dashboard_welcome_title">Welcome to Lumina</string>
+    <string name="dashboard_welcome_subtitle">Lumina lets you control the lights, climate and security of your home from one place. Start by creating a home.</string>
+    <string name="dashboard_create_home">Create a home</string>
+    <string name="dashboard_manage_homes">Manage homes</string>
+    <string name="dashboard_cd_change_home">Switch home</string>
+    <string name="dashboard_cd_current_home">Current home</string>
+</resources>
