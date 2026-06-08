@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Homes list -->
+    <string name="homes_cd_add_home">Crear hogar</string>
+    <plurals name="homes_member_count">
+        <item quantity="one">%1$d integrante</item>
+        <item quantity="other">%1$d integrantes</item>
+    </plurals>
+    <string name="homes_active_badge">Activo</string>
+    <string name="homes_active_snackbar">Hogar activo: %1$s</string>
+    <string name="homes_menu_rename">Renombrar</string>
+    <string name="homes_menu_members">Integrantes</string>
+    <string name="homes_empty_title">Todavía no tenés hogares</string>
+    <string name="homes_empty_subtitle">Creá tu primer hogar para empezar a gestionar tus dispositivos. Si alguien te invita a su hogar, va a aparecer acá automáticamente.</string>
+    <string name="homes_create_action">Crear hogar</string>
+
+    <!-- Create home -->
+    <string name="homes_create_title">Nuevo hogar</string>
+    <string name="homes_name_label">Nombre</string>
+    <string name="homes_name_hint">Por ejemplo: Casa, Departamento u Oficina</string>
+    <string name="homes_invite_section">Invitar integrantes (opcional)</string>
+    <string name="homes_invite_email_label">Correo electrónico</string>
+    <string name="homes_cd_add_email">Agregar correo</string>
+    <string name="homes_cd_remove_email">Quitar correo</string>
+    <string name="homes_email_duplicate">Ese correo ya está en la lista</string>
+    <string name="homes_email_already_member">Esa persona ya es integrante del hogar</string>
+    <string name="homes_email_self">No podés invitarte a vos mismo</string>
+    <string name="homes_created_snackbar">Se creó el hogar %1$s</string>
+
+    <!-- Rename home -->
+    <string name="homes_rename_title">Renombrar hogar</string>
+    <string name="homes_renamed_snackbar">Nombre actualizado</string>
+
+    <!-- Members -->
+    <string name="homes_members_title">Integrantes</string>
+    <string name="homes_members_empty">Todavía no compartiste este hogar con nadie. Invitá a alguien con su correo electrónico.</string>
+    <string name="homes_invite_button">Invitar</string>
+    <string name="homes_invite_sent_snackbar">Invitación enviada a %1$s</string>
+    <string name="homes_cd_remove_member">Quitar integrante</string>
+    <string name="homes_remove_member_title">Quitar integrante</string>
+    <string name="homes_remove_member_text">¿Querés quitar a %1$s del hogar? Va a perder acceso a sus habitaciones y dispositivos.</string>
+    <string name="homes_remove_action">Quitar</string>
+    <string name="homes_member_removed_snackbar">Se quitó a %1$s del hogar</string>
+
+    <!-- Delete home -->
+    <string name="homes_delete_title">Eliminar hogar</string>
+    <string name="homes_delete_text">Se va a eliminar \"%1$s\" junto con todas sus habitaciones y dispositivos. Esta acción no se puede deshacer.</string>
+    <string name="homes_deleted_snackbar">Hogar eliminado</string>
+
+    <!-- Failed invitations -->
+    <string name="homes_failed_invites_title">Invitaciones no enviadas</string>
+    <string name="homes_failed_invites_created_intro">El hogar se creó, pero estas invitaciones no se pudieron enviar porque no hay una cuenta registrada con ese correo:</string>
+    <string name="homes_failed_invites_intro">Estas invitaciones no se pudieron enviar porque no hay una cuenta registrada con ese correo:</string>
+</resources>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Homes list -->
+    <string name="homes_cd_add_home">Create home</string>
+    <plurals name="homes_member_count">
+        <item quantity="one">%1$d member</item>
+        <item quantity="other">%1$d members</item>
+    </plurals>
+    <string name="homes_active_badge">Active</string>
+    <string name="homes_active_snackbar">Active home: %1$s</string>
+    <string name="homes_menu_rename">Rename</string>
+    <string name="homes_menu_members">Members</string>
+    <string name="homes_empty_title">You do not have any homes yet</string>
+    <string name="homes_empty_subtitle">Create your first home to start managing your devices. If someone invites you to their home, it will appear here automatically.</string>
+    <string name="homes_create_action">Create home</string>
+
+    <!-- Create home -->
+    <string name="homes_create_title">New home</string>
+    <string name="homes_name_label">Name</string>
+    <string name="homes_name_hint">For example: House, Apartment or Office</string>
+    <string name="homes_invite_section">Invite members (optional)</string>
+    <string name="homes_invite_email_label">Email address</string>
+    <string name="homes_cd_add_email">Add email</string>
+    <string name="homes_cd_remove_email">Remove email</string>
+    <string name="homes_email_duplicate">That email is already on the list</string>
+    <string name="homes_email_already_member">That person is already a member of the home</string>
+    <string name="homes_email_self">You cannot invite yourself</string>
+    <string name="homes_created_snackbar">Home %1$s created</string>
+
+    <!-- Rename home -->
+    <string name="homes_rename_title">Rename home</string>
+    <string name="homes_renamed_snackbar">Name updated</string>
+
+    <!-- Members -->
+    <string name="homes_members_title">Members</string>
+    <string name="homes_members_empty">You have not shared this home with anyone yet. Invite someone with their email address.</string>
+    <string name="homes_invite_button">Invite</string>
+    <string name="homes_invite_sent_snackbar">Invitation sent to %1$s</string>
+    <string name="homes_cd_remove_member">Remove member</string>
+    <string name="homes_remove_member_title">Remove member</string>
+    <string name="homes_remove_member_text">Do you want to remove %1$s from the home? They will lose access to its rooms and devices.</string>
+    <string name="homes_remove_action">Remove</string>
+    <string name="homes_member_removed_snackbar">%1$s was removed from the home</string>
+
+    <!-- Delete home -->
+    <string name="homes_delete_title">Delete home</string>
+    <string name="homes_delete_text">\"%1$s\" will be deleted along with all of its rooms and devices. This action cannot be undone.</string>
+    <string name="homes_deleted_snackbar">Home deleted</string>
+
+    <!-- Failed invitations -->
+    <string name="homes_failed_invites_title">Invitations not sent</string>
+    <string name="homes_failed_invites_created_intro">The home was created, but these invitations could not be sent because there is no registered account with that email:</string>
+    <string name="homes_failed_invites_intro">These invitations could not be sent because there is no registered account with that email:</string>
+</resources>
