@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rooms_title">Rooms</string>
+    <string name="rooms_cd_add_room">Create room</string>
+
+    <!-- Empty states -->
+    <string name="rooms_no_home_title">No home yet</string>
+    <string name="rooms_no_home_subtitle">To organize rooms, first create a home from the Home tab.</string>
+    <string name="rooms_empty_title">No rooms</string>
+    <string name="rooms_empty_subtitle">Create a room to organize the devices in the home.</string>
+    <string name="rooms_room_empty_title">No devices</string>
+    <string name="rooms_room_empty_subtitle">Add devices to control them from this room.</string>
+
+    <!-- Create / rename -->
+    <string name="rooms_new_room">New room</string>
+    <string name="rooms_rename_room">Rename room</string>
+    <string name="rooms_action_rename">Rename</string>
+    <string name="rooms_name_label">Name</string>
+
+    <!-- Delete room -->
+    <string name="rooms_delete_room_title">Delete room</string>
+    <string name="rooms_delete_room_message">\"%1$s\" will be deleted. Its devices will be left without a room.</string>
+
+    <!-- Devices in a room -->
+    <string name="rooms_add_device">Add device</string>
+    <string name="rooms_unassigned_section">Devices without a room</string>
+    <string name="rooms_no_unassigned">There are no devices without a room to assign. You can create new ones from the Devices tab.</string>
+    <string name="rooms_cd_assign_device">Assign to room</string>
+    <string name="rooms_remove_device_title">Remove device</string>
+    <string name="rooms_remove_device_message">\"%1$s\" will be left without a room. You can assign it again whenever you want.</string>
+    <string name="rooms_action_remove">Remove</string>
+    <string name="rooms_cd_remove_device">Remove from room</string>
+
+    <plurals name="rooms_device_count">
+        <item quantity="one">%1$d device</item>
+        <item quantity="other">%1$d devices</item>
+    </plurals>
+</resources>

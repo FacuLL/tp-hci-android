@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rooms_title">Habitaciones</string>
+    <string name="rooms_cd_add_room">Crear habitación</string>
+
+    <!-- Empty states -->
+    <string name="rooms_no_home_title">Todavía no hay un hogar</string>
+    <string name="rooms_no_home_subtitle">Para organizar las habitaciones primero creá un hogar desde la pestaña Inicio.</string>
+    <string name="rooms_empty_title">No hay habitaciones</string>
+    <string name="rooms_empty_subtitle">Creá una habitación para organizar los dispositivos del hogar.</string>
+    <string name="rooms_room_empty_title">Sin dispositivos</string>
+    <string name="rooms_room_empty_subtitle">Agregá dispositivos para controlarlos desde esta habitación.</string>
+
+    <!-- Create / rename -->
+    <string name="rooms_new_room">Nueva habitación</string>
+    <string name="rooms_rename_room">Renombrar habitación</string>
+    <string name="rooms_action_rename">Renombrar</string>
+    <string name="rooms_name_label">Nombre</string>
+
+    <!-- Delete room -->
+    <string name="rooms_delete_room_title">Eliminar habitación</string>
+    <string name="rooms_delete_room_message">Se va a eliminar \"%1$s\". Los dispositivos asignados van a quedar sin habitación.</string>
+
+    <!-- Devices in a room -->
+    <string name="rooms_add_device">Agregar dispositivo</string>
+    <string name="rooms_unassigned_section">Dispositivos sin habitación</string>
+    <string name="rooms_no_unassigned">No hay dispositivos sin habitación para asignar. Podés crear nuevos desde la pestaña Dispositivos.</string>
+    <string name="rooms_cd_assign_device">Asignar a la habitación</string>
+    <string name="rooms_remove_device_title">Quitar dispositivo</string>
+    <string name="rooms_remove_device_message">\"%1$s\" va a quedar sin habitación. Podés volver a asignarlo cuando quieras.</string>
+    <string name="rooms_action_remove">Quitar</string>
+    <string name="rooms_cd_remove_device">Quitar de la habitación</string>
+
+    <plurals name="rooms_device_count">
+        <item quantity="one">%1$d dispositivo</item>
+        <item quantity="other">%1$d dispositivos</item>
+    </plurals>
+</resources>
