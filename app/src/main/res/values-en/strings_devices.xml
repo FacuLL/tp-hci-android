@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Devices tab -->
+    <string name="devices_cd_add">Add device</string>
+    <string name="devices_search_placeholder">Search by name</string>
+    <string name="devices_filter_all">All</string>
+    <string name="devices_no_room">No room</string>
+    <string name="devices_item_subtitle">%1$s · %2$s</string>
+    <string name="devices_menu_view_detail">View details</string>
+    <string name="devices_menu_assign_room">Assign to a room</string>
+    <string name="devices_menu_remove_room">Remove from room</string>
+    <string name="devices_empty_title">No devices yet</string>
+    <string name="devices_empty_subtitle">Add a device to control it from here.</string>
+    <string name="devices_empty_action">Add device</string>
+    <string name="devices_empty_filtered_title">No results</string>
+    <string name="devices_empty_filtered_subtitle">Try a different search or filter.</string>
+    <string name="devices_select_prompt">Pick a device</string>
+    <string name="devices_select_prompt_subtitle">Tap a device on the list to see and control its state.</string>
+
+    <!-- Create device dialog -->
+    <string name="devices_create_title">New device</string>
+    <string name="devices_field_name">Name</string>
+    <string name="devices_field_type">Device type</string>
+    <string name="devices_field_room">Room</string>
+    <string name="devices_type_required">Choose a device type</string>
+    <string name="devices_create_success">Device created</string>
+
+    <!-- Assign room dialog -->
+    <string name="devices_assign_title">Assign to a room</string>
+    <string name="devices_assign_subtitle">Choose the room where %1$s is located.</string>
+    <string name="devices_assign_no_rooms">There are no rooms in this home yet.</string>
+    <string name="devices_assign_success">Room updated</string>
+    <string name="devices_remove_room_success">The device was removed from the room</string>
+
+    <!-- Delete device -->
+    <string name="devices_delete_title">Delete device</string>
+    <string name="devices_delete_message">Delete \"%1$s\"? This action cannot be undone.</string>
+    <string name="devices_delete_success">Device deleted</string>
+</resources>
