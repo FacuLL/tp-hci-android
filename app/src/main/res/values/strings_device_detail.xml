@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Header -->
+    <string name="device_detail_no_room">Sin habitación</string>
+    <string name="device_detail_status_label">Estado</string>
+
+    <!-- Management actions -->
+    <string name="device_detail_rename_title">Renombrar dispositivo</string>
+    <string name="device_detail_name_label">Nombre</string>
+    <string name="device_detail_delete_title">Eliminar dispositivo</string>
+    <string name="device_detail_delete_message">¿Querés eliminar \"%1$s\"? Esta acción no se puede deshacer.</string>
+    <string name="device_detail_missing_title">Dispositivo no disponible</string>
+    <string name="device_detail_missing_subtitle">El dispositivo fue eliminado o ya no existe.</string>
+    <string name="cd_device_rename">Renombrar dispositivo</string>
+    <string name="cd_device_assign_room">Asignar habitación</string>
+    <string name="cd_device_delete">Eliminar dispositivo</string>
+
+    <!-- Security code dialogs -->
+    <string name="device_detail_code_label">Código de seguridad</string>
+    <string name="device_detail_code_hint">Ingresá el código de 4 dígitos</string>
+    <string name="device_detail_current_code_label">Código actual</string>
+    <string name="device_detail_new_code_label">Código nuevo</string>
+    <string name="device_detail_code_length">El código debe tener 4 dígitos</string>
+
+    <!-- Vacuum location -->
+    <string name="device_detail_set_location">Enviar a habitación</string>
+    <string name="device_detail_set_location_placeholder">Elegir habitación</string>
+
+    <!-- Dispense -->
+    <string name="device_detail_quantity_label">Cantidad</string>
+    <string name="device_detail_unit_label">Unidad</string>
+    <string name="device_detail_dispense_closed">Abrí el grifo para poder dispensar.</string>
+
+    <!-- Playlist -->
+    <string name="device_detail_playlist_title">Lista de reproducción</string>
+    <string name="device_detail_playlist_empty">No hay canciones en la lista.</string>
+    <string name="device_detail_playlist_error">No se pudo cargar la lista de reproducción.</string>
+
+    <!-- Lamp color names -->
+    <string name="device_color_white">Blanco</string>
+    <string name="device_color_warm_white">Blanco cálido</string>
+    <string name="device_color_yellow">Amarillo</string>
+    <string name="device_color_orange">Naranja</string>
+    <string name="device_color_red">Rojo</string>
+    <string name="device_color_pink">Rosa</string>
+    <string name="device_color_purple">Violeta</string>
+    <string name="device_color_blue">Azul</string>
+    <string name="device_color_light_blue">Celeste</string>
+    <string name="device_color_green">Verde</string>
+    <string name="device_color_light_green">Verde claro</string>
+    <string name="device_color_teal">Turquesa</string>
+    <string name="device_color_gray">Gris</string>
+    <string name="device_color_lavender">Lavanda</string>
+</resources>
