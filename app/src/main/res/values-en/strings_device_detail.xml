@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Header -->
+    <string name="device_detail_no_room">No room</string>
+    <string name="device_detail_status_label">Status</string>
+
+    <!-- Management actions -->
+    <string name="device_detail_rename_title">Rename device</string>
+    <string name="device_detail_name_label">Name</string>
+    <string name="device_detail_delete_title">Delete device</string>
+    <string name="device_detail_delete_message">Do you want to delete \"%1$s\"? This action cannot be undone.</string>
+    <string name="device_detail_missing_title">Device unavailable</string>
+    <string name="device_detail_missing_subtitle">The device was deleted or no longer exists.</string>
+    <string name="cd_device_rename">Rename device</string>
+    <string name="cd_device_assign_room">Assign room</string>
+    <string name="cd_device_delete">Delete device</string>
+
+    <!-- Security code dialogs -->
+    <string name="device_detail_code_label">Security code</string>
+    <string name="device_detail_code_hint">Enter the 4-digit code</string>
+    <string name="device_detail_current_code_label">Current code</string>
+    <string name="device_detail_new_code_label">New code</string>
+    <string name="device_detail_code_length">The code must be 4 digits long</string>
+
+    <!-- Vacuum location -->
+    <string name="device_detail_set_location">Send to room</string>
+    <string name="device_detail_set_location_placeholder">Choose a room</string>
+
+    <!-- Dispense -->
+    <string name="device_detail_quantity_label">Quantity</string>
+    <string name="device_detail_unit_label">Unit</string>
+    <string name="device_detail_dispense_closed">Open the faucet to dispense.</string>
+
+    <!-- Playlist -->
+    <string name="device_detail_playlist_title">Playlist</string>
+    <string name="device_detail_playlist_empty">There are no songs in the playlist.</string>
+    <string name="device_detail_playlist_error">The playlist could not be loaded.</string>
+
+    <!-- Lamp color names -->
+    <string name="device_color_white">White</string>
+    <string name="device_color_warm_white">Warm white</string>
+    <string name="device_color_yellow">Yellow</string>
+    <string name="device_color_orange">Orange</string>
+    <string name="device_color_red">Red</string>
+    <string name="device_color_pink">Pink</string>
+    <string name="device_color_purple">Purple</string>
+    <string name="device_color_blue">Blue</string>
+    <string name="device_color_light_blue">Light blue</string>
+    <string name="device_color_green">Green</string>
+    <string name="device_color_light_green">Light green</string>
+    <string name="device_color_teal">Teal</string>
+    <string name="device_color_gray">Gray</string>
+    <string name="device_color_lavender">Lavender</string>
+</resources>

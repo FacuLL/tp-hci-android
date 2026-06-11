@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Devices tab -->
+    <string name="devices_cd_add">Agregar dispositivo</string>
+    <string name="devices_search_placeholder">Buscar por nombre</string>
+    <string name="devices_filter_all">Todos</string>
+    <string name="devices_no_room">Sin habitación</string>
+    <string name="devices_item_subtitle">%1$s · %2$s</string>
+    <string name="devices_menu_view_detail">Ver detalle</string>
+    <string name="devices_menu_assign_room">Asignar a habitación</string>
+    <string name="devices_menu_remove_room">Quitar de la habitación</string>
+    <string name="devices_empty_title">Todavía no hay dispositivos</string>
+    <string name="devices_empty_subtitle">Agregá un dispositivo para controlarlo desde acá.</string>
+    <string name="devices_empty_action">Agregar dispositivo</string>
+    <string name="devices_empty_filtered_title">Sin resultados</string>
+    <string name="devices_empty_filtered_subtitle">Probá con otra búsqueda u otro filtro.</string>
+    <string name="devices_select_prompt">Elegí un dispositivo</string>
+    <string name="devices_select_prompt_subtitle">Tocá un dispositivo de la lista para ver y controlar su estado.</string>
+
+    <!-- Create device dialog -->
+    <string name="devices_create_title">Nuevo dispositivo</string>
+    <string name="devices_field_name">Nombre</string>
+    <string name="devices_field_type">Tipo de dispositivo</string>
+    <string name="devices_field_room">Habitación</string>
+    <string name="devices_type_required">Elegí un tipo de dispositivo</string>
+    <string name="devices_create_success">Se creó el dispositivo</string>
+
+    <!-- Assign room dialog -->
+    <string name="devices_assign_title">Asignar a habitación</string>
+    <string name="devices_assign_subtitle">Elegí en qué habitación está %1$s.</string>
+    <string name="devices_assign_no_rooms">No hay habitaciones en este hogar todavía.</string>
+    <string name="devices_assign_success">Se actualizó la habitación</string>
+    <string name="devices_remove_room_success">Se quitó el dispositivo de la habitación</string>
+
+    <!-- Delete device -->
+    <string name="devices_delete_title">Eliminar dispositivo</string>
+    <string name="devices_delete_message">¿Querés eliminar \"%1$s\"? Esta acción no se puede deshacer.</string>
+    <string name="devices_delete_success">Se eliminó el dispositivo</string>
+</resources>
