@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Routines tab (view and execute; management lives in the web app) -->
+    <string name="routines_execute">Run</string>
+    <string name="routines_executed">Routine executed</string>
+    <string name="routines_inactive">Inactive</string>
+    <string name="routines_device_deleted">Deleted device</string>
+    <string name="routines_no_actions">No actions defined</string>
+    <string name="routines_action_detail">%1$s · %2$s</string>
+    <string name="routines_empty_title">No routines yet</string>
+    <string name="routines_empty_subtitle">Routines are created from the Lumina web version. From the app you can review and run them.</string>
+    <string name="routines_cd_expand_actions">Show actions</string>
+    <string name="routines_cd_collapse_actions">Hide actions</string>
+    <string name="routines_day_monday">Monday</string>
+    <string name="routines_day_tuesday">Tuesday</string>
+    <string name="routines_day_wednesday">Wednesday</string>
+    <string name="routines_day_thursday">Thursday</string>
+    <string name="routines_day_friday">Friday</string>
+    <string name="routines_day_saturday">Saturday</string>
+    <string name="routines_day_sunday">Sunday</string>
+    <plurals name="routines_action_count">
+        <item quantity="one">%1$d action</item>
+        <item quantity="other">%1$d actions</item>
+    </plurals>
+</resources>
