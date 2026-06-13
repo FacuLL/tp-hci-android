@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sections -->
+    <string name="settings_section_profile">Profile</string>
+    <string name="settings_section_security">Security</string>
+    <string name="settings_section_personalization">Personalization</string>
+    <string name="settings_section_server">Server connection</string>
+    <string name="settings_section_session">Session</string>
+
+    <!-- Profile -->
+    <string name="settings_name_label">Name</string>
+    <string name="settings_no_name">No name</string>
+    <string name="settings_edit_name">Edit name</string>
+    <string name="settings_profile_updated">Name updated</string>
+
+    <!-- Security -->
+    <string name="settings_current_password">Current password</string>
+    <string name="settings_new_password">New password</string>
+    <string name="settings_confirm_password">Confirm password</string>
+    <string name="settings_change_password">Change password</string>
+    <string name="settings_password_changed">Password updated</string>
+
+    <!-- Personalization -->
+    <string name="settings_theme_label">App theme</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+
+    <!-- Server connection -->
+    <string name="settings_server_description">Address of the Lumina API. Change it only if you use your own server.</string>
+    <string name="settings_api_url_label">Server address</string>
+    <string name="settings_api_key_label">API key</string>
+    <string name="settings_validation_api_url">Enter a valid address starting with http:// or https://</string>
+    <string name="settings_api_saved">Settings saved</string>
+    <string name="settings_api_reset">Restore defaults</string>
+    <string name="settings_api_reset_done">Defaults restored</string>
+
+    <!-- Session -->
+    <string name="settings_logout">Sign out</string>
+    <string name="settings_logout_confirm_title">Sign out</string>
+    <string name="settings_logout_confirm_text">You will be signed out on this device.</string>
+</resources>
