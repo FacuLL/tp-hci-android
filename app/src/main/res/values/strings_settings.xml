@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sections -->
+    <string name="settings_section_profile">Perfil</string>
+    <string name="settings_section_security">Seguridad</string>
+    <string name="settings_section_personalization">Personalización</string>
+    <string name="settings_section_server">Conexión con el servidor</string>
+    <string name="settings_section_session">Sesión</string>
+
+    <!-- Profile -->
+    <string name="settings_name_label">Nombre</string>
+    <string name="settings_no_name">Sin nombre</string>
+    <string name="settings_edit_name">Editar nombre</string>
+    <string name="settings_profile_updated">Nombre actualizado</string>
+
+    <!-- Security -->
+    <string name="settings_current_password">Contraseña actual</string>
+    <string name="settings_new_password">Nueva contraseña</string>
+    <string name="settings_confirm_password">Confirmar contraseña</string>
+    <string name="settings_change_password">Cambiar contraseña</string>
+    <string name="settings_password_changed">Contraseña actualizada</string>
+
+    <!-- Personalization -->
+    <string name="settings_theme_label">Tema de la aplicación</string>
+    <string name="settings_theme_system">Según el sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+
+    <!-- Server connection -->
+    <string name="settings_server_description">Dirección del API de Lumina. Cambiala solo si usás un servidor propio.</string>
+    <string name="settings_api_url_label">Dirección del servidor</string>
+    <string name="settings_api_key_label">Clave de API</string>
+    <string name="settings_validation_api_url">Ingresá una dirección válida que empiece con http:// o https://</string>
+    <string name="settings_api_saved">Configuración guardada</string>
+    <string name="settings_api_reset">Restaurar valores predeterminados</string>
+    <string name="settings_api_reset_done">Se restauraron los valores predeterminados</string>
+
+    <!-- Session -->
+    <string name="settings_logout">Cerrar sesión</string>
+    <string name="settings_logout_confirm_title">Cerrar sesión</string>
+    <string name="settings_logout_confirm_text">Vas a salir de tu cuenta en este dispositivo.</string>
+</resources>
