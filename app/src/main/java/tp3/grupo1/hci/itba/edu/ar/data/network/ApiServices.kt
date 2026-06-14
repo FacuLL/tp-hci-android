@@ -13,6 +13,7 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 import tp3.grupo1.hci.itba.edu.ar.data.model.AuthResponse
 import tp3.grupo1.hci.itba.edu.ar.data.model.ChangePasswordRequest
+import tp3.grupo1.hci.itba.edu.ar.data.model.CodeResponse
 import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceCreateRequest
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceType
@@ -64,7 +65,7 @@ interface UserService {
     suspend fun resetPassword(@Body body: ResetPasswordRequest)
 
     @POST("users/send-verification")
-    suspend fun sendVerification(@Body body: EmailRequest)
+    suspend fun sendVerification(@Body body: EmailRequest): CodeResponse
 }
 
 interface HomeService {

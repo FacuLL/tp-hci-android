@@ -9,6 +9,7 @@ object Routes {
     const val FORGOT_PASSWORD = "forgot_password"
     const val MAIN = "main"
     const val DEVICE_DETAIL = "device/{deviceId}"
+    const val ROOM_DETAIL = "room/{roomId}"
     const val HOMES = "homes"
     const val SETTINGS = "settings"
 
@@ -21,4 +22,6 @@ object Routes {
     fun verify(email: String): String = "verify/${URLEncoder.encode(email, "UTF-8")}"
 
     fun deviceDetail(deviceId: String): String = "device/$deviceId"
+
+    fun roomDetail(roomId: String): String = "room/$roomId"
 }

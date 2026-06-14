@@ -54,6 +54,12 @@ data class EmailRequest(
     val email: String,
 )
 
+/** send-verification returns the OTP code in the testing environment. */
+@Serializable
+data class CodeResponse(
+    val code: String? = null,
+)
+
 @Serializable
 data class ResetPasswordRequest(
     val code: String,

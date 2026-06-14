@@ -3,6 +3,7 @@ package tp3.grupo1.hci.itba.edu.ar.ui.screens.auth
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -99,6 +101,31 @@ fun VerifyAccountScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            uiState.displayedCode?.let { code ->
+                Spacer(Modifier.height(16.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(
+                            text = stringResource(R.string.auth_displayed_code_label),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                        Text(
+                            text = code,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Text(
+                            text = stringResource(R.string.auth_displayed_code_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
             Spacer(Modifier.height(20.dp))
             uiState.apiErrorRes?.let { errorRes ->
                 ErrorBanner(stringResource(errorRes))

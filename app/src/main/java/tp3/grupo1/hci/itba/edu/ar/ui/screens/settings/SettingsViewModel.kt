@@ -15,13 +15,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tp3.grupo1.hci.itba.edu.ar.AppContainer
 import tp3.grupo1.hci.itba.edu.ar.R
-import tp3.grupo1.hci.itba.edu.ar.data.AppPreferences
 import tp3.grupo1.hci.itba.edu.ar.data.ThemeMode
 import tp3.grupo1.hci.itba.edu.ar.data.model.User
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiException
 import tp3.grupo1.hci.itba.edu.ar.domain.Validators
 import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
-import java.net.URI
 
 data class SettingsUiState(
     val loading: Boolean = true,
@@ -42,12 +40,6 @@ data class SettingsUiState(
     @StringRes val confirmPasswordError: Int? = null,
     @StringRes val passwordApiError: Int? = null,
     val passwordSaving: Boolean = false,
-    // API connection form
-    val apiUrl: String = "",
-    val apiKey: String = "",
-    @StringRes val apiUrlError: Int? = null,
-    @StringRes val apiKeyError: Int? = null,
-    val apiConfigSaving: Boolean = false,
     // Session
     val loggingOut: Boolean = false,
 )
@@ -68,14 +60,8 @@ class SettingsViewModel(container: AppContainer) : ViewModel() {
     // Live re-validation only kicks in after the first submit attempt per form.
     private var nameSubmitted = false
     private var passwordSubmitted = false
-    private var apiConfigSubmitted = false
 
     init {
-        viewModelScope.launch {
-            val url = preferences.apiBaseUrl.first()
-            val key = preferences.apiKey.first()
-            _uiState.update { it.copy(apiUrl = url, apiKey = key) }
-        }
         viewModelScope.launch {
             try {
                 authRepository.loadProfile()
@@ -213,77 +199,6 @@ class SettingsViewModel(container: AppContainer) : ViewModel() {
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { preferences.setThemeMode(mode) }
-    }
-
-    // API connection
-
-    fun onApiUrlChange(value: String) {
-        _uiState.update {
-            it.copy(
-                apiUrl = value,
-                apiUrlError = if (apiConfigSubmitted) validateApiUrl(value) else it.apiUrlError,
-            )
-        }
-    }
-
-    fun onApiKeyChange(value: String) {
-        _uiState.update {
-            it.copy(
-                apiKey = value,
-                apiKeyError = if (apiConfigSubmitted) Validators.required(value) else it.apiKeyError,
-            )
-        }
-    }
-
-    fun saveApiConfig() {
-        apiConfigSubmitted = true
-        val state = _uiState.value
-        val urlError = validateApiUrl(state.apiUrl)
-        val keyError = Validators.required(state.apiKey)
-        _uiState.update { it.copy(apiUrlError = urlError, apiKeyError = keyError) }
-        if (urlError != null || keyError != null) return
-        viewModelScope.launch {
-            _uiState.update { it.copy(apiConfigSaving = true) }
-            preferences.setApiBaseUrl(state.apiUrl.trim())
-            preferences.setApiKey(state.apiKey.trim())
-            apiConfigSubmitted = false
-            _uiState.update {
-                it.copy(
-                    apiConfigSaving = false,
-                    apiUrl = state.apiUrl.trim(),
-                    apiKey = state.apiKey.trim(),
-                    snackbarMessage = R.string.settings_api_saved,
-                )
-            }
-        }
-    }
-
-    fun resetApiConfig() {
-        apiConfigSubmitted = false
-        viewModelScope.launch {
-            preferences.setApiBaseUrl(AppPreferences.DEFAULT_BASE_URL)
-            preferences.setApiKey(AppPreferences.DEFAULT_API_KEY)
-            _uiState.update {
-                it.copy(
-                    apiUrl = AppPreferences.DEFAULT_BASE_URL,
-                    apiKey = AppPreferences.DEFAULT_API_KEY,
-                    apiUrlError = null,
-                    apiKeyError = null,
-                    snackbarMessage = R.string.settings_api_reset_done,
-                )
-            }
-        }
-    }
-
-    @StringRes
-    private fun validateApiUrl(value: String): Int? {
-        val trimmed = value.trim()
-        if (trimmed.isBlank()) return R.string.validation_required
-        val uri = runCatching { URI(trimmed) }.getOrNull()
-        val valid = uri != null &&
-            uri.scheme?.lowercase() in listOf("http", "https") &&
-            !uri.host.isNullOrBlank()
-        return if (valid) null else R.string.settings_validation_api_url
     }
 
     // Session

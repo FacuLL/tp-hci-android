@@ -46,6 +46,8 @@
         <item quantity="other">Resend in %1$d seconds</item>
     </plurals>
     <string name="auth_resend_success">Code resent successfully</string>
+    <string name="auth_displayed_code_label">Verification code</string>
+    <string name="auth_displayed_code_hint">For this submission, the code is shown here to make testing easier.</string>
     <string name="auth_verify_success">Account verified. Sign in to continue.</string>
 
     <!-- Forgot password -->

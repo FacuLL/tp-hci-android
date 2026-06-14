@@ -43,6 +43,7 @@ enum class MainTab(
 @Composable
 fun MainScreen(
     onOpenDevice: (String) -> Unit,
+    onOpenRoom: (String) -> Unit,
     onOpenHomes: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
@@ -90,6 +91,7 @@ fun MainScreen(
             composable(Routes.TAB_ROOMS) {
                 RoomsScreen(
                     onOpenDevice = onOpenDevice,
+                    onOpenRoom = onOpenRoom,
                     onOpenSettings = onOpenSettings,
                 )
             }

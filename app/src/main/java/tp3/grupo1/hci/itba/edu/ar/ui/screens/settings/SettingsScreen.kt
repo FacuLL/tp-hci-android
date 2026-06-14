@@ -12,12 +12,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Logout
-import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Person
@@ -49,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -215,47 +212,6 @@ fun SettingsScreen(
                                     )
                                 }
                             }
-                        }
-                    }
-
-                    SettingsSection(
-                        icon = Icons.Outlined.Dns,
-                        title = stringResource(R.string.settings_section_server),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.settings_server_description),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        LuminaTextField(
-                            value = uiState.apiUrl,
-                            onValueChange = viewModel::onApiUrlChange,
-                            label = stringResource(R.string.settings_api_url_label),
-                            required = true,
-                            error = uiState.apiUrlError?.let { stringResource(it) },
-                            enabled = !uiState.apiConfigSaving,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                        )
-                        LuminaTextField(
-                            value = uiState.apiKey,
-                            onValueChange = viewModel::onApiKeyChange,
-                            label = stringResource(R.string.settings_api_key_label),
-                            required = true,
-                            error = uiState.apiKeyError?.let { stringResource(it) },
-                            enabled = !uiState.apiConfigSaving,
-                        )
-                        LoadingButton(
-                            text = stringResource(R.string.action_save),
-                            onClick = viewModel::saveApiConfig,
-                            loading = uiState.apiConfigSaving,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        TextButton(
-                            onClick = viewModel::resetApiConfig,
-                            enabled = !uiState.apiConfigSaving,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.settings_api_reset))
                         }
                     }
 

@@ -17,11 +17,9 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DevicesOther
 import androidx.compose.material.icons.outlined.LinkOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -47,37 +45,9 @@ import tp3.grupo1.hci.itba.edu.ar.domain.deviceTypeIcon
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 
 /**
- * Room detail shown as a modal bottom sheet on compact and medium widths.
- * Expanded layouts embed [RoomDetailContent] directly as a side panel.
+ * Devices of a room with quick toggle, unlink and add actions. Used both as
+ * the body of the room detail screen and as the side panel on large tablets.
  */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun RoomDetailSheet(
-    room: Room,
-    devices: List<Device>,
-    types: Map<String, DeviceType>,
-    pendingDeviceIds: Set<String>,
-    onDismiss: () -> Unit,
-    onOpenDevice: (String) -> Unit,
-    onToggleDevice: (Device) -> Unit,
-    onRemoveDevice: (Device) -> Unit,
-    onAddDevice: () -> Unit,
-) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        RoomDetailContent(
-            room = room,
-            devices = devices,
-            types = types,
-            pendingDeviceIds = pendingDeviceIds,
-            onOpenDevice = onOpenDevice,
-            onToggleDevice = onToggleDevice,
-            onRemoveDevice = onRemoveDevice,
-            onAddDevice = onAddDevice,
-        )
-    }
-}
-
-/** Devices of a room with quick toggle, unlink and add actions. */
 @Composable
 fun RoomDetailContent(
     room: Room,
