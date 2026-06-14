@@ -29,7 +29,8 @@
     <!-- Devices in a room -->
     <string name="rooms_add_device">Add device</string>
     <string name="rooms_unassigned_section">Devices without a room</string>
-    <string name="rooms_no_unassigned">There are no devices without a room to assign. You can create new ones from the Devices tab.</string>
+    <string name="rooms_no_unassigned">There are no devices without a room to assign.</string>
+    <string name="rooms_create_new_device">Create new device</string>
     <string name="rooms_cd_assign_device">Assign to room</string>
     <string name="rooms_remove_device_title">Remove device</string>
     <string name="rooms_remove_device_message">\"%1$s\" will be left without a room. You can assign it again whenever you want.</string>

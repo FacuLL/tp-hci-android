@@ -53,4 +53,15 @@
         <item quantity="one">%1$d action</item>
         <item quantity="other">%1$d actions</item>
     </plurals>
+
+    <!-- Header subtitle -->
+    <plurals name="routines_active_count">
+        <item quantity="one">%1$d active routine</item>
+        <item quantity="other">%1$d active routines</item>
+    </plurals>
+    <string name="routines_next_in">next in %1$s</string>
+    <string name="routines_next_soon">next very soon</string>
+    <string name="routines_duration_hm">%1$dh %2$dmin</string>
+    <string name="routines_duration_m">%1$dmin</string>
+    <string name="routines_cd_enabled">Enable or disable the routine</string>
 </resources>

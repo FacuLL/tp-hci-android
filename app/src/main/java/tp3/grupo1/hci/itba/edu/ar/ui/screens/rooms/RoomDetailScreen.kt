@@ -33,6 +33,7 @@ import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.ui.components.CenteredLoading
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ConfirmDialog
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
+import tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.CreateDeviceDialog
 
 private const val MISSING_ROOM_NOTICE_MILLIS = 1500L
 
@@ -169,6 +170,15 @@ fun RoomDetailScreen(
             types = state.types,
             pendingDeviceIds = state.pendingDeviceIds,
             onAssign = { device -> viewModel.assignDevice(device.id) },
+            onCreateNew = viewModel::openCreateDeviceDialog,
+            onDismiss = viewModel::dismissDialog,
+        )
+        RoomDetailDialog.CreateDevice -> CreateDeviceDialog(
+            rooms = state.rooms,
+            creating = state.creatingDevice,
+            apiErrorRes = state.createDeviceErrorRes,
+            initialRoomId = state.room?.id,
+            onCreate = { name, typeId, roomId -> viewModel.createDevice(name, typeId, roomId) },
             onDismiss = viewModel::dismissDialog,
         )
     }

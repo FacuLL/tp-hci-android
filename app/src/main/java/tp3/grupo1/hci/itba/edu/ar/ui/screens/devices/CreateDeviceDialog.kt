@@ -69,10 +69,11 @@ fun CreateDeviceDialog(
     @StringRes apiErrorRes: Int?,
     onDismiss: () -> Unit,
     onCreate: (name: String, typeId: String, roomId: String?) -> Unit,
+    initialRoomId: String? = null,
 ) {
     var name by rememberSaveable { mutableStateOf("") }
     var selectedTypeId by rememberSaveable { mutableStateOf<String?>(null) }
-    var selectedRoomId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedRoomId by rememberSaveable { mutableStateOf(initialRoomId) }
     var submitted by rememberSaveable { mutableStateOf(false) }
     var roomMenuExpanded by remember { mutableStateOf(false) }
 

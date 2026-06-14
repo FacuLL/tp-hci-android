@@ -10,10 +10,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import tp3.grupo1.hci.itba.edu.ar.AppContainer
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.Routine
+import tp3.grupo1.hci.itba.edu.ar.data.model.RoutineUpsertRequest
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiException
 import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
 
@@ -23,6 +26,8 @@ data class RoutinesUiState(
     val routines: List<Routine> = emptyList(),
     val devicesById: Map<String, Device> = emptyMap(),
     val executingId: String? = null,
+    /** Scheduled routines whose enable/disable toggle is in flight. */
+    val togglingIds: Set<String> = emptySet(),
     @StringRes val loadErrorRes: Int? = null,
     @StringRes val snackbarMessageRes: Int? = null,
 )
@@ -86,6 +91,32 @@ class RoutinesViewModel(private val container: AppContainer) : ViewModel() {
                 _uiState.update {
                     it.copy(executingId = null, snackbarMessageRes = e.userMessageRes)
                 }
+            }
+        }
+    }
+
+    /**
+     * Enables/disables a scheduled routine by flipping the "activa" flag in its
+     * metadata. Manual routines have no enabled state and never call this.
+     */
+    fun setEnabled(routine: Routine, enabled: Boolean) {
+        if (routine.id in _uiState.value.togglingIds) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(togglingIds = it.togglingIds + routine.id) }
+            try {
+                val metadata = JsonObject(
+                    (routine.metadata ?: JsonObject(emptyMap()))
+                        .toMutableMap()
+                        .apply { put("activa", JsonPrimitive(enabled)) },
+                )
+                container.routinesRepository.update(
+                    routine.id,
+                    RoutineUpsertRequest(routine.name, routine.actions, metadata),
+                )
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(snackbarMessageRes = e.userMessageRes) }
+            } finally {
+                _uiState.update { it.copy(togglingIds = it.togglingIds - routine.id) }
             }
         }
     }

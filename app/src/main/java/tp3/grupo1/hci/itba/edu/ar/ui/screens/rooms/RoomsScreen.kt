@@ -68,6 +68,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.Room
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceTypeNameRes
 import tp3.grupo1.hci.itba.edu.ar.domain.devicesInRoom
 import tp3.grupo1.hci.itba.edu.ar.domain.unassignedDevices
+import tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.CreateDeviceDialog
 import tp3.grupo1.hci.itba.edu.ar.ui.components.CenteredLoading
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ConfirmDialog
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
@@ -222,6 +223,15 @@ fun RoomsScreen(
             types = state.types,
             pendingDeviceIds = state.pendingDeviceIds,
             onAssign = { device -> viewModel.assignDevice(device.id, dialog.room.id) },
+            onCreateNew = { viewModel.openCreateDeviceDialog(dialog.room) },
+            onDismiss = viewModel::dismissDialog,
+        )
+        is RoomsDialog.CreateDevice -> CreateDeviceDialog(
+            rooms = state.rooms,
+            creating = state.creatingDevice,
+            apiErrorRes = state.createDeviceErrorRes,
+            initialRoomId = dialog.room.id,
+            onCreate = { name, typeId, roomId -> viewModel.createDevice(name, typeId, roomId) },
             onDismiss = viewModel::dismissDialog,
         )
     }
@@ -452,16 +462,17 @@ fun AddDeviceDialog(
     types: Map<String, DeviceType>,
     pendingDeviceIds: Set<String>,
     onAssign: (Device) -> Unit,
+    onCreateNew: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.rooms_add_device)) },
         text = {
-            if (unassigned.isEmpty()) {
-                Text(stringResource(R.string.rooms_no_unassigned))
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (unassigned.isEmpty()) {
+                    Text(stringResource(R.string.rooms_no_unassigned))
+                } else {
                     Text(
                         text = stringResource(R.string.rooms_unassigned_section),
                         style = MaterialTheme.typography.labelLarge,
@@ -480,6 +491,14 @@ fun AddDeviceDialog(
                             )
                         }
                     }
+                }
+                TextButton(
+                    onClick = onCreateNew,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Outlined.Add, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.rooms_create_new_device))
                 }
             }
         },

@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tp3.grupo1.hci.itba.edu.ar.AppContainer
+import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceType
 import tp3.grupo1.hci.itba.edu.ar.data.model.Home
@@ -28,6 +29,7 @@ sealed interface RoomsDialog {
     data class Rename(val room: Room) : RoomsDialog
     data class ConfirmDeleteRoom(val room: Room) : RoomsDialog
     data class AddDevice(val room: Room) : RoomsDialog
+    data class CreateDevice(val room: Room) : RoomsDialog
 }
 
 data class RoomsUiState(
@@ -51,6 +53,9 @@ data class RoomsUiState(
     @field:StringRes val dialogErrorRes: Int? = null,
     /** Devices with an action in flight, to disable their row controls. */
     val pendingDeviceIds: Set<String> = emptySet(),
+    // Create-device form
+    val creatingDevice: Boolean = false,
+    @field:StringRes val createDeviceErrorRes: Int? = null,
     @field:StringRes val snackbarMessageRes: Int? = null,
 )
 
@@ -167,6 +172,29 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
 
     fun openAddDeviceDialog(room: Room) {
         _uiState.update { it.copy(dialog = RoomsDialog.AddDevice(room)) }
+    }
+
+    fun openCreateDeviceDialog(room: Room) {
+        _uiState.update { it.copy(dialog = RoomsDialog.CreateDevice(room), createDeviceErrorRes = null) }
+    }
+
+    /** Creates a device already assigned to [roomId] (preselected to the room). */
+    fun createDevice(name: String, typeId: String, roomId: String?) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(creatingDevice = true, createDeviceErrorRes = null) }
+            try {
+                devicesRepository.create(name.trim(), typeId, roomId)
+                _uiState.update {
+                    it.copy(
+                        creatingDevice = false,
+                        dialog = null,
+                        snackbarMessageRes = R.string.devices_create_success,
+                    )
+                }
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(creatingDevice = false, createDeviceErrorRes = e.userMessageRes) }
+            }
+        }
     }
 
     fun dismissDialog() {

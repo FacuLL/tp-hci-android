@@ -29,7 +29,8 @@
     <!-- Devices in a room -->
     <string name="rooms_add_device">Agregar dispositivo</string>
     <string name="rooms_unassigned_section">Dispositivos sin habitación</string>
-    <string name="rooms_no_unassigned">No hay dispositivos sin habitación para asignar. Podés crear nuevos desde la pestaña Dispositivos.</string>
+    <string name="rooms_no_unassigned">No hay dispositivos sin habitación para asignar.</string>
+    <string name="rooms_create_new_device">Crear dispositivo nuevo</string>
     <string name="rooms_cd_assign_device">Asignar a la habitación</string>
     <string name="rooms_remove_device_title">Quitar dispositivo</string>
     <string name="rooms_remove_device_message">\"%1$s\" va a quedar sin habitación. Podés volver a asignarlo cuando quieras.</string>

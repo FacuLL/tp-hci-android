@@ -40,6 +40,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Switch
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -63,6 +64,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.serialization.json.JsonPrimitive
+import java.time.DayOfWeek
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.LocalTime
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.Routine
@@ -108,7 +113,14 @@ fun RoutinesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.nav_routines)) },
+                title = {
+                    Column {
+                        Text(stringResource(R.string.nav_routines))
+                        if (state.routines.isNotEmpty()) {
+                            RoutinesSubtitle(routines = state.routines)
+                        }
+                    }
+                },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
                         Icon(
@@ -182,6 +194,8 @@ fun RoutinesScreen(
                                 routine = routine,
                                 devicesById = state.devicesById,
                                 executing = state.executingId == routine.id,
+                                toggling = routine.id in state.togglingIds,
+                                onSetEnabled = { enabled -> viewModel.setEnabled(routine, enabled) },
                                 onExecute = { viewModel.execute(routine.id) },
                                 onEdit = { onEditRoutine(routine.id) },
                                 onDelete = { routineToDelete = routine },
@@ -211,6 +225,8 @@ private fun RoutineCard(
     routine: Routine,
     devicesById: Map<String, Device>,
     executing: Boolean,
+    toggling: Boolean,
+    onSetEnabled: (Boolean) -> Unit,
     onExecute: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -258,6 +274,15 @@ private fun RoutineCard(
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                // Only scheduled (automatic) routines can be enabled/disabled;
+                // manual ones are always run on demand.
+                if (schedule.isScheduled) {
+                    Switch(
+                        checked = schedule.enabled,
+                        onCheckedChange = onSetEnabled,
+                        enabled = !toggling,
                     )
                 }
                 IconButton(onClick = onEdit) {
@@ -429,3 +454,76 @@ private fun scheduleDaysLabel(context: Context, days: List<String>): String =
             dayLabelRes(day)?.let(context::getString)
                 ?: day.replaceFirstChar { it.uppercaseChar() }
         }
+
+/** Header subtitle: active routine count plus the time until the next run. */
+@Composable
+private fun RoutinesSubtitle(routines: List<Routine>) {
+    val context = LocalContext.current
+    val activeCount = routines.count { it.schedule.isScheduled && it.schedule.enabled }
+    val nextMinutes = remember(routines) { nextRoutineMinutes(routines) }
+    val activeText = pluralStringResource(R.plurals.routines_active_count, activeCount, activeCount)
+    val nextText = when {
+        nextMinutes == null -> null
+        nextMinutes < 1L -> stringResource(R.string.routines_next_soon)
+        else -> stringResource(R.string.routines_next_in, formatDelay(context, nextMinutes))
+    }
+    Text(
+        text = if (nextText != null) "$activeText · $nextText" else activeText,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
+private val DAY_CODE_TO_DOW = mapOf(
+    "lu" to DayOfWeek.MONDAY,
+    "ma" to DayOfWeek.TUESDAY,
+    "mi" to DayOfWeek.WEDNESDAY,
+    "ju" to DayOfWeek.THURSDAY,
+    "vi" to DayOfWeek.FRIDAY,
+    "sa" to DayOfWeek.SATURDAY,
+    "do" to DayOfWeek.SUNDAY,
+)
+
+/**
+ * Minutes from now until the next scheduled+enabled routine fires, or null when
+ * none is scheduled. Empty day list means the routine runs every day.
+ */
+private fun nextRoutineMinutes(routines: List<Routine>): Long? {
+    val now = LocalDateTime.now()
+    var best: Long? = null
+    routines.forEach { routine ->
+        val schedule = routine.schedule
+        if (!schedule.isScheduled || !schedule.enabled) return@forEach
+        val time = schedule.time?.let { runCatching { LocalTime.parse(it) }.getOrNull() } ?: return@forEach
+        val days = if (schedule.days.isEmpty()) {
+            DayOfWeek.values().toSet()
+        } else {
+            schedule.days.mapNotNull { DAY_CODE_TO_DOW[it.lowercase().take(2)] }.toSet()
+        }
+        if (days.isEmpty()) return@forEach
+        for (offset in 0..7L) {
+            val date = now.toLocalDate().plusDays(offset)
+            if (date.dayOfWeek in days) {
+                val candidate = LocalDateTime.of(date, time)
+                if (candidate.isAfter(now)) {
+                    val minutes = Duration.between(now, candidate).toMinutes()
+                    if (best == null || minutes < best!!) best = minutes
+                    break
+                }
+            }
+        }
+    }
+    return best
+}
+
+private fun formatDelay(context: Context, minutes: Long): String {
+    val hours = (minutes / 60).toInt()
+    val mins = (minutes % 60).toInt()
+    return if (hours > 0) {
+        context.getString(R.string.routines_duration_hm, hours, mins)
+    } else {
+        context.getString(R.string.routines_duration_m, mins)
+    }
+}

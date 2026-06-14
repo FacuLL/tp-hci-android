@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tp3.grupo1.hci.itba.edu.ar.AppContainer
+import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceType
 import tp3.grupo1.hci.itba.edu.ar.data.model.Room
@@ -29,17 +30,22 @@ sealed interface RoomDetailDialog {
     data object Rename : RoomDetailDialog
     data object ConfirmDelete : RoomDetailDialog
     data object AddDevice : RoomDetailDialog
+    data object CreateDevice : RoomDetailDialog
 }
 
 data class RoomDetailUiState(
     val loading: Boolean = true,
     val refreshing: Boolean = false,
     val room: Room? = null,
+    val rooms: List<Room> = emptyList(),
     val roomDevices: List<Device> = emptyList(),
     val unassignedDevices: List<Device> = emptyList(),
     val types: Map<String, DeviceType> = emptyMap(),
     val pendingDeviceIds: Set<String> = emptySet(),
     val dialog: RoomDetailDialog? = null,
+    // Create-device form
+    val creatingDevice: Boolean = false,
+    @field:StringRes val createDeviceErrorRes: Int? = null,
     // Rename form
     val nameInput: String = "",
     @field:StringRes val nameErrorRes: Int? = null,
@@ -92,6 +98,7 @@ class RoomDetailViewModel(
                 _uiState.update {
                     it.copy(
                         room = snapshot.rooms.firstOrNull { room -> room.id == roomId },
+                        rooms = snapshot.rooms,
                         roomDevices = devicesInRoom(snapshot.devices, roomId),
                         unassignedDevices = unassignedDevices(snapshot.devices),
                         types = snapshot.types,
@@ -140,6 +147,29 @@ class RoomDetailViewModel(
 
     fun openAddDeviceDialog() {
         _uiState.update { it.copy(dialog = RoomDetailDialog.AddDevice) }
+    }
+
+    fun openCreateDeviceDialog() {
+        _uiState.update { it.copy(dialog = RoomDetailDialog.CreateDevice, createDeviceErrorRes = null) }
+    }
+
+    /** Creates a device already assigned to [roomId] (preselected to this room). */
+    fun createDevice(name: String, typeId: String, roomId: String?) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(creatingDevice = true, createDeviceErrorRes = null) }
+            try {
+                devicesRepository.create(name.trim(), typeId, roomId)
+                _uiState.update {
+                    it.copy(
+                        creatingDevice = false,
+                        dialog = null,
+                        snackbarMessageRes = R.string.devices_create_success,
+                    )
+                }
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(creatingDevice = false, createDeviceErrorRes = e.userMessageRes) }
+            }
+        }
     }
 
     fun dismissDialog() {

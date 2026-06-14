@@ -54,4 +54,16 @@
         <item quantity="many">%1$d acciones</item>
         <item quantity="other">%1$d acciones</item>
     </plurals>
+
+    <!-- Header subtitle -->
+    <plurals name="routines_active_count">
+        <item quantity="one">%1$d rutina activa</item>
+        <item quantity="many">%1$d rutinas activas</item>
+        <item quantity="other">%1$d rutinas activas</item>
+    </plurals>
+    <string name="routines_next_in">próxima en %1$s</string>
+    <string name="routines_next_soon">próxima muy pronto</string>
+    <string name="routines_duration_hm">%1$dh %2$dmin</string>
+    <string name="routines_duration_m">%1$dmin</string>
+    <string name="routines_cd_enabled">Activar o desactivar la rutina</string>
 </resources>
