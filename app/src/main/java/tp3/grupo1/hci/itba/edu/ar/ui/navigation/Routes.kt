@@ -18,6 +18,7 @@ object Routes {
     const val TAB_DEVICES = "tab_devices"
     const val TAB_ROOMS = "tab_rooms"
     const val TAB_ROUTINES = "tab_routines"
+    const val TAB_STATISTICS = "tab_statistics"
 
     fun verify(email: String): String = "verify/${URLEncoder.encode(email, "UTF-8")}"
 

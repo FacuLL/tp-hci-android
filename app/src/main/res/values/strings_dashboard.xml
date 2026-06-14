@@ -16,4 +16,16 @@
     <string name="dashboard_manage_homes">Gestionar hogares</string>
     <string name="dashboard_cd_change_home">Cambiar de hogar</string>
     <string name="dashboard_cd_current_home">Hogar actual</string>
+    <string name="dashboard_locks_title">Cerraduras</string>
+    <string name="dashboard_locks_empty">Sin cerraduras.</string>
+    <string name="dashboard_alarms_title">Alarmas</string>
+    <string name="dashboard_alarms_empty">Sin alarmas.</string>
+    <string name="dashboard_greeting_with_name">Bienvenido de nuevo, %1$s</string>
+    <string name="dashboard_greeting_generic">Bienvenido de nuevo</string>
+    <string name="dashboard_status_ok">Todo funciona correctamente.</string>
+    <string name="dashboard_room_devices_label">DISPOSITIVOS</string>
+    <string name="dashboard_room_view_detail">Ver detalle →</string>
+    <string name="dashboard_section_arrow">→</string>
+    <string name="dashboard_cd_quick_add">Agregar</string>
+    <string name="dashboard_cd_section_navigate">Ir a %1$s</string>
 </resources>

@@ -33,6 +33,7 @@ data class DashboardUiState(
     /** Devices already scoped to the current home (its rooms plus unassigned ones). */
     val devices: List<Device> = emptyList(),
     val deviceTypes: Map<String, DeviceType> = emptyMap(),
+    val userName: String? = null,
 )
 
 class DashboardViewModel(container: AppContainer) : ViewModel() {
@@ -41,6 +42,7 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
     private val roomsRepository = container.roomsRepository
     private val devicesRepository = container.devicesRepository
     private val deviceTypesRepository = container.deviceTypesRepository
+    private val authRepository = container.authRepository
 
     private val refreshing = MutableStateFlow(true)
     private val errorRes = MutableStateFlow<Int?>(null)
@@ -60,10 +62,12 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
         ) { homes, currentHome, loaded, rooms, devices ->
             DashboardSources(homes, currentHome, loaded, rooms, devices)
         },
-        deviceTypesRepository.types,
+        combine(deviceTypesRepository.types, authRepository.currentUser) { types, user ->
+            TypesAndUser(types, user?.name)
+        },
         refreshing,
         errorRes,
-    ) { sources, types, isRefreshing, error ->
+    ) { sources, typesAndUser, isRefreshing, error ->
         DashboardUiState(
             loading = isRefreshing,
             errorRes = error,
@@ -72,7 +76,8 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
             currentHome = sources.currentHome,
             rooms = sources.rooms,
             devices = devicesForHome(sources.devices, sources.rooms),
-            deviceTypes = types,
+            deviceTypes = typesAndUser.types,
+            userName = typesAndUser.userName,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DashboardUiState())
 
@@ -128,4 +133,9 @@ private data class DashboardSources(
     val loaded: Boolean,
     val rooms: List<Room>,
     val devices: List<Device>,
+)
+
+private data class TypesAndUser(
+    val types: Map<String, DeviceType>,
+    val userName: String?,
 )
