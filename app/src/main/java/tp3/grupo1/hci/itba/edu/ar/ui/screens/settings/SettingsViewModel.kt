@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tp3.grupo1.hci.itba.edu.ar.AppContainer
 import tp3.grupo1.hci.itba.edu.ar.R
+import tp3.grupo1.hci.itba.edu.ar.data.AppLanguage
 import tp3.grupo1.hci.itba.edu.ar.data.AppPreferences
 import tp3.grupo1.hci.itba.edu.ar.data.ThemeMode
 import tp3.grupo1.hci.itba.edu.ar.data.model.User
@@ -64,6 +65,9 @@ class SettingsViewModel(container: AppContainer) : ViewModel() {
 
     val themeMode: StateFlow<ThemeMode> = preferences.themeMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ThemeMode.SYSTEM)
+
+    val language: StateFlow<AppLanguage> = preferences.language
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppLanguage.SYSTEM)
 
     // Live re-validation only kicks in after the first submit attempt per form.
     private var nameSubmitted = false
@@ -213,6 +217,10 @@ class SettingsViewModel(container: AppContainer) : ViewModel() {
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { preferences.setThemeMode(mode) }
+    }
+
+    fun setLanguage(language: AppLanguage) {
+        viewModelScope.launch { preferences.setLanguage(language) }
     }
 
     // API connection

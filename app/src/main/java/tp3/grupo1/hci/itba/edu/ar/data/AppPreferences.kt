@@ -13,6 +13,9 @@ private val Context.dataStore by preferencesDataStore(name = "lumina_settings")
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
+/** SYSTEM follows the device locale; ES/EN force that language regardless of it. */
+enum class AppLanguage { SYSTEM, ES, EN }
+
 /**
  * Persistent user preferences. Includes the API connection settings required
  * by the chair (changeable IP and port) and the personalization options
@@ -30,7 +33,17 @@ class AppPreferences(private val context: Context) {
         private val REMEMBER_SESSION = booleanPreferencesKey("remember_session")
         private val CURRENT_HOME_ID = stringPreferencesKey("current_home_id")
         private val THEME_MODE = stringPreferencesKey("theme_mode")
+        private val LANGUAGE = stringPreferencesKey("language")
+
+        private const val BOOTSTRAP_PREFS = "lumina_bootstrap"
+        private const val BOOTSTRAP_LANGUAGE = "language"
     }
+
+    // The chosen language must be read synchronously inside Activity.attachBaseContext,
+    // which runs before any coroutine can read DataStore. We mirror it into a plain
+    // SharedPreferences so the locale can be applied at cold start without blocking.
+    private val bootstrapPrefs =
+        context.getSharedPreferences(BOOTSTRAP_PREFS, Context.MODE_PRIVATE)
 
     val apiBaseUrl: Flow<String> = context.dataStore.data
         .map { it[API_BASE_URL] ?: DEFAULT_BASE_URL }
@@ -59,6 +72,19 @@ class AppPreferences(private val context: Context) {
         }
         .distinctUntilChanged()
 
+    val language: Flow<AppLanguage> = context.dataStore.data
+        .map { prefs ->
+            prefs[LANGUAGE]?.let { stored -> AppLanguage.entries.firstOrNull { it.name == stored } }
+                ?: AppLanguage.SYSTEM
+        }
+        .distinctUntilChanged()
+
+    /** Synchronous read of the persisted language for use in attachBaseContext. */
+    fun languageBlocking(): AppLanguage {
+        val stored = bootstrapPrefs.getString(BOOTSTRAP_LANGUAGE, null)
+        return AppLanguage.entries.firstOrNull { it.name == stored } ?: AppLanguage.SYSTEM
+    }
+
     suspend fun setApiBaseUrl(value: String) {
         context.dataStore.edit { it[API_BASE_URL] = value }
     }
@@ -85,5 +111,11 @@ class AppPreferences(private val context: Context) {
 
     suspend fun setThemeMode(value: ThemeMode) {
         context.dataStore.edit { it[THEME_MODE] = value.name }
+    }
+
+    suspend fun setLanguage(value: AppLanguage) {
+        // Keep the synchronous bootstrap mirror in sync with the DataStore value.
+        bootstrapPrefs.edit().putString(BOOTSTRAP_LANGUAGE, value.name).apply()
+        context.dataStore.edit { it[LANGUAGE] = value.name }
     }
 }

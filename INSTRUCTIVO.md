@@ -1,4 +1,4 @@
-# Lumina — Instructivo de instalación
+ # Lumina — Instructivo de instalación
 
 Aplicación móvil de gestión de casas inteligentes (Trabajo Práctico de HCI — Tercera Entrega, Grupo 1).
 

@@ -1,6 +1,7 @@
 package tp3.grupo1.hci.itba.edu.ar
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -36,6 +37,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import tp3.grupo1.hci.itba.edu.ar.data.AppLanguage
+import tp3.grupo1.hci.itba.edu.ar.data.LocaleHelper
 import tp3.grupo1.hci.itba.edu.ar.data.ThemeMode
 import tp3.grupo1.hci.itba.edu.ar.ui.components.CenteredLoading
 import tp3.grupo1.hci.itba.edu.ar.ui.navigation.MainScreen
@@ -51,6 +54,18 @@ import tp3.grupo1.hci.itba.edu.ar.ui.theme.LuminaTheme
 import java.net.URLDecoder
 
 class MainActivity : ComponentActivity() {
+
+    // Language the Context was built with in attachBaseContext. When the persisted
+    // value diverges from this (the user picked another language) we recreate the
+    // Activity so attachBaseContext re-runs and the new locale takes effect.
+    private var appliedLanguage: AppLanguage = AppLanguage.SYSTEM
+
+    override fun attachBaseContext(newBase: Context) {
+        val preferences = (newBase.applicationContext as LuminaApplication).container.preferences
+        appliedLanguage = preferences.languageBlocking()
+        super.attachBaseContext(LocaleHelper.wrap(newBase, appliedLanguage))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -63,6 +78,13 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
             }
+
+            val language by container.preferences.language
+                .collectAsStateWithLifecycle(initialValue = appliedLanguage)
+            LaunchedEffect(language) {
+                if (language != appliedLanguage) recreate()
+            }
+
             LuminaTheme(darkTheme = darkTheme) {
                 LuminaApp(container)
             }

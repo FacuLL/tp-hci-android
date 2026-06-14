@@ -25,6 +25,10 @@
     <string name="settings_theme_system">Según el sistema</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_language_label">Idioma</string>
+    <string name="settings_language_system">Según el sistema</string>
+    <string name="settings_language_spanish">Español</string>
+    <string name="settings_language_english">English</string>
 
     <!-- Server connection -->
     <string name="settings_server_description">Dirección del API de Lumina. Cambiala solo si usás un servidor propio.</string>

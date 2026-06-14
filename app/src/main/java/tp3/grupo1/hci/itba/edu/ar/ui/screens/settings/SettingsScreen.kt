@@ -56,6 +56,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowWidthSizeClass
 import tp3.grupo1.hci.itba.edu.ar.R
+import tp3.grupo1.hci.itba.edu.ar.data.AppLanguage
 import tp3.grupo1.hci.itba.edu.ar.data.ThemeMode
 import tp3.grupo1.hci.itba.edu.ar.ui.components.CenteredLoading
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ConfirmDialog
@@ -79,6 +80,7 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val language by viewModel.language.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -211,6 +213,33 @@ fun SettingsScreen(
                                     RadioButton(selected = themeMode == mode, onClick = null)
                                     Text(
                                         text = stringResource(mode.labelRes()),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                    )
+                                }
+                            }
+                        }
+                        Text(
+                            text = stringResource(R.string.settings_language_label),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Column(modifier = Modifier.selectableGroup()) {
+                            AppLanguage.entries.forEach { lang ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .selectable(
+                                            selected = language == lang,
+                                            onClick = { viewModel.setLanguage(lang) },
+                                            role = Role.RadioButton,
+                                        )
+                                        .padding(vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    RadioButton(selected = language == lang, onClick = null)
+                                    Text(
+                                        text = stringResource(lang.labelRes()),
                                         style = MaterialTheme.typography.bodyLarge,
                                     )
                                 }
@@ -363,4 +392,11 @@ private fun ThemeMode.labelRes(): Int = when (this) {
     ThemeMode.SYSTEM -> R.string.settings_theme_system
     ThemeMode.LIGHT -> R.string.settings_theme_light
     ThemeMode.DARK -> R.string.settings_theme_dark
+}
+
+@StringRes
+private fun AppLanguage.labelRes(): Int = when (this) {
+    AppLanguage.SYSTEM -> R.string.settings_language_system
+    AppLanguage.ES -> R.string.settings_language_spanish
+    AppLanguage.EN -> R.string.settings_language_english
 }
