@@ -83,6 +83,17 @@ class RoutinesViewModel(private val container: AppContainer) : ViewModel() {
         }
     }
 
+    fun delete(routineId: String) {
+        viewModelScope.launch {
+            try {
+                container.routinesRepository.delete(routineId)
+                _uiState.update { it.copy(snackbarMessageRes = R.string.routine_deleted) }
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(snackbarMessageRes = e.userMessageRes) }
+            }
+        }
+    }
+
     fun consumeSnackbarMessage() {
         _uiState.update { it.copy(snackbarMessageRes = null) }
     }

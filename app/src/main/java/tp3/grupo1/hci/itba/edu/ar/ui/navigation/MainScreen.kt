@@ -49,6 +49,8 @@ fun MainScreen(
     onOpenRoom: (String) -> Unit,
     onOpenHomes: () -> Unit,
     onOpenSettings: () -> Unit,
+    onCreateRoutine: () -> Unit,
+    onEditRoutine: (String) -> Unit,
 ) {
     val tabNavController = rememberNavController()
     val backStackEntry by tabNavController.currentBackStackEntryAsState()
@@ -120,6 +122,8 @@ fun MainScreen(
             composable(Routes.TAB_ROUTINES) {
                 RoutinesScreen(
                     onOpenSettings = onOpenSettings,
+                    onCreateRoutine = onCreateRoutine,
+                    onEditRoutine = onEditRoutine,
                 )
             }
             composable(Routes.TAB_STATISTICS) {

@@ -31,7 +31,8 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.Room
 import tp3.grupo1.hci.itba.edu.ar.data.model.RoomCreateRequest
 import tp3.grupo1.hci.itba.edu.ar.data.model.RoomUpdateRequest
 import tp3.grupo1.hci.itba.edu.ar.data.model.Routine
-import tp3.grupo1.hci.itba.edu.ar.data.model.RoutineExecuteResponse
+import tp3.grupo1.hci.itba.edu.ar.data.model.RoutineActionResult
+import tp3.grupo1.hci.itba.edu.ar.data.model.RoutineUpsertRequest
 import tp3.grupo1.hci.itba.edu.ar.data.model.UpdateProfileRequest
 import tp3.grupo1.hci.itba.edu.ar.data.model.User
 import tp3.grupo1.hci.itba.edu.ar.data.model.VerifyAccountRequest
@@ -146,6 +147,15 @@ interface RoutineService {
     @GET("routines")
     suspend fun getAll(): List<Routine>
 
+    @POST("routines")
+    suspend fun create(@Body body: RoutineUpsertRequest): Routine
+
+    @PUT("routines/{id}")
+    suspend fun update(@Path("id") id: String, @Body body: RoutineUpsertRequest): Routine
+
+    @DELETE("routines/{id}")
+    suspend fun delete(@Path("id") id: String): JsonElement
+
     @PATCH("routines/{id}/execute")
-    suspend fun execute(@Path("id") id: String, @Body body: RequestBody): RoutineExecuteResponse
+    suspend fun execute(@Path("id") id: String, @Body body: RequestBody): List<RoutineActionResult>
 }

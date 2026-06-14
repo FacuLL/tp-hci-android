@@ -2,6 +2,7 @@ package tp3.grupo1.hci.itba.edu.ar.data.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -51,7 +52,26 @@ data class RoutineAction(
     val params: JsonArray = JsonArray(emptyList()),
 )
 
+/**
+ * Result of executing a routine: the API returns one entry per action with the
+ * device id and whether it succeeded (e.g.
+ * `[{"device":"...","success":true,"result":false}]`).
+ */
 @Serializable
-data class RoutineExecuteResponse(
-    val message: String? = null,
+data class RoutineActionResult(
+    val device: String,
+    val success: Boolean,
+    val result: JsonElement? = null,
+)
+
+/**
+ * Body for creating and updating a routine. The schedule lives inside
+ * [metadata] using the same Spanish keys the web client persists
+ * ("activa", "tipo", "hora", "dias").
+ */
+@Serializable
+data class RoutineUpsertRequest(
+    val name: String,
+    val actions: List<RoutineAction>,
+    val metadata: JsonObject,
 )
