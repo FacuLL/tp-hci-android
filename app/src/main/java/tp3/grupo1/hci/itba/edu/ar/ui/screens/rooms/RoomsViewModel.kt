@@ -28,7 +28,6 @@ sealed interface RoomsDialog {
     data class Rename(val room: Room) : RoomsDialog
     data class ConfirmDeleteRoom(val room: Room) : RoomsDialog
     data class AddDevice(val room: Room) : RoomsDialog
-    data class ConfirmRemoveDevice(val device: Device) : RoomsDialog
 }
 
 data class RoomsUiState(
@@ -170,10 +169,6 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
         _uiState.update { it.copy(dialog = RoomsDialog.AddDevice(room)) }
     }
 
-    fun openRemoveDeviceDialog(device: Device) {
-        _uiState.update { it.copy(dialog = RoomsDialog.ConfirmRemoveDevice(device)) }
-    }
-
     fun dismissDialog() {
         if (_uiState.value.saving) return
         _uiState.update { it.copy(dialog = null) }
@@ -257,11 +252,6 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
 
     fun assignDevice(deviceId: String, roomId: String) {
         runDeviceAction(deviceId) { devicesRepository.assignToRoom(deviceId, roomId) }
-    }
-
-    fun removeDeviceFromRoom(deviceId: String) {
-        _uiState.update { it.copy(dialog = null) }
-        runDeviceAction(deviceId) { devicesRepository.removeFromRoom(deviceId) }
     }
 
     private fun runDeviceAction(deviceId: String, action: suspend () -> Unit) {

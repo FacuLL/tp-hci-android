@@ -57,6 +57,7 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.json.JsonElement
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.data.model.Device
+import tp3.grupo1.hci.itba.edu.ar.data.model.Room
 import tp3.grupo1.hci.itba.edu.ar.domain.Validators
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceStateText
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceTypeColor
@@ -286,6 +287,7 @@ private fun DeviceDetailLayout(
                 DeviceHeader(
                     device = device,
                     typeName = state.type?.name.orEmpty(),
+                    rooms = state.rooms,
                     showManagementActions = showManagementActions,
                     onOpenDialog = onOpenDialog,
                 )
@@ -311,6 +313,7 @@ private fun DeviceDetailLayout(
 private fun DeviceHeader(
     device: Device,
     typeName: String,
+    rooms: List<Room>,
     showManagementActions: Boolean,
     onOpenDialog: (DeviceDetailDialog) -> Unit,
 ) {
@@ -340,10 +343,13 @@ private fun DeviceHeader(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
+            val roomName = device.room?.let { ref ->
+                rooms.firstOrNull { it.id == ref.id }?.name ?: ref.name?.ifBlank { null }
+            }
             Text(
                 text = listOf(
                     deviceTypeName(context, device.type.id, typeName),
-                    device.room?.name ?: stringResource(R.string.device_detail_no_room),
+                    roomName ?: stringResource(R.string.device_detail_no_room),
                 ).joinToString(" · "),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

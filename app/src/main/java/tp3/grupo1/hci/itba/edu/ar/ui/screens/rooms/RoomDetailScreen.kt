@@ -139,14 +139,13 @@ fun RoomDetailScreen(
                     pendingDeviceIds = state.pendingDeviceIds,
                     onOpenDevice = onOpenDevice,
                     onToggleDevice = viewModel::toggleDevice,
-                    onRemoveDevice = viewModel::openRemoveDeviceDialog,
                     onAddDevice = viewModel::openAddDeviceDialog,
                 )
             }
         }
     }
 
-    when (val dialog = state.dialog) {
+    when (state.dialog) {
         null -> Unit
         RoomDetailDialog.Rename -> RoomNameDialog(
             title = stringResource(R.string.rooms_rename_room),
@@ -170,13 +169,6 @@ fun RoomDetailScreen(
             types = state.types,
             pendingDeviceIds = state.pendingDeviceIds,
             onAssign = { device -> viewModel.assignDevice(device.id) },
-            onDismiss = viewModel::dismissDialog,
-        )
-        is RoomDetailDialog.ConfirmRemoveDevice -> ConfirmDialog(
-            title = stringResource(R.string.rooms_remove_device_title),
-            text = stringResource(R.string.rooms_remove_device_message, dialog.device.name),
-            confirmLabel = stringResource(R.string.rooms_action_remove),
-            onConfirm = { viewModel.removeDeviceFromRoom(dialog.device.id) },
             onDismiss = viewModel::dismissDialog,
         )
     }

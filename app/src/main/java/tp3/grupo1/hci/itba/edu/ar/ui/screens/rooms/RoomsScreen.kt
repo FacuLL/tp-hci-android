@@ -180,7 +180,6 @@ fun RoomsScreen(
                         onDeleteRoom = viewModel::openDeleteRoomDialog,
                         onOpenDevice = onOpenDevice,
                         onToggleDevice = viewModel::toggleDevice,
-                        onRemoveDevice = viewModel::openRemoveDeviceDialog,
                         onAddDevice = viewModel::openAddDeviceDialog,
                     )
                 }
@@ -225,13 +224,6 @@ fun RoomsScreen(
             onAssign = { device -> viewModel.assignDevice(device.id, dialog.room.id) },
             onDismiss = viewModel::dismissDialog,
         )
-        is RoomsDialog.ConfirmRemoveDevice -> ConfirmDialog(
-            title = stringResource(R.string.rooms_remove_device_title),
-            text = stringResource(R.string.rooms_remove_device_message, dialog.device.name),
-            confirmLabel = stringResource(R.string.rooms_action_remove),
-            onConfirm = { viewModel.removeDeviceFromRoom(dialog.device.id) },
-            onDismiss = viewModel::dismissDialog,
-        )
     }
 }
 
@@ -244,7 +236,6 @@ private fun RoomsContent(
     onDeleteRoom: (Room) -> Unit,
     onOpenDevice: (String) -> Unit,
     onToggleDevice: (Device) -> Unit,
-    onRemoveDevice: (Device) -> Unit,
     onAddDevice: (Room) -> Unit,
 ) {
     when (widthClass) {
@@ -302,7 +293,6 @@ private fun RoomsContent(
                         pendingDeviceIds = state.pendingDeviceIds,
                         onOpenDevice = onOpenDevice,
                         onToggleDevice = onToggleDevice,
-                        onRemoveDevice = onRemoveDevice,
                         onAddDevice = { onAddDevice(displayedRoom) },
                         modifier = Modifier.fillMaxHeight(),
                     )

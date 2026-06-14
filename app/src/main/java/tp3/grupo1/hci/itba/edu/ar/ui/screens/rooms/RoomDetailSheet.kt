@@ -15,10 +15,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.DevicesOther
-import androidx.compose.material.icons.outlined.LinkOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -46,8 +44,9 @@ import tp3.grupo1.hci.itba.edu.ar.domain.deviceTypeIcon
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 
 /**
- * Devices of a room with quick toggle, unlink and add actions. Used both as
- * the body of the room detail screen and as the side panel on large tablets.
+ * Devices of a room with quick toggle and add actions. Used both as the body of
+ * the room detail screen and as the side panel on large tablets. Unlinking a
+ * device is done from the device's "change room" modal, not here.
  */
 @Composable
 fun RoomDetailContent(
@@ -57,7 +56,6 @@ fun RoomDetailContent(
     pendingDeviceIds: Set<String>,
     onOpenDevice: (String) -> Unit,
     onToggleDevice: (Device) -> Unit,
-    onRemoveDevice: (Device) -> Unit,
     onAddDevice: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -98,7 +96,6 @@ fun RoomDetailContent(
                         pending = device.id in pendingDeviceIds,
                         onOpen = { onOpenDevice(device.id) },
                         onToggle = { onToggleDevice(device) },
-                        onRemove = { onRemoveDevice(device) },
                     )
                 }
             }
@@ -118,7 +115,6 @@ private fun RoomDeviceRow(
     pending: Boolean,
     onOpen: () -> Unit,
     onToggle: () -> Unit,
-    onRemove: () -> Unit,
 ) {
     val context = LocalContext.current
     val powerAtom = remember(device, type) {
@@ -165,12 +161,6 @@ private fun RoomDeviceRow(
                     colors = SwitchDefaults.colors(
                         uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     ),
-                )
-            }
-            IconButton(onClick = onRemove, enabled = !pending) {
-                Icon(
-                    imageVector = Icons.Outlined.LinkOff,
-                    contentDescription = stringResource(R.string.rooms_cd_remove_device),
                 )
             }
         }
