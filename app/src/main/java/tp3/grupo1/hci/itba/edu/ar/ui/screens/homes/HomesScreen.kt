@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -125,15 +126,22 @@ fun HomesScreen(
                 actionLabel = stringResource(R.string.homes_create_action),
                 onAction = viewModel::openCreate,
             )
-            else -> HomesContent(
-                homes = uiState.homes,
-                currentHomeId = uiState.currentHomeId,
-                onSelect = viewModel::selectHome,
-                onRename = viewModel::openRename,
-                onMembers = viewModel::openMembers,
-                onDelete = viewModel::openDelete,
-                modifier = Modifier.padding(innerPadding),
-            )
+            else -> PullToRefreshBox(
+                isRefreshing = uiState.refreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            ) {
+                HomesContent(
+                    homes = uiState.homes,
+                    currentHomeId = uiState.currentHomeId,
+                    onSelect = viewModel::selectHome,
+                    onRename = viewModel::openRename,
+                    onMembers = viewModel::openMembers,
+                    onDelete = viewModel::openDelete,
+                )
+            }
         }
     }
 

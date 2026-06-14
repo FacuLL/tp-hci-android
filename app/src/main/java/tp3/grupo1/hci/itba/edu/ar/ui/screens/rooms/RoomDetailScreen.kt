@@ -12,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -124,17 +125,24 @@ fun RoomDetailScreen(
                     subtitle = stringResource(R.string.rooms_missing_subtitle),
                 )
             }
-            else -> RoomDetailContent(
-                room = room,
-                devices = state.roomDevices,
-                types = state.types,
-                pendingDeviceIds = state.pendingDeviceIds,
-                onOpenDevice = onOpenDevice,
-                onToggleDevice = viewModel::toggleDevice,
-                onRemoveDevice = viewModel::openRemoveDeviceDialog,
-                onAddDevice = viewModel::openAddDeviceDialog,
-                modifier = Modifier.padding(innerPadding),
-            )
+            else -> PullToRefreshBox(
+                isRefreshing = state.refreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            ) {
+                RoomDetailContent(
+                    room = room,
+                    devices = state.roomDevices,
+                    types = state.types,
+                    pendingDeviceIds = state.pendingDeviceIds,
+                    onOpenDevice = onOpenDevice,
+                    onToggleDevice = viewModel::toggleDevice,
+                    onRemoveDevice = viewModel::openRemoveDeviceDialog,
+                    onAddDevice = viewModel::openAddDeviceDialog,
+                )
+            }
         }
     }
 

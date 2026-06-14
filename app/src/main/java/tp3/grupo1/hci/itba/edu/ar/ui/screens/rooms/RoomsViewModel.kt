@@ -33,6 +33,7 @@ sealed interface RoomsDialog {
 
 data class RoomsUiState(
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     @field:StringRes val loadErrorRes: Int? = null,
     val rooms: List<Room> = emptyList(),
     val devices: List<Device> = emptyList(),
@@ -97,6 +98,21 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
     }
 
     fun retry() = loadInitialData()
+
+    /** Pull-to-refresh: force a re-fetch keeping current content visible. */
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(refreshing = true, loadErrorRes = null) }
+            try {
+                homesRepository.refresh()
+                devicesRepository.refresh()
+                deviceTypesRepository.ensureLoaded()
+                _uiState.update { it.copy(refreshing = false) }
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(refreshing = false, loadErrorRes = e.userMessageRes) }
+            }
+        }
+    }
 
     private fun loadInitialData() {
         viewModelScope.launch {

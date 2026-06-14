@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.DevicesOther
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
@@ -36,6 +37,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
@@ -88,6 +90,8 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 fun DevicesScreen(
     onOpenDevice: (String) -> Unit,
     onOpenSettings: () -> Unit,
+    initialFilter: String? = null,
+    onFilterConsumed: () -> Unit = {},
 ) {
     val viewModel: DevicesViewModel = viewModel(factory = DevicesViewModel.Factory)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -114,6 +118,13 @@ fun DevicesScreen(
         uiState.snackbarRes?.let { messageRes ->
             snackbarHostState.showSnackbar(context.getString(messageRes))
             viewModel.snackbarShown()
+        }
+    }
+
+    LaunchedEffect(initialFilter) {
+        if (initialFilter != null) {
+            viewModel.applyInitialFilter(initialFilter)
+            onFilterConsumed()
         }
     }
 
@@ -145,24 +156,31 @@ fun DevicesScreen(
                         .padding(innerPadding)
                         .fillMaxSize()
                 ) {
-                    DevicesListPane(
-                        uiState = uiState,
-                        listState = listState,
-                        rooms = rooms,
-                        deviceTypes = deviceTypes,
-                        selectedDeviceId = selectedDeviceId,
-                        onQueryChange = viewModel::onQueryChange,
-                        onTypeSelected = viewModel::onTypeSelected,
-                        onDeviceClick = openDevice,
-                        onToggle = viewModel::toggleDevice,
-                        onAssignRoom = { deviceToAssignId = it.id },
-                        onRemoveFromRoom = viewModel::removeFromRoom,
-                        onDelete = { deviceToDeleteId = it.id },
-                        onAddDevice = { showCreateDialog = true },
+                    PullToRefreshBox(
+                        isRefreshing = uiState.refreshing,
+                        onRefresh = viewModel::refresh,
                         modifier = Modifier
                             .weight(2f)
                             .fillMaxHeight(),
-                    )
+                    ) {
+                        DevicesListPane(
+                            uiState = uiState,
+                            listState = listState,
+                            rooms = rooms,
+                            deviceTypes = deviceTypes,
+                            selectedDeviceId = selectedDeviceId,
+                            onQueryChange = viewModel::onQueryChange,
+                            onTypeSelected = viewModel::onTypeSelected,
+                            onLockFilterToggle = viewModel::onLockFilterToggle,
+                            onDeviceClick = openDevice,
+                            onToggle = viewModel::toggleDevice,
+                            onAssignRoom = { deviceToAssignId = it.id },
+                            onRemoveFromRoom = viewModel::removeFromRoom,
+                            onDelete = { deviceToDeleteId = it.id },
+                            onAddDevice = { showCreateDialog = true },
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                     DeviceDetailPane(
                         deviceId = selectedDeviceId,
                         onDeleted = { selectedDeviceId = null },
@@ -172,24 +190,31 @@ fun DevicesScreen(
                     )
                 }
             } else {
-                DevicesListPane(
-                    uiState = uiState,
-                    listState = listState,
-                    rooms = rooms,
-                    deviceTypes = deviceTypes,
-                    selectedDeviceId = null,
-                    onQueryChange = viewModel::onQueryChange,
-                    onTypeSelected = viewModel::onTypeSelected,
-                    onDeviceClick = openDevice,
-                    onToggle = viewModel::toggleDevice,
-                    onAssignRoom = { deviceToAssignId = it.id },
-                    onRemoveFromRoom = viewModel::removeFromRoom,
-                    onDelete = { deviceToDeleteId = it.id },
-                    onAddDevice = { showCreateDialog = true },
+                PullToRefreshBox(
+                    isRefreshing = uiState.refreshing,
+                    onRefresh = viewModel::refresh,
                     modifier = Modifier
                         .padding(innerPadding)
                         .fillMaxSize(),
-                )
+                ) {
+                    DevicesListPane(
+                        uiState = uiState,
+                        listState = listState,
+                        rooms = rooms,
+                        deviceTypes = deviceTypes,
+                        selectedDeviceId = null,
+                        onQueryChange = viewModel::onQueryChange,
+                        onTypeSelected = viewModel::onTypeSelected,
+                        onLockFilterToggle = viewModel::onLockFilterToggle,
+                        onDeviceClick = openDevice,
+                        onToggle = viewModel::toggleDevice,
+                        onAssignRoom = { deviceToAssignId = it.id },
+                        onRemoveFromRoom = viewModel::removeFromRoom,
+                        onDelete = { deviceToDeleteId = it.id },
+                        onAddDevice = { showCreateDialog = true },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
     }
@@ -249,6 +274,7 @@ private fun DevicesListPane(
     selectedDeviceId: String?,
     onQueryChange: (String) -> Unit,
     onTypeSelected: (String?) -> Unit,
+    onLockFilterToggle: () -> Unit,
     onDeviceClick: (Device) -> Unit,
     onToggle: (Device) -> Unit,
     onAssignRoom: (Device) -> Unit,
@@ -275,9 +301,21 @@ private fun DevicesListPane(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             FilterChip(
-                selected = uiState.selectedTypeId == null,
+                selected = uiState.selectedTypeId == null && !uiState.lockOnly,
                 onClick = { onTypeSelected(null) },
                 label = { Text(stringResource(R.string.devices_filter_all)) },
+            )
+            FilterChip(
+                selected = uiState.lockOnly,
+                onClick = { onLockFilterToggle() },
+                label = { Text(stringResource(R.string.dashboard_locks_title)) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(FilterChipDefaults.IconSize),
+                    )
+                },
             )
             DeviceTypeIds.CREATABLE.forEach { typeId ->
                 val nameRes = deviceTypeNameRes(typeId) ?: return@forEach

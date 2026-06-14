@@ -25,6 +25,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
 
 data class DashboardUiState(
     val loading: Boolean = true,
+    val isRefreshing: Boolean = false,
     @field:StringRes val errorRes: Int? = null,
     val loaded: Boolean = false,
     val homes: List<Home> = emptyList(),
@@ -45,6 +46,7 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
     private val authRepository = container.authRepository
 
     private val refreshing = MutableStateFlow(true)
+    private val manualRefreshing = MutableStateFlow(false)
     private val errorRes = MutableStateFlow<Int?>(null)
 
     private val _toggleErrorRes = MutableStateFlow<Int?>(null)
@@ -65,11 +67,12 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
         combine(deviceTypesRepository.types, authRepository.currentUser) { types, user ->
             TypesAndUser(types, user?.name)
         },
-        refreshing,
+        combine(refreshing, manualRefreshing) { loading, manual -> loading to manual },
         errorRes,
-    ) { sources, typesAndUser, isRefreshing, error ->
+    ) { sources, typesAndUser, loadingState, error ->
         DashboardUiState(
-            loading = isRefreshing,
+            loading = loadingState.first,
+            isRefreshing = loadingState.second,
             errorRes = error,
             loaded = sources.loaded,
             homes = sources.homes,
@@ -85,9 +88,11 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
         refresh()
     }
 
-    fun refresh() {
+    /** [manual] is true for pull-to-refresh, which keeps content visible and
+     *  shows the pull indicator instead of the full-screen loader. */
+    fun refresh(manual: Boolean = false) {
         viewModelScope.launch {
-            refreshing.value = true
+            if (manual) manualRefreshing.value = true else refreshing.value = true
             errorRes.value = null
             try {
                 coroutineScope {
@@ -98,7 +103,7 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
             } catch (e: ApiException) {
                 errorRes.value = e.userMessageRes
             }
-            refreshing.value = false
+            if (manual) manualRefreshing.value = false else refreshing.value = false
         }
     }
 

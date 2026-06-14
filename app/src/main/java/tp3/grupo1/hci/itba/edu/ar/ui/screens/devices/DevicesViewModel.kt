@@ -19,6 +19,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceType
 import tp3.grupo1.hci.itba.edu.ar.data.model.Room
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiException
+import tp3.grupo1.hci.itba.edu.ar.domain.DeviceTypeIds
 import tp3.grupo1.hci.itba.edu.ar.domain.PowerAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceControls
 import tp3.grupo1.hci.itba.edu.ar.domain.devicesForHome
@@ -26,9 +27,12 @@ import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
 
 data class DevicesUiState(
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     @StringRes val loadErrorRes: Int? = null,
     val query: String = "",
     val selectedTypeId: String? = null,
+    /** When true, show only devices that expose a lock (the "Cerraduras" filter). */
+    val lockOnly: Boolean = false,
     val creating: Boolean = false,
     @StringRes val createErrorRes: Int? = null,
     val assigning: Boolean = false,
@@ -64,6 +68,7 @@ class DevicesViewModel(container: AppContainer) : ViewModel() {
             val query = state.query.trim()
             val filtered = scoped.filter { device ->
                 (state.selectedTypeId == null || device.type.id == state.selectedTypeId) &&
+                    (!state.lockOnly || device.state.lock != null) &&
                     (query.isEmpty() || device.name.contains(query, ignoreCase = true))
             }
             DeviceListState(devices = filtered, totalCount = scoped.size)
@@ -81,12 +86,39 @@ class DevicesViewModel(container: AppContainer) : ViewModel() {
         }
     }
 
+    /** Pull-to-refresh: re-fetch the device list without the full-screen loader. */
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(refreshing = true, loadErrorRes = null) }
+            try {
+                deviceTypesRepository.ensureLoaded()
+                devicesRepository.refresh()
+                _uiState.update { it.copy(refreshing = false) }
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(refreshing = false, loadErrorRes = e.userMessageRes) }
+            }
+        }
+    }
+
     fun onQueryChange(query: String) {
         _uiState.update { it.copy(query = query) }
     }
 
     fun onTypeSelected(typeId: String?) {
-        _uiState.update { it.copy(selectedTypeId = typeId) }
+        // Type and lock filters are mutually exclusive in the UI.
+        _uiState.update { it.copy(selectedTypeId = typeId, lockOnly = false) }
+    }
+
+    fun onLockFilterToggle() {
+        _uiState.update { it.copy(lockOnly = !it.lockOnly, selectedTypeId = null) }
+    }
+
+    /** Apply a one-shot filter requested from the dashboard ("locks", "alarms"). */
+    fun applyInitialFilter(filter: String) {
+        when (filter) {
+            "locks" -> _uiState.update { it.copy(lockOnly = true, selectedTypeId = null) }
+            "alarms" -> _uiState.update { it.copy(lockOnly = false, selectedTypeId = DeviceTypeIds.ALARM) }
+        }
     }
 
     /** Quick power toggle from the list, using the same atom as the dashboard. */

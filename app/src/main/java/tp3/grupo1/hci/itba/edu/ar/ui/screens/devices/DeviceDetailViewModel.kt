@@ -55,6 +55,7 @@ sealed interface PlaylistUiState {
 
 data class DeviceDetailUiState(
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val device: Device? = null,
     val type: DeviceType? = null,
     val atoms: List<ControlAtom> = emptyList(),
@@ -119,6 +120,21 @@ class DeviceDetailViewModel(
                         rooms = rooms,
                     )
                 }
+            }
+        }
+    }
+
+    /** Pull-to-refresh: re-fetch device state from the server. */
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(refreshing = true) }
+            try {
+                container.devicesRepository.refresh()
+                container.deviceTypesRepository.ensureLoaded()
+            } catch (e: ApiException) {
+                _messages.emit(e.userMessageRes)
+            } finally {
+                _uiState.update { it.copy(refreshing = false) }
             }
         }
     }

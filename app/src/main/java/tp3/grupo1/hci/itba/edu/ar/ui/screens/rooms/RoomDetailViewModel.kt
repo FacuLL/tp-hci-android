@@ -34,6 +34,7 @@ sealed interface RoomDetailDialog {
 
 data class RoomDetailUiState(
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val room: Room? = null,
     val roomDevices: List<Device> = emptyList(),
     val unassignedDevices: List<Device> = emptyList(),
@@ -97,6 +98,24 @@ class RoomDetailViewModel(
                         types = snapshot.types,
                     )
                 }
+            }
+        }
+    }
+
+    /** Pull-to-refresh: re-fetch rooms and devices keeping content visible. */
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(refreshing = true) }
+            try {
+                container.homesRepository.currentHome.value?.id?.let { homeId ->
+                    roomsRepository.refreshForHome(homeId)
+                }
+                devicesRepository.refresh()
+                deviceTypesRepository.ensureLoaded()
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(snackbarMessageRes = e.userMessageRes) }
+            } finally {
+                _uiState.update { it.copy(refreshing = false) }
             }
         }
     }

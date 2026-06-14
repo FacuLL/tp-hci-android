@@ -22,6 +22,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
 
 data class HomesUiState(
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     @StringRes val loadErrorRes: Int? = null,
     val homes: List<Home> = emptyList(),
     val currentHomeId: String? = null,
@@ -100,6 +101,19 @@ class HomesViewModel(container: AppContainer) : ViewModel() {
     }
 
     fun retry() = load()
+
+    /** Pull-to-refresh: re-fetch homes keeping content visible. */
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(refreshing = true, loadErrorRes = null) }
+            try {
+                homesRepository.refresh()
+                _uiState.update { it.copy(refreshing = false) }
+            } catch (e: ApiException) {
+                _uiState.update { it.copy(refreshing = false, loadErrorRes = e.userMessageRes) }
+            }
+        }
+    }
 
     private fun load() {
         viewModelScope.launch {

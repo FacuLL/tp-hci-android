@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -48,6 +49,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import java.text.NumberFormat
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(onOpenSettings: () -> Unit) {
     val viewModel: StatisticsViewModel = viewModel(factory = StatisticsViewModel.Factory)
@@ -64,11 +66,17 @@ fun StatisticsScreen(onOpenSettings: () -> Unit) {
             ) {
                 ErrorBanner(stringResource(state.errorRes!!))
             }
-            else -> StatisticsContent(
-                state = state,
-                onSelectPeriod = viewModel::setPeriod,
-                contentPadding = innerPadding,
-            )
+            else -> PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = { viewModel.refresh(manual = true) },
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                StatisticsContent(
+                    state = state,
+                    onSelectPeriod = viewModel::setPeriod,
+                    contentPadding = innerPadding,
+                )
+            }
         }
     }
 }

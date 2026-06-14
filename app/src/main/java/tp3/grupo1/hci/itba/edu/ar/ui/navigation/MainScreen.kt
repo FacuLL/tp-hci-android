@@ -12,6 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -56,11 +59,15 @@ fun MainScreen(
     val backStackEntry by tabNavController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
+    // One-shot filter handed to the Devices tab when opened from a dashboard
+    // section ("Cerraduras", "Alarmas"); consumed on arrival.
+    var pendingDevicesFilter by rememberSaveable { mutableStateOf<String?>(null) }
+
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             MainTab.entries.forEach { tab ->
                 item(
-                    selected = currentRoute == tab.route,
+                    selected = currentRoute?.substringBefore("?") == tab.route,
                     onClick = {
                         tabNavController.navigate(tab.route) {
                             popUpTo(tabNavController.graph.findStartDestination().id) {
@@ -96,13 +103,15 @@ fun MainScreen(
                         }
                     },
                     onOpenDevices = {
-                        tabNavController.navigate(Routes.TAB_DEVICES) {
-                            popUpTo(tabNavController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        tabNavController.navigateToDevices()
+                    },
+                    onOpenLocks = {
+                        pendingDevicesFilter = "locks"
+                        tabNavController.navigateToDevices()
+                    },
+                    onOpenAlarms = {
+                        pendingDevicesFilter = "alarms"
+                        tabNavController.navigateToDevices()
                     },
                 )
             }
@@ -110,6 +119,8 @@ fun MainScreen(
                 DevicesScreen(
                     onOpenDevice = onOpenDevice,
                     onOpenSettings = onOpenSettings,
+                    initialFilter = pendingDevicesFilter,
+                    onFilterConsumed = { pendingDevicesFilter = null },
                 )
             }
             composable(Routes.TAB_ROOMS) {
@@ -132,5 +143,16 @@ fun MainScreen(
                 )
             }
         }
+    }
+}
+
+/** Switch to the Devices tab, optionally carrying an initial filter route. */
+private fun androidx.navigation.NavController.navigateToDevices(
+    route: String = Routes.TAB_DEVICES,
+) {
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }

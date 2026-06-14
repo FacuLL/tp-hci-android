@@ -30,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -157,6 +158,7 @@ fun DeviceDetailContent(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DeviceDetailBody(
     viewModel: DeviceDetailViewModel,
@@ -188,14 +190,20 @@ private fun DeviceDetailBody(
                     subtitle = stringResource(R.string.device_detail_missing_subtitle),
                 )
             }
-            else -> DeviceDetailLayout(
-                state = state,
-                device = device,
-                showManagementActions = showManagementActions,
-                onExecute = viewModel::execute,
-                onDispense = viewModel::dispense,
-                onOpenDialog = viewModel::openDialog,
-            )
+            else -> PullToRefreshBox(
+                isRefreshing = state.refreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                DeviceDetailLayout(
+                    state = state,
+                    device = device,
+                    showManagementActions = showManagementActions,
+                    onExecute = viewModel::execute,
+                    onDispense = viewModel::dispense,
+                    onOpenDialog = viewModel::openDialog,
+                )
+            }
         }
         SnackbarHost(
             hostState = snackbarHostState,

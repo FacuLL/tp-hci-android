@@ -34,6 +34,7 @@ data class RoomUsage(val roomName: String, val watts: Int)
 
 data class StatisticsUiState(
     val loading: Boolean = true,
+    val isRefreshing: Boolean = false,
     @field:StringRes val errorRes: Int? = null,
     val currentHome: Home? = null,
     val period: StatsPeriod = StatsPeriod.HOY,
@@ -60,6 +61,7 @@ class StatisticsViewModel(container: AppContainer) : ViewModel() {
     private val deviceTypesRepository = container.deviceTypesRepository
 
     private val refreshing = MutableStateFlow(true)
+    private val manualRefreshing = MutableStateFlow(false)
     private val errorRes = MutableStateFlow<Int?>(null)
     private val periodFlow = MutableStateFlow(StatsPeriod.HOY)
 
@@ -73,9 +75,9 @@ class StatisticsViewModel(container: AppContainer) : ViewModel() {
             Sources(home, rooms, devices, types)
         },
         periodFlow,
-        refreshing,
+        combine(refreshing, manualRefreshing) { loading, manual -> loading to manual },
         errorRes,
-    ) { sources, period, isRefreshing, error ->
+    ) { sources, period, loadingState, error ->
         val scopedDevices = devicesForHome(sources.devices, sources.rooms)
         val active = scopedDevices.filter(::isDeviceActive)
         val activeWatts = active.sumOf { (sources.types[it.type.id]?.powerUsage ?: 0.0) }
@@ -84,7 +86,8 @@ class StatisticsViewModel(container: AppContainer) : ViewModel() {
         val estimatedCost = totalKwh * COST_PER_KWH_ARS
         val mostActive = mostActiveRoom(sources.rooms, scopedDevices, sources.types)
         StatisticsUiState(
-            loading = isRefreshing,
+            loading = loadingState.first,
+            isRefreshing = loadingState.second,
             errorRes = error,
             currentHome = sources.home,
             period = period,
@@ -100,9 +103,10 @@ class StatisticsViewModel(container: AppContainer) : ViewModel() {
 
     init { refresh() }
 
-    fun refresh() {
+    /** [manual] is true for pull-to-refresh, keeping content visible. */
+    fun refresh(manual: Boolean = false) {
         viewModelScope.launch {
-            refreshing.value = true
+            if (manual) manualRefreshing.value = true else refreshing.value = true
             errorRes.value = null
             try {
                 homesRepository.refresh()
@@ -111,7 +115,7 @@ class StatisticsViewModel(container: AppContainer) : ViewModel() {
             } catch (e: ApiException) {
                 errorRes.value = e.userMessageRes
             }
-            refreshing.value = false
+            if (manual) manualRefreshing.value = false else refreshing.value = false
         }
     }
 

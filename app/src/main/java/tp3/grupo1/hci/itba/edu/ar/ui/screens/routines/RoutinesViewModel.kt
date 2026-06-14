@@ -19,6 +19,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
 
 data class RoutinesUiState(
     val loading: Boolean = true,
+    val refreshing: Boolean = false,
     val routines: List<Routine> = emptyList(),
     val devicesById: Map<String, Device> = emptyMap(),
     val executingId: String? = null,
@@ -45,9 +46,13 @@ class RoutinesViewModel(private val container: AppContainer) : ViewModel() {
         refresh()
     }
 
-    fun refresh() {
+    /** [manual] is true for pull-to-refresh, keeping content visible. */
+    fun refresh(manual: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { it.copy(loading = true, loadErrorRes = null) }
+            _uiState.update {
+                if (manual) it.copy(refreshing = true, loadErrorRes = null)
+                else it.copy(loading = true, loadErrorRes = null)
+            }
             try {
                 container.routinesRepository.refresh()
                 // Devices and types are needed to render each action row.
@@ -55,9 +60,11 @@ class RoutinesViewModel(private val container: AppContainer) : ViewModel() {
                     container.devicesRepository.refresh()
                 }
                 container.deviceTypesRepository.ensureLoaded()
-                _uiState.update { it.copy(loading = false) }
+                _uiState.update { it.copy(loading = false, refreshing = false) }
             } catch (e: ApiException) {
-                _uiState.update { it.copy(loading = false, loadErrorRes = e.userMessageRes) }
+                _uiState.update {
+                    it.copy(loading = false, refreshing = false, loadErrorRes = e.userMessageRes)
+                }
             }
         }
     }

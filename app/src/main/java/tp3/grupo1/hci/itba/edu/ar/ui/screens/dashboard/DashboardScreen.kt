@@ -2,8 +2,10 @@ package tp3.grupo1.hci.itba.edu.ar.ui.screens.dashboard
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +32,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Check
@@ -44,13 +45,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -93,6 +94,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.CenteredLoading
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     onOpenDevice: (String) -> Unit,
@@ -101,8 +103,9 @@ fun DashboardScreen(
     onOpenRoom: (String) -> Unit = {},
     onOpenRooms: () -> Unit = {},
     onOpenDevices: () -> Unit = {},
+    onOpenLocks: () -> Unit = onOpenDevices,
+    onOpenAlarms: () -> Unit = onOpenDevices,
     onOpenNotifications: () -> Unit = {},
-    onQuickAdd: () -> Unit = {},
 ) {
     val viewModel: DashboardViewModel = viewModel(factory = DashboardViewModel.Factory)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -130,16 +133,6 @@ fun DashboardScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            if (state.loaded && state.currentHome != null) {
-                FloatingActionButton(onClick = onQuickAdd) {
-                    Icon(
-                        imageVector = Icons.Outlined.Add,
-                        contentDescription = stringResource(R.string.dashboard_cd_quick_add),
-                    )
-                }
-            }
-        },
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -149,17 +142,24 @@ fun DashboardScreen(
             val errorRes = state.errorRes
             when {
                 state.loading -> CenteredLoading()
-                errorRes != null -> DashboardError(errorRes, onRetry = viewModel::refresh)
+                errorRes != null -> DashboardError(errorRes, onRetry = { viewModel.refresh() })
                 state.loaded && state.homes.isEmpty() -> WelcomeEmptyState(onCreateHome = onOpenHomes)
                 state.currentHome == null -> CenteredLoading()
-                else -> DashboardContent(
-                    state = state,
-                    onOpenDevice = onOpenDevice,
-                    onTogglePower = { device, atom -> viewModel.togglePower(device.id, atom) },
-                    onOpenRoom = onOpenRoom,
-                    onOpenRooms = onOpenRooms,
-                    onOpenDevices = onOpenDevices,
-                )
+                else -> PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { viewModel.refresh(manual = true) },
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    DashboardContent(
+                        state = state,
+                        onOpenDevice = onOpenDevice,
+                        onTogglePower = { device, atom -> viewModel.togglePower(device.id, atom) },
+                        onOpenRoom = onOpenRoom,
+                        onOpenRooms = onOpenRooms,
+                        onOpenLocks = onOpenLocks,
+                        onOpenAlarms = onOpenAlarms,
+                    )
+                }
             }
         }
     }
@@ -294,11 +294,12 @@ private fun DashboardContent(
     onTogglePower: (Device, PowerAtom) -> Unit,
     onOpenRoom: (String) -> Unit,
     onOpenRooms: () -> Unit,
-    onOpenDevices: () -> Unit,
+    onOpenLocks: () -> Unit,
+    onOpenAlarms: () -> Unit,
 ) {
     val widthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     if (widthClass == WindowWidthSizeClass.COMPACT) {
-        CompactDashboard(state, onOpenDevice, onTogglePower, onOpenRoom, onOpenRooms, onOpenDevices)
+        CompactDashboard(state, onOpenDevice, onTogglePower, onOpenRoom, onOpenRooms, onOpenLocks, onOpenAlarms)
     } else {
         TwoPaneDashboard(state, onOpenDevice, onTogglePower, onOpenRoom)
     }
@@ -317,7 +318,8 @@ private fun CompactDashboard(
     onTogglePower: (Device, PowerAtom) -> Unit,
     onOpenRoom: (String) -> Unit,
     onOpenRooms: () -> Unit,
-    onOpenDevices: () -> Unit,
+    onOpenLocks: () -> Unit,
+    onOpenAlarms: () -> Unit,
 ) {
     val lockDevices = state.devices.filter { it.state.lock != null }
     val alarmDevices = state.devices.filter { it.type.id == DeviceTypeIds.ALARM }
@@ -368,7 +370,7 @@ private fun CompactDashboard(
         item {
             SectionTitle(
                 text = stringResource(R.string.dashboard_locks_title),
-                onClick = onOpenDevices,
+                onClick = onOpenLocks,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
         }
@@ -400,7 +402,7 @@ private fun CompactDashboard(
         item {
             SectionTitle(
                 text = stringResource(R.string.dashboard_alarms_title),
-                onClick = onOpenDevices,
+                onClick = onOpenAlarms,
                 modifier = Modifier.padding(horizontal = 16.dp),
             )
         }
@@ -625,6 +627,7 @@ private fun DeviceToggleRow(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun DeviceToggleTile(
     device: Device,
@@ -640,9 +643,12 @@ private fun DeviceToggleTile(
             .height(56.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(if (active) primary else primary.copy(alpha = 0.12f))
-            .clickable {
-                if (powerAtom != null) onToggle(powerAtom) else onOpen()
-            },
+            // Tap toggles power (or opens detail if there's no power control);
+            // long-press always opens the device's control panel.
+            .combinedClickable(
+                onClick = { if (powerAtom != null) onToggle(powerAtom) else onOpen() },
+                onLongClick = onOpen,
+            ),
         contentAlignment = Alignment.Center,
     ) {
         Icon(

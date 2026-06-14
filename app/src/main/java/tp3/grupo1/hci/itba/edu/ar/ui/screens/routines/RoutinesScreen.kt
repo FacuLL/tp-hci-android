@@ -38,6 +38,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -141,7 +142,7 @@ fun RoutinesScreen(
                 ) {
                     if (loadErrorRes != null) {
                         ErrorBanner(stringResource(loadErrorRes))
-                        Button(onClick = viewModel::refresh) {
+                        Button(onClick = { viewModel.refresh() }) {
                             Text(stringResource(R.string.action_retry))
                         }
                     } else {
@@ -157,29 +158,35 @@ fun RoutinesScreen(
             }
 
             else ->
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(columns),
+                PullToRefreshBox(
+                    isRefreshing = state.refreshing,
+                    onRefresh = { viewModel.refresh(manual = true) },
                     modifier = Modifier
                         .padding(innerPadding)
                         .fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    state.loadErrorRes?.let { errorRes ->
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            ErrorBanner(stringResource(errorRes))
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(columns),
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        state.loadErrorRes?.let { errorRes ->
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                ErrorBanner(stringResource(errorRes))
+                            }
                         }
-                    }
-                    items(state.routines, key = { it.id }) { routine ->
-                        RoutineCard(
-                            routine = routine,
-                            devicesById = state.devicesById,
-                            executing = state.executingId == routine.id,
-                            onExecute = { viewModel.execute(routine.id) },
-                            onEdit = { onEditRoutine(routine.id) },
-                            onDelete = { routineToDelete = routine },
-                        )
+                        items(state.routines, key = { it.id }) { routine ->
+                            RoutineCard(
+                                routine = routine,
+                                devicesById = state.devicesById,
+                                executing = state.executingId == routine.id,
+                                onExecute = { viewModel.execute(routine.id) },
+                                onEdit = { onEditRoutine(routine.id) },
+                                onDelete = { routineToDelete = routine },
+                            )
+                        }
                     }
                 }
         }
