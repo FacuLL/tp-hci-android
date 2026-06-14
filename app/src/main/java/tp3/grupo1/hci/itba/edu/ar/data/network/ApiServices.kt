@@ -38,7 +38,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.VerifyAccountRequest
 
 interface UserService {
     @POST("users/register")
-    suspend fun register(@Body body: RegisterRequest): User
+    suspend fun register(@Body body: RegisterRequest): AuthResponse
 
     @POST("users/login")
     suspend fun login(@Body body: LoginRequest): AuthResponse

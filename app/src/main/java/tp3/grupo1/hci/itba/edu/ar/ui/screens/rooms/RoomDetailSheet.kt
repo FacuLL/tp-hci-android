@@ -22,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -151,10 +152,19 @@ private fun RoomDeviceRow(
                 )
             }
             if (powerAtom != null) {
+                // Same safety rule as the device detail (DeviceControlAtoms): an
+                // open/close toggle is blocked while locked, and a lock toggle is
+                // blocked while the door is open.
+                val togglesOpening = powerAtom.onAction == "open" || powerAtom.offAction == "open"
+                val blocked = (togglesOpening && device.state.lock == "locked") ||
+                    (powerAtom.onAction == "lock" && device.state.status == "opened")
                 Switch(
                     checked = powerAtom.active,
                     onCheckedChange = { onToggle() },
-                    enabled = !pending,
+                    enabled = !pending && !blocked,
+                    colors = SwitchDefaults.colors(
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
                 )
             }
             IconButton(onClick = onRemove, enabled = !pending) {

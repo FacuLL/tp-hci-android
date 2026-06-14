@@ -99,27 +99,33 @@ internal fun AlarmControl(
     onOpenDialog: (DeviceDetailDialog) -> Unit,
 ) {
     val armed = deviceStatus == "armedStay" || deviceStatus == "armedAway"
+    // Always offer every transition (like the web app); disable only the one that
+    // matches the current state so house<->away can be switched in a single step.
     ControlCard {
-        if (armed) {
+        atom.armActions.forEach { arm ->
+            val isCurrent = when (arm.action) {
+                "armStay" -> deviceStatus == "armedStay"
+                "armAway" -> deviceStatus == "armedAway"
+                else -> false
+            }
             OutlinedButton(
-                onClick = {
-                    onOpenDialog(
-                        DeviceDetailDialog.SecurityCode(atom.disarmAction, R.string.device_action_disarm)
-                    )
-                },
+                onClick = { onOpenDialog(DeviceDetailDialog.SecurityCode(arm.action, arm.labelRes)) },
+                enabled = !isCurrent,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text(stringResource(R.string.device_action_disarm))
+                Text(stringResource(arm.labelRes))
             }
-        } else {
-            atom.armActions.forEach { arm ->
-                OutlinedButton(
-                    onClick = { onOpenDialog(DeviceDetailDialog.SecurityCode(arm.action, arm.labelRes)) },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(arm.labelRes))
-                }
-            }
+        }
+        OutlinedButton(
+            onClick = {
+                onOpenDialog(
+                    DeviceDetailDialog.SecurityCode(atom.disarmAction, R.string.device_action_disarm)
+                )
+            },
+            enabled = armed,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.device_action_disarm))
         }
     }
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- RF20: notificaciones de eventos de estado del hogar (seguridad). -->
+    <string name="notif_device_fallback_name">Un dispositivo</string>
+    <string name="notif_door_opened_title">Puerta abierta</string>
+    <string name="notif_door_opened_body">Se abrió %1$s</string>
+    <string name="notif_door_unlocked_title">Puerta desbloqueada</string>
+    <string name="notif_door_unlocked_body">Se desbloqueó %1$s</string>
+    <string name="notif_alarm_triggered_title">¡Alarma disparada!</string>
+    <string name="notif_alarm_triggered_body">%1$s detectó actividad</string>
+    <string name="notif_alarm_armed_title">Alarma activada</string>
+    <string name="notif_alarm_armed_body">Se armó %1$s</string>
+    <string name="notif_alarm_disarmed_title">Alarma desactivada</string>
+    <string name="notif_alarm_disarmed_body">Se desarmó %1$s</string>
+    <string name="notif_cycle_finished_title">Ciclo finalizado</string>
+    <string name="notif_cycle_finished_body">%1$s terminó su ciclo</string>
+</resources>

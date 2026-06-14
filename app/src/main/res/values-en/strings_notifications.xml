@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- RF20: home state event notifications (security). -->
+    <string name="notif_device_fallback_name">A device</string>
+    <string name="notif_door_opened_title">Door opened</string>
+    <string name="notif_door_opened_body">%1$s was opened</string>
+    <string name="notif_door_unlocked_title">Door unlocked</string>
+    <string name="notif_door_unlocked_body">%1$s was unlocked</string>
+    <string name="notif_alarm_triggered_title">Alarm triggered!</string>
+    <string name="notif_alarm_triggered_body">%1$s detected activity</string>
+    <string name="notif_alarm_armed_title">Alarm armed</string>
+    <string name="notif_alarm_armed_body">%1$s was armed</string>
+    <string name="notif_alarm_disarmed_title">Alarm disarmed</string>
+    <string name="notif_alarm_disarmed_body">%1$s was disarmed</string>
+    <string name="notif_cycle_finished_title">Cycle finished</string>
+    <string name="notif_cycle_finished_body">%1$s finished its cycle</string>
+</resources>

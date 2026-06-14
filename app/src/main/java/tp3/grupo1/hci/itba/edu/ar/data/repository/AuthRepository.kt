@@ -34,8 +34,9 @@ class AuthRepository(
      * part of this call, so no extra send-verification request is made (the
      * web version was marked down for sending the code twice).
      */
-    suspend fun register(name: String, email: String, password: String): User =
+    suspend fun register(name: String, email: String, password: String) {
         apiCall { api.users.register(RegisterRequest(name, email, password)) }
+    }
 
     suspend fun verifyAccount(code: String) {
         apiCall { api.users.verifyAccount(VerifyAccountRequest(code)) }

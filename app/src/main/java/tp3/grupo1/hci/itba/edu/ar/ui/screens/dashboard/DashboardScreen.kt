@@ -55,6 +55,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -131,7 +132,11 @@ fun DashboardScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (state.loaded && state.currentHome != null) {
-                FloatingActionButton(onClick = onQuickAdd) {
+                FloatingActionButton(
+                    onClick = onQuickAdd,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.Add,
                         contentDescription = stringResource(R.string.dashboard_cd_quick_add),
@@ -677,9 +682,19 @@ private fun DeviceRow(
                 )
             }
             if (powerAtom != null) {
+                // Same safety rules as the device detail (DeviceControlAtoms): an
+                // open/close toggle is blocked while locked, and a lock toggle is
+                // blocked while the door is open.
+                val togglesOpening = powerAtom.onAction == "open" || powerAtom.offAction == "open"
+                val blocked = (togglesOpening && device.state.lock == "locked") ||
+                    (powerAtom.onAction == "lock" && device.state.status == "opened")
                 Switch(
                     checked = powerAtom.active,
+                    enabled = !blocked,
                     onCheckedChange = { onTogglePower(powerAtom) },
+                    colors = SwitchDefaults.colors(
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
                 )
             }
         }
