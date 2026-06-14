@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import tp3.grupo1.hci.itba.edu.ar.MainActivity
@@ -66,6 +67,30 @@ class NotificationHelper(private val context: Context) {
         context.getString(R.string.notif_home_unshared_title),
         context.getString(R.string.notif_home_unshared_body),
     )
+
+    /**
+     * The home state events relevant to RF20 (security/end-of-cycle). The caller
+     * decides which one fired from the `deviceEvent` args; this only renders it.
+     */
+    enum class DeviceStateEvent(@StringRes val titleRes: Int, @StringRes val bodyRes: Int) {
+        DOOR_OPENED(R.string.notif_door_opened_title, R.string.notif_door_opened_body),
+        DOOR_UNLOCKED(R.string.notif_door_unlocked_title, R.string.notif_door_unlocked_body),
+        ALARM_TRIGGERED(R.string.notif_alarm_triggered_title, R.string.notif_alarm_triggered_body),
+        ALARM_ARMED(R.string.notif_alarm_armed_title, R.string.notif_alarm_armed_body),
+        ALARM_DISARMED(R.string.notif_alarm_disarmed_title, R.string.notif_alarm_disarmed_body),
+        CYCLE_FINISHED(R.string.notif_cycle_finished_title, R.string.notif_cycle_finished_body),
+    }
+
+    /** Posts a state-change notification (RF20). Falls back if the name is missing. */
+    fun showDeviceStateEvent(event: DeviceStateEvent, deviceName: String?) {
+        val name = deviceName?.takeIf { it.isNotBlank() }
+            ?: context.getString(R.string.notif_device_fallback_name)
+        post(
+            CHANNEL_DEVICES,
+            context.getString(event.titleRes),
+            context.getString(event.bodyRes, name),
+        )
+    }
 
     private fun post(channel: String, title: String, body: String) {
         val manager = NotificationManagerCompat.from(context)

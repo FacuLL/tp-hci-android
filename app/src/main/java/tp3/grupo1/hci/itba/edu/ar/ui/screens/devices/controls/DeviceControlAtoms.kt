@@ -250,7 +250,10 @@ private fun PowerControl(
                 onCheckedChange = { checked ->
                     onExecute(if (checked) atom.onAction else atom.offAction, emptyList())
                 },
-                colors = SwitchDefaults.colors(checkedTrackColor = accent),
+                colors = SwitchDefaults.colors(
+                    checkedTrackColor = accent,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
             )
         }
     }

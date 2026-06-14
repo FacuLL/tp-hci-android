@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +41,8 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.LockOpen
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -56,9 +59,10 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import tp3.grupo1.hci.itba.edu.ar.ui.components.FloatingTopBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -69,6 +73,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -93,6 +98,7 @@ import tp3.grupo1.hci.itba.edu.ar.domain.isDeviceActive
 import tp3.grupo1.hci.itba.edu.ar.ui.components.CenteredLoading
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
+import tp3.grupo1.hci.itba.edu.ar.ui.components.ProfileAvatar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,6 +116,7 @@ fun DashboardScreen(
     val viewModel: DashboardViewModel = viewModel(factory = DashboardViewModel.Factory)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val toggleErrorRes by viewModel.toggleErrorRes.collectAsStateWithLifecycle()
+    val unreadNotifications by viewModel.unreadNotifications.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     toggleErrorRes?.let { messageRes ->
@@ -121,11 +128,16 @@ fun DashboardScreen(
     }
 
     Scaffold(
+        // El outer NavigationSuiteScaffold ya consumio los insets del sistema.
+        // Sin esto el Scaffold interno re-aplica safeDrawing y deja
+        // innerPadding.bottom = 0, lo que forzaba contentPadding(bottom=96.dp).
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             DashboardTopBar(
                 currentHome = state.currentHome,
                 homes = state.homes,
                 userName = state.userName,
+                unreadNotifications = unreadNotifications,
                 onSelectHome = viewModel::selectHome,
                 onOpenHomes = onOpenHomes,
                 onOpenNotifications = onOpenNotifications,
@@ -171,13 +183,14 @@ private fun DashboardTopBar(
     currentHome: Home?,
     homes: List<Home>,
     userName: String?,
+    unreadNotifications: Int,
     onSelectHome: (String) -> Unit,
     onOpenHomes: () -> Unit,
     onOpenNotifications: () -> Unit,
     onOpenProfile: () -> Unit,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
-    TopAppBar(
+    FloatingTopBar(
         title = {
             if (currentHome != null) {
                 Box {
@@ -250,41 +263,24 @@ private fun DashboardTopBar(
         },
         actions = {
             IconButton(onClick = onOpenNotifications) {
-                Icon(
-                    imageVector = Icons.Outlined.Notifications,
-                    contentDescription = null,
-                )
+                BadgedBox(
+                    badge = {
+                        if (unreadNotifications > 0) {
+                            Badge {
+                                Text(if (unreadNotifications > 99) "99+" else unreadNotifications.toString())
+                            }
+                        }
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = stringResource(R.string.title_notifications),
+                    )
+                }
             }
-            UserAvatar(name = userName, onClick = onOpenProfile)
+            ProfileAvatar(name = userName, onClick = onOpenProfile)
         },
     )
-}
-
-@Composable
-private fun UserAvatar(name: String?, onClick: () -> Unit) {
-    val initials = (name ?: "").trim()
-        .split(' ')
-        .filter { it.isNotBlank() }
-        .take(2)
-        .map { it.first().uppercaseChar() }
-        .joinToString("")
-        .ifBlank { "?" }
-    Box(
-        modifier = Modifier
-            .padding(end = 8.dp)
-            .size(36.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primary)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = initials,
-            color = MaterialTheme.colorScheme.onPrimary,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
-    }
 }
 
 @Composable
@@ -297,20 +293,9 @@ private fun DashboardContent(
     onOpenLocks: () -> Unit,
     onOpenAlarms: () -> Unit,
 ) {
-    val widthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
-    if (widthClass == WindowWidthSizeClass.COMPACT) {
-        CompactDashboard(state, onOpenDevice, onTogglePower, onOpenRoom, onOpenRooms, onOpenLocks, onOpenAlarms)
-    } else {
-        TwoPaneDashboard(state, onOpenDevice, onTogglePower, onOpenRoom)
-    }
+    CompactDashboard(state, onOpenDevice, onTogglePower, onOpenRoom, onOpenRooms, onOpenLocks, onOpenAlarms)
 }
 
-/**
- * Phone portrait — stacked vertical layout matching the prototype's three
- * sections:
- *   greeting → "Habitaciones →" cards with per-device on/off shortcuts and a
- *   "Ver detalle" link into the room → "Cerraduras →" cards → "Alarmas →" cards.
- */
 @Composable
 private fun CompactDashboard(
     state: DashboardUiState,
@@ -323,14 +308,35 @@ private fun CompactDashboard(
 ) {
     val lockDevices = state.devices.filter { it.state.lock != null }
     val alarmDevices = state.devices.filter { it.type.id == DeviceTypeIds.ALARM }
-    LazyColumn(
+    // En landscape phone el alto disponible es minimo: ocultamos el saludo y
+    // achicamos las tiles para que al menos una room card entre sin scroll.
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+    val screenHeightDp = configuration.screenHeightDp
+    val isLandscape = screenWidthDp > screenHeightDp
+    val isCompactLandscape = isLandscape && screenHeightDp < 480
+    val roomCardWidth = when {
+        screenWidthDp >= 840 -> (screenWidthDp * 0.32f).dp
+        isLandscape          -> (screenWidthDp * 0.48f).dp
+        else                 -> (screenWidthDp * 0.88f).dp
+    }
+    val deviceTileHeight = if (isCompactLandscape) 56.dp else 72.dp
+    val verticalSpacing = if (isCompactLandscape) 12.dp else 20.dp
+    Box(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 8.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        item { GreetingHeader(userName = state.userName) }
+    LazyColumn(
+        modifier = Modifier
+            .widthIn(max = 760.dp)
+            .fillMaxSize(),
+        contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(verticalSpacing),
+    ) {
+        if (!isCompactLandscape) {
+            item { GreetingHeader(userName = state.userName) }
+        }
 
-        // ── Habitaciones ──────────────────────────────────────────────────
         item {
             SectionTitle(
                 text = stringResource(R.string.nav_rooms),
@@ -356,17 +362,18 @@ private fun CompactDashboard(
                             room = room,
                             roomDevices = devicesInRoom(state.devices, room.id),
                             deviceTypes = state.deviceTypes,
+                            deviceTileHeight = deviceTileHeight,
+                            compact = isCompactLandscape,
                             onOpenDevice = onOpenDevice,
                             onTogglePower = onTogglePower,
                             onOpenDetail = { onOpenRoom(room.id) },
-                            modifier = Modifier.width(260.dp),
+                            modifier = Modifier.width(roomCardWidth),
                         )
                     }
                 }
             }
         }
 
-        // ── Cerraduras ────────────────────────────────────────────────────
         item {
             SectionTitle(
                 text = stringResource(R.string.dashboard_locks_title),
@@ -391,14 +398,13 @@ private fun CompactDashboard(
                         LockChipCard(
                             device = device,
                             onOpen = { onOpenDevice(device.id) },
-                            modifier = Modifier.width(160.dp),
+                            modifier = Modifier.width(200.dp),
                         )
                     }
                 }
             }
         }
 
-        // ── Alarmas ───────────────────────────────────────────────────────
         item {
             SectionTitle(
                 text = stringResource(R.string.dashboard_alarms_title),
@@ -423,12 +429,13 @@ private fun CompactDashboard(
                         AlarmChipCard(
                             device = device,
                             onOpen = { onOpenDevice(device.id) },
-                            modifier = Modifier.width(160.dp),
+                            modifier = Modifier.width(200.dp),
                         )
                     }
                 }
             }
         }
+    }
     }
 }
 
@@ -455,7 +462,6 @@ private fun GreetingHeader(userName: String?, modifier: Modifier = Modifier) {
     }
 }
 
-/** Tablet / landscape: summary and rooms grid on the left, device list on the right. */
 @Composable
 private fun TwoPaneDashboard(
     state: DashboardUiState,
@@ -540,10 +546,15 @@ private fun RoomCard(
     onTogglePower: (Device, PowerAtom) -> Unit,
     onOpenDetail: () -> Unit,
     modifier: Modifier = Modifier,
+    deviceTileHeight: androidx.compose.ui.unit.Dp = 72.dp,
+    compact: Boolean = false,
 ) {
     val anyActive = roomDevices.any(::isDeviceActive)
+    val pad = if (compact) 12.dp else 16.dp
+    val gap = if (compact) 8.dp else 12.dp
     OutlinedCard(
         modifier = modifier,
+        onClick = onOpenDetail,
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
             width = 1.dp,
@@ -553,8 +564,8 @@ private fun RoomCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(pad),
+            verticalArrangement = Arrangement.spacedBy(gap),
         ) {
             Text(
                 text = room.name.uppercase(),
@@ -569,40 +580,48 @@ private fun RoomCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (roomDevices.isEmpty()) {
-                SectionHint(text = stringResource(R.string.dashboard_room_empty))
+                // Reservamos el alto de las tiles para que las rooms vacias queden igual de altas.
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(deviceTileHeight),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    SectionHint(text = stringResource(R.string.dashboard_room_empty))
+                }
             } else {
                 DeviceToggleRow(
                     devices = roomDevices.take(4),
                     deviceTypes = deviceTypes,
+                    tileHeight = deviceTileHeight,
                     onOpenDevice = onOpenDevice,
                     onTogglePower = onTogglePower,
                 )
             }
-            TextButton(
-                onClick = onOpenDetail,
-                modifier = Modifier.align(Alignment.End),
-                contentPadding = PaddingValues(0.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.dashboard_room_view_detail),
-                    style = MaterialTheme.typography.labelLarge,
-                )
+            // En compact toda la card es clickeable, asi que sacamos el boton "Ver detalle" para ahorrar alto.
+            if (!compact) {
+                TextButton(
+                    onClick = onOpenDetail,
+                    modifier = Modifier.align(Alignment.End),
+                    contentPadding = PaddingValues(0.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.dashboard_room_view_detail),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
             }
         }
     }
 }
 
-/**
- * Quick-access shortcuts for a room's devices. Tapping a tile toggles power
- * directly (turnOn/turnOff, lock/unlock, …); devices without a power control
- * just open their detail screen. Active devices get a filled, tinted tile.
- */
 @Composable
 private fun DeviceToggleRow(
     devices: List<Device>,
     deviceTypes: Map<String, DeviceType>,
     onOpenDevice: (String) -> Unit,
     onTogglePower: (Device, PowerAtom) -> Unit,
+    tileHeight: androidx.compose.ui.unit.Dp = 72.dp,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -615,12 +634,13 @@ private fun DeviceToggleRow(
             DeviceToggleTile(
                 device = device,
                 powerAtom = powerAtom,
+                tileHeight = tileHeight,
                 onToggle = { atom -> onTogglePower(device, atom) },
                 onOpen = { onOpenDevice(device.id) },
                 modifier = Modifier.weight(1f),
             )
         }
-        // Pad to a stable 4-column grid so cards keep their width.
+        // Rellenamos hasta 4 columnas para que las cards mantengan su ancho.
         repeat(4 - devices.size) {
             Spacer(Modifier.weight(1f))
         }
@@ -635,16 +655,16 @@ private fun DeviceToggleTile(
     onToggle: (PowerAtom) -> Unit,
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
+    tileHeight: androidx.compose.ui.unit.Dp = 72.dp,
 ) {
     val active = powerAtom?.active == true
     val primary = MaterialTheme.colorScheme.primary
     Box(
         modifier = modifier
-            .height(56.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .height(tileHeight)
+            .clip(RoundedCornerShape(14.dp))
             .background(if (active) primary else primary.copy(alpha = 0.12f))
-            // Tap toggles power (or opens detail if there's no power control);
-            // long-press always opens the device's control panel.
+            // Tap togglea el power (o abre el detalle si no hay control); long-press siempre abre el detalle.
             .combinedClickable(
                 onClick = { if (powerAtom != null) onToggle(powerAtom) else onOpen() },
                 onLongClick = onOpen,
@@ -655,7 +675,7 @@ private fun DeviceToggleTile(
             imageVector = deviceTypeIcon(device.type.id),
             contentDescription = device.name,
             tint = if (active) MaterialTheme.colorScheme.onPrimary else primary,
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(36.dp),
         )
     }
 }
@@ -685,20 +705,22 @@ private fun AlarmChipCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = if (armed) 0.20f else 0.12f),
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = Icons.Outlined.NotificationsActive,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(24.dp),
                 )
             }
             Text(
@@ -708,11 +730,27 @@ private fun AlarmChipCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                text = stringResource(statusRes),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            device.room?.name?.takeIf { it.isNotBlank() }?.let { roomName ->
+                Text(
+                    text = roomName,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            StatusChip(textRes = statusRes, highlighted = armed)
+            device.state.batteryLevel?.let { battery ->
+                Text(
+                    text = stringResource(R.string.dashboard_chip_battery, battery),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (battery <= 20) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
         }
     }
 }
@@ -724,6 +762,8 @@ private fun LockChipCard(
     modifier: Modifier = Modifier,
 ) {
     val locked = device.state.lock == "locked"
+    val opened = device.state.status == "opened"
+    val closed = device.state.status == "closed"
     OutlinedCard(
         modifier = modifier,
         onClick = onOpen,
@@ -737,20 +777,22 @@ private fun LockChipCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = if (locked) 0.20f else 0.12f),
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = if (locked) Icons.Outlined.Lock else Icons.Outlined.LockOpen,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(24.dp),
                 )
             }
             Text(
@@ -760,13 +802,43 @@ private fun LockChipCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                text = stringResource(
-                    if (locked) R.string.device_state_locked else R.string.device_state_unlocked,
-                ),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            device.room?.name?.takeIf { it.isNotBlank() }?.let { roomName ->
+                Text(
+                    text = roomName,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            // Si el device solo expone uno de los dos estados, mostramos solo ese chip.
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (opened || closed) {
+                    StatusChip(
+                        textRes = if (opened) R.string.device_state_opened else R.string.device_state_closed,
+                        highlighted = opened,
+                    )
+                }
+                StatusChip(
+                    textRes = if (locked) {
+                        R.string.device_state_locked
+                    } else {
+                        R.string.device_state_unlocked
+                    },
+                    highlighted = locked,
+                )
+            }
+            device.state.batteryLevel?.let { battery ->
+                Text(
+                    text = stringResource(R.string.dashboard_chip_battery, battery),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (battery <= 20) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
         }
     }
 }
@@ -819,21 +891,23 @@ private fun DeviceRow(
                 )
             }
             if (powerAtom != null) {
+                // No se puede abrir/cerrar mientras esta bloqueado, ni bloquear mientras esta abierto.
+                val togglesOpening = powerAtom.onAction == "open" || powerAtom.offAction == "open"
+                val blocked = (togglesOpening && device.state.lock == "locked") ||
+                    (powerAtom.onAction == "lock" && device.state.status == "opened")
                 Switch(
                     checked = powerAtom.active,
+                    enabled = !blocked,
                     onCheckedChange = { onTogglePower(powerAtom) },
+                    colors = SwitchDefaults.colors(
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
                 )
             }
         }
     }
 }
 
-/**
- * Three full-width cards (Locks, Alarms, Devices) navigated with a horizontal
- * swipe, mirroring the bottom row of the web dashboard. Each card scrolls
- * vertically when its list overflows. A row of dots below the pager signals
- * the current page and acts as a tap target to jump between them.
- */
 @Composable
 private fun CategoryPager(
     state: DashboardUiState,
@@ -986,7 +1060,6 @@ private fun PagerIndicator(
     }
 }
 
-/** Lock-specific row: open/closed chip + locked/unlocked chip, like the web. */
 @Composable
 private fun LockRow(device: Device, onOpen: () -> Unit) {
     val locked = device.state.lock == "locked"
@@ -1032,7 +1105,6 @@ private fun LockRow(device: Device, onOpen: () -> Unit) {
     }
 }
 
-/** Alarm-specific row: status chip, like the web. */
 @Composable
 private fun AlarmRow(device: Device, onOpen: () -> Unit) {
     val armed = device.state.status == "armedStay" || device.state.status == "armedAway"
@@ -1165,16 +1237,21 @@ private fun DashboardError(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
     ) {
-        ErrorBanner(stringResource(messageRes))
-        Button(onClick = onRetry) {
-            Text(stringResource(R.string.action_retry))
+        Column(
+            modifier = Modifier
+                .widthIn(max = 480.dp)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            ErrorBanner(stringResource(messageRes))
+            Button(onClick = onRetry) {
+                Text(stringResource(R.string.action_retry))
+            }
         }
     }
 }

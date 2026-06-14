@@ -41,6 +41,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -445,7 +446,20 @@ private fun DeviceListItem(
                 )
             }
             if (powerAtom != null) {
-                Switch(checked = powerAtom.active, onCheckedChange = { onToggle() })
+                // Same safety rule as the device detail (DeviceControlAtoms): an
+                // open/close toggle is blocked while locked, and a lock toggle is
+                // blocked while the door is open.
+                val togglesOpening = powerAtom.onAction == "open" || powerAtom.offAction == "open"
+                val blocked = (togglesOpening && device.state.lock == "locked") ||
+                    (powerAtom.onAction == "lock" && device.state.status == "opened")
+                Switch(
+                    checked = powerAtom.active,
+                    onCheckedChange = { onToggle() },
+                    enabled = !blocked,
+                    colors = SwitchDefaults.colors(
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+                )
             }
             Box {
                 IconButton(onClick = { menuOpen = true }) {
