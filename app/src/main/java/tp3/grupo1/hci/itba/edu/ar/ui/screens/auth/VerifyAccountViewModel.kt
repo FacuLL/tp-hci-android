@@ -26,6 +26,8 @@ data class VerifyAccountUiState(
     val resending: Boolean = false,
     val resendCooldownSeconds: Int = 0,
     val resendSuccess: Boolean = false,
+    /** OTP echoed by the testing API, shown so the user need not open email. */
+    val displayedCode: String? = null,
 )
 
 class VerifyAccountViewModel(
@@ -38,6 +40,19 @@ class VerifyAccountViewModel(
 
     private var submitAttempted = false
     private var cooldownJob: Job? = null
+
+    init {
+        // Fetch and surface the verification code right away so the user does
+        // not have to open their email (the testing API returns it directly).
+        viewModelScope.launch {
+            try {
+                val code = container.authRepository.resendVerification(email)
+                _uiState.update { it.copy(displayedCode = code) }
+            } catch (_: ApiException) {
+                // It failed silently: the user can still resend manually.
+            }
+        }
+    }
 
     fun onCodeChange(value: String) {
         _uiState.update {
@@ -68,8 +83,10 @@ class VerifyAccountViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(resending = true, resendSuccess = false, apiErrorRes = null) }
             try {
-                container.authRepository.resendVerification(email)
-                _uiState.update { it.copy(resending = false, resendSuccess = true) }
+                val code = container.authRepository.resendVerification(email)
+                _uiState.update {
+                    it.copy(resending = false, resendSuccess = true, displayedCode = code ?: it.displayedCode)
+                }
                 startCooldown()
             } catch (e: ApiException) {
                 _uiState.update { it.copy(resending = false, apiErrorRes = e.userMessageRes) }

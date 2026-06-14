@@ -17,6 +17,11 @@
     <string name="rooms_action_rename">Renombrar</string>
     <string name="rooms_name_label">Nombre</string>
 
+    <!-- Room detail -->
+    <string name="rooms_cd_delete_room">Eliminar habitación</string>
+    <string name="rooms_missing_title">Habitación no disponible</string>
+    <string name="rooms_missing_subtitle">La habitación fue eliminada o ya no existe.</string>
+
     <!-- Delete room -->
     <string name="rooms_delete_room_title">Eliminar habitación</string>
     <string name="rooms_delete_room_message">Se va a eliminar \"%1$s\". Los dispositivos asignados van a quedar sin habitación.</string>

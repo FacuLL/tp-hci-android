@@ -78,6 +78,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.LuminaTextField
 @Composable
 fun RoomsScreen(
     onOpenDevice: (String) -> Unit,
+    onOpenRoom: (String) -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val viewModel: RoomsViewModel = viewModel(factory = RoomsViewModel.Factory)
@@ -92,6 +93,21 @@ fun RoomsScreen(
             snackbarHostState.showSnackbar(context.getString(messageRes))
             viewModel.onSnackbarShown()
         }
+    }
+
+    // A freshly created room opens right away: navigate to its detail on
+    // phones / medium widths, or select it in the side panel on large tablets.
+    LaunchedEffect(state.roomToOpen) {
+        state.roomToOpen?.let { roomId ->
+            viewModel.onRoomOpened()
+            if (isExpanded) viewModel.selectRoom(roomId) else onOpenRoom(roomId)
+        }
+    }
+
+    // Tapping a room navigates to its detail, except on large tablets where the
+    // two-pane layout shows it in a side panel.
+    val openRoom: (String) -> Unit = { roomId ->
+        if (isExpanded) viewModel.selectRoom(roomId) else onOpenRoom(roomId)
     }
 
     Scaffold(
@@ -153,7 +169,7 @@ fun RoomsScreen(
                 else -> RoomsContent(
                     state = state,
                     widthClass = widthClass,
-                    onSelectRoom = viewModel::selectRoom,
+                    onSelectRoom = openRoom,
                     onRenameRoom = viewModel::openRenameDialog,
                     onDeleteRoom = viewModel::openDeleteRoomDialog,
                     onOpenDevice = onOpenDevice,
@@ -163,24 +179,6 @@ fun RoomsScreen(
                 )
             }
         }
-    }
-
-    val selectedRoom = state.rooms.firstOrNull { it.id == state.selectedRoomId }
-    if (!isExpanded && selectedRoom != null) {
-        RoomDetailSheet(
-            room = selectedRoom,
-            devices = devicesInRoom(state.devices, selectedRoom.id),
-            types = state.types,
-            pendingDeviceIds = state.pendingDeviceIds,
-            onDismiss = { viewModel.selectRoom(null) },
-            onOpenDevice = { deviceId ->
-                viewModel.selectRoom(null)
-                onOpenDevice(deviceId)
-            },
-            onToggleDevice = viewModel::toggleDevice,
-            onRemoveDevice = viewModel::openRemoveDeviceDialog,
-            onAddDevice = { viewModel.openAddDeviceDialog(selectedRoom) },
-        )
     }
 
     when (val dialog = state.dialog) {
@@ -413,7 +411,7 @@ private fun RoomCard(
 }
 
 @Composable
-private fun RoomNameDialog(
+fun RoomNameDialog(
     title: String,
     confirmLabel: String,
     name: String,
@@ -452,7 +450,7 @@ private fun RoomNameDialog(
 }
 
 @Composable
-private fun AddDeviceDialog(
+fun AddDeviceDialog(
     unassigned: List<Device>,
     types: Map<String, DeviceType>,
     pendingDeviceIds: Set<String>,

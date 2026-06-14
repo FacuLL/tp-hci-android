@@ -3,13 +3,16 @@ package tp3.grupo1.hci.itba.edu.ar.ui.screens.dashboard
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,18 +24,27 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.DevicesOther
 import androidx.compose.material.icons.outlined.HomeWork
-import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.LockOpen
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +53,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -56,8 +69,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -68,6 +81,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceType
 import tp3.grupo1.hci.itba.edu.ar.data.model.Home
 import tp3.grupo1.hci.itba.edu.ar.data.model.Room
+import tp3.grupo1.hci.itba.edu.ar.domain.DeviceTypeIds
 import tp3.grupo1.hci.itba.edu.ar.domain.PowerAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceControls
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceStateText
@@ -84,6 +98,10 @@ fun DashboardScreen(
     onOpenDevice: (String) -> Unit,
     onOpenHomes: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenRooms: () -> Unit = {},
+    onOpenDevices: () -> Unit = {},
+    onOpenNotifications: () -> Unit = {},
+    onQuickAdd: () -> Unit = {},
 ) {
     val viewModel: DashboardViewModel = viewModel(factory = DashboardViewModel.Factory)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -103,12 +121,24 @@ fun DashboardScreen(
             DashboardTopBar(
                 currentHome = state.currentHome,
                 homes = state.homes,
+                userName = state.userName,
                 onSelectHome = viewModel::selectHome,
                 onOpenHomes = onOpenHomes,
-                onOpenSettings = onOpenSettings,
+                onOpenNotifications = onOpenNotifications,
+                onOpenProfile = onOpenSettings,
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            if (state.loaded && state.currentHome != null) {
+                FloatingActionButton(onClick = onQuickAdd) {
+                    Icon(
+                        imageVector = Icons.Outlined.Add,
+                        contentDescription = stringResource(R.string.dashboard_cd_quick_add),
+                    )
+                }
+            }
+        },
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -125,6 +155,8 @@ fun DashboardScreen(
                     state = state,
                     onOpenDevice = onOpenDevice,
                     onTogglePower = { device, atom -> viewModel.togglePower(device.id, atom) },
+                    onOpenRooms = onOpenRooms,
+                    onOpenDevices = onOpenDevices,
                 )
             }
         }
@@ -136,27 +168,47 @@ fun DashboardScreen(
 private fun DashboardTopBar(
     currentHome: Home?,
     homes: List<Home>,
+    userName: String?,
     onSelectHome: (String) -> Unit,
     onOpenHomes: () -> Unit,
-    onOpenSettings: () -> Unit,
+    onOpenNotifications: () -> Unit,
+    onOpenProfile: () -> Unit,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
     TopAppBar(
-        title = { Text(stringResource(R.string.nav_dashboard)) },
-        actions = {
+        title = {
             if (currentHome != null) {
                 Box {
-                    TextButton(onClick = { menuExpanded = true }) {
-                        Text(
-                            text = currentHome.name,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.widthIn(max = 180.dp),
-                        )
-                        Icon(
-                            imageVector = Icons.Outlined.ArrowDropDown,
-                            contentDescription = stringResource(R.string.dashboard_cd_change_home),
-                        )
+                    Surface(
+                        onClick = { menuExpanded = true },
+                        shape = RoundedCornerShape(20.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        tonalElevation = 1.dp,
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.HomeWork,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                text = currentHome.name,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.widthIn(max = 140.dp),
+                            )
+                            Icon(
+                                imageVector = Icons.Outlined.ArrowDropDown,
+                                contentDescription = stringResource(R.string.dashboard_cd_change_home),
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
                     }
                     DropdownMenu(
                         expanded = menuExpanded,
@@ -193,14 +245,44 @@ private fun DashboardTopBar(
                     }
                 }
             }
-            IconButton(onClick = onOpenSettings) {
+        },
+        actions = {
+            IconButton(onClick = onOpenNotifications) {
                 Icon(
-                    imageVector = Icons.Outlined.Settings,
-                    contentDescription = stringResource(R.string.cd_open_settings),
+                    imageVector = Icons.Outlined.Notifications,
+                    contentDescription = null,
                 )
             }
+            UserAvatar(name = userName, onClick = onOpenProfile)
         },
     )
+}
+
+@Composable
+private fun UserAvatar(name: String?, onClick: () -> Unit) {
+    val initials = (name ?: "").trim()
+        .split(' ')
+        .filter { it.isNotBlank() }
+        .take(2)
+        .map { it.first().uppercaseChar() }
+        .joinToString("")
+        .ifBlank { "?" }
+    Box(
+        modifier = Modifier
+            .padding(end = 8.dp)
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primary)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = initials,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
 }
 
 @Composable
@@ -208,57 +290,123 @@ private fun DashboardContent(
     state: DashboardUiState,
     onOpenDevice: (String) -> Unit,
     onTogglePower: (Device, PowerAtom) -> Unit,
+    onOpenRooms: () -> Unit,
+    onOpenDevices: () -> Unit,
 ) {
     val widthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     if (widthClass == WindowWidthSizeClass.COMPACT) {
-        CompactDashboard(state, onOpenDevice, onTogglePower)
+        CompactDashboard(state, onOpenDevice, onOpenRooms, onOpenDevices)
     } else {
         TwoPaneDashboard(state, onOpenDevice, onTogglePower)
     }
 }
 
-/** Phone portrait: a single scrolling column with rooms as a horizontal carousel. */
+/**
+ * Phone portrait — stacked vertical layout matching the prototype:
+ *   greeting → "Habitaciones →" carousel of blue room cards → "Cerraduras →"
+ *   carousel of lock chip cards. No pager, no swipe between categories.
+ */
 @Composable
 private fun CompactDashboard(
     state: DashboardUiState,
     onOpenDevice: (String) -> Unit,
-    onTogglePower: (Device, PowerAtom) -> Unit,
+    onOpenRooms: () -> Unit,
+    onOpenDevices: () -> Unit,
 ) {
+    val lockDevices = state.devices.filter { it.state.lock != null }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(top = 8.dp, bottom = 96.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        item { SummaryCard(state.devices) }
-        item { SectionTitle(stringResource(R.string.nav_rooms)) }
+        item { GreetingHeader(userName = state.userName) }
+
+        item {
+            SectionTitle(
+                text = stringResource(R.string.nav_rooms),
+                onClick = onOpenRooms,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+        }
         if (state.rooms.isEmpty()) {
-            item { SectionHint(stringResource(R.string.dashboard_no_rooms_hint)) }
+            item {
+                SectionHint(
+                    text = stringResource(R.string.dashboard_no_rooms_hint),
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
         } else {
             item {
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
                     items(state.rooms, key = { it.id }) { room ->
                         RoomCard(
                             room = room,
                             roomDevices = devicesInRoom(state.devices, room.id),
-                            modifier = Modifier.width(170.dp),
+                            onOpenDevice = onOpenDevice,
+                            onOpenDetail = onOpenRooms,
+                            modifier = Modifier.width(240.dp),
                         )
                     }
                 }
             }
         }
-        item { SectionTitle(stringResource(R.string.nav_devices)) }
-        if (state.devices.isEmpty()) {
-            item { NoDevicesEmptyState() }
-        } else {
-            items(state.devices, key = { it.id }) { device ->
-                DeviceRow(
-                    device = device,
-                    deviceType = state.deviceTypes[device.type.id],
-                    onOpen = { onOpenDevice(device.id) },
-                    onTogglePower = { atom -> onTogglePower(device, atom) },
+
+        item {
+            SectionTitle(
+                text = stringResource(R.string.dashboard_locks_title),
+                onClick = onOpenDevices,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+        }
+        if (lockDevices.isEmpty()) {
+            item {
+                SectionHint(
+                    text = stringResource(R.string.dashboard_locks_empty),
+                    modifier = Modifier.padding(horizontal = 16.dp),
                 )
             }
+        } else {
+            item {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(lockDevices, key = { it.id }) { device ->
+                        LockChipCard(
+                            device = device,
+                            onOpen = { onOpenDevice(device.id) },
+                            modifier = Modifier.width(160.dp),
+                        )
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun GreetingHeader(userName: String?, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(
+            text = if (userName.isNullOrBlank()) {
+                stringResource(R.string.dashboard_greeting_generic)
+            } else {
+                stringResource(R.string.dashboard_greeting_with_name, userName.trim().split(' ').first())
+            },
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = stringResource(R.string.dashboard_status_ok),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -292,29 +440,21 @@ private fun TwoPaneDashboard(
                     RoomCard(
                         room = room,
                         roomDevices = devicesInRoom(state.devices, room.id),
+                        onOpenDevice = onOpenDevice,
+                        onOpenDetail = {},
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
             }
         }
-        LazyColumn(
-            modifier = Modifier.weight(1.4f),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            item { SectionTitle(stringResource(R.string.nav_devices)) }
-            if (state.devices.isEmpty()) {
-                item { NoDevicesEmptyState() }
-            } else {
-                items(state.devices, key = { it.id }) { device ->
-                    DeviceRow(
-                        device = device,
-                        deviceType = state.deviceTypes[device.type.id],
-                        onOpen = { onOpenDevice(device.id) },
-                        onTogglePower = { atom -> onTogglePower(device, atom) },
-                    )
-                }
-            }
-        }
+        CategoryPager(
+            state = state,
+            onOpenDevice = onOpenDevice,
+            onTogglePower = onTogglePower,
+            modifier = Modifier
+                .weight(1.4f)
+                .fillMaxSize(),
+        )
     }
 }
 
@@ -344,10 +484,17 @@ private fun SummaryCard(devices: List<Device>, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun RoomCard(room: Room, roomDevices: List<Device>, modifier: Modifier = Modifier) {
+private fun RoomCard(
+    room: Room,
+    roomDevices: List<Device>,
+    onOpenDevice: (String) -> Unit,
+    onOpenDetail: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val anyActive = roomDevices.any(::isDeviceActive)
     OutlinedCard(
         modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
             width = 1.dp,
             color = if (anyActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
@@ -357,21 +504,125 @@ private fun RoomCard(room: Room, roomDevices: List<Device>, modifier: Modifier =
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                text = room.name,
+                text = room.name.uppercase(),
                 style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = pluralStringResource(
-                    R.plurals.dashboard_room_device_count,
-                    roomDevices.size,
-                    roomDevices.size,
+                text = stringResource(R.string.dashboard_room_devices_label),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            DeviceTilesRow(
+                devices = roomDevices.take(3),
+                onOpenDevice = onOpenDevice,
+            )
+            TextButton(
+                onClick = onOpenDetail,
+                modifier = Modifier.align(Alignment.End),
+                contentPadding = PaddingValues(0.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.dashboard_room_view_detail),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeviceTilesRow(
+    devices: List<Device>,
+    onOpenDevice: (String) -> Unit,
+) {
+    val activeTile = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+    val emptyTile = MaterialTheme.colorScheme.surfaceContainerLow
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        repeat(3) { index ->
+            val device = devices.getOrNull(index)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(72.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (device != null) activeTile else emptyTile)
+                    .then(
+                        if (device != null) {
+                            Modifier.clickable { onOpenDevice(device.id) }
+                        } else Modifier,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (device != null) {
+                    Icon(
+                        imageVector = deviceTypeIcon(device.type.id),
+                        contentDescription = device.name,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(30.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LockChipCard(
+    device: Device,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val locked = device.state.lock == "locked"
+    OutlinedCard(
+        modifier = modifier,
+        onClick = onOpen,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (locked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = if (locked) Icons.Outlined.Lock else Icons.Outlined.LockOpen,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Text(
+                text = device.name.uppercase(),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = stringResource(
+                    if (locked) R.string.device_state_locked else R.string.device_state_unlocked,
                 ),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -435,13 +686,312 @@ private fun DeviceRow(
     }
 }
 
+/**
+ * Three full-width cards (Locks, Alarms, Devices) navigated with a horizontal
+ * swipe, mirroring the bottom row of the web dashboard. Each card scrolls
+ * vertically when its list overflows. A row of dots below the pager signals
+ * the current page and acts as a tap target to jump between them.
+ */
 @Composable
-private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleMedium,
-        modifier = modifier.padding(top = 4.dp),
+private fun CategoryPager(
+    state: DashboardUiState,
+    onOpenDevice: (String) -> Unit,
+    onTogglePower: (Device, PowerAtom) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val lockDevices = state.devices.filter { it.state.lock != null }
+    val alarmDevices = state.devices.filter { it.type.id == DeviceTypeIds.ALARM }
+    val pages = listOf(
+        CategoryPage.Locks(lockDevices),
+        CategoryPage.Alarms(alarmDevices),
+        CategoryPage.Devices(state.devices),
     )
+    val pagerState = rememberPagerState(pageCount = { pages.size })
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            pageSpacing = 12.dp,
+            contentPadding = PaddingValues(horizontal = 24.dp),
+        ) { page ->
+            CategoryCard(
+                page = pages[page],
+                deviceTypes = state.deviceTypes,
+                onOpenDevice = onOpenDevice,
+                onTogglePower = onTogglePower,
+            )
+        }
+        PagerIndicator(
+            pageCount = pages.size,
+            currentPage = pagerState.currentPage,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+        )
+    }
+}
+
+private sealed interface CategoryPage {
+    @get:androidx.annotation.StringRes
+    val titleRes: Int
+
+    @get:androidx.annotation.StringRes
+    val emptyRes: Int
+
+    val devices: List<Device>
+
+    data class Locks(override val devices: List<Device>) : CategoryPage {
+        override val titleRes get() = R.string.dashboard_locks_title
+        override val emptyRes get() = R.string.dashboard_locks_empty
+    }
+
+    data class Alarms(override val devices: List<Device>) : CategoryPage {
+        override val titleRes get() = R.string.dashboard_alarms_title
+        override val emptyRes get() = R.string.dashboard_alarms_empty
+    }
+
+    data class Devices(override val devices: List<Device>) : CategoryPage {
+        override val titleRes get() = R.string.nav_devices
+        override val emptyRes get() = R.string.dashboard_no_devices_title
+    }
+}
+
+@Composable
+private fun CategoryCard(
+    page: CategoryPage,
+    deviceTypes: Map<String, DeviceType>,
+    onOpenDevice: (String) -> Unit,
+    onTogglePower: (Device, PowerAtom) -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(page.titleRes),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            if (page.devices.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 24.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(page.emptyRes),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(page.devices, key = { it.id }) { device ->
+                        when (page) {
+                            is CategoryPage.Locks -> LockRow(
+                                device = device,
+                                onOpen = { onOpenDevice(device.id) },
+                            )
+                            is CategoryPage.Alarms -> AlarmRow(
+                                device = device,
+                                onOpen = { onOpenDevice(device.id) },
+                            )
+                            is CategoryPage.Devices -> DeviceRow(
+                                device = device,
+                                deviceType = deviceTypes[device.type.id],
+                                onOpen = { onOpenDevice(device.id) },
+                                onTogglePower = { atom -> onTogglePower(device, atom) },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PagerIndicator(
+    pageCount: Int,
+    currentPage: Int,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        repeat(pageCount) { index ->
+            val selected = index == currentPage
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .size(if (selected) 10.dp else 8.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (selected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.outlineVariant,
+                    ),
+            )
+        }
+    }
+}
+
+/** Lock-specific row: open/closed chip + locked/unlocked chip, like the web. */
+@Composable
+private fun LockRow(device: Device, onOpen: () -> Unit) {
+    val locked = device.state.lock == "locked"
+    Card(onClick = onOpen, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            CategoryIcon(
+                icon = if (locked) Icons.Outlined.Lock else Icons.Outlined.LockOpen,
+                active = locked,
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = device.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (device.state.status == "opened" || device.state.status == "closed") {
+                        StatusChip(
+                            textRes = if (device.state.status == "opened") {
+                                R.string.device_state_opened
+                            } else {
+                                R.string.device_state_closed
+                            },
+                            highlighted = device.state.status == "opened",
+                        )
+                    }
+                    StatusChip(
+                        textRes = if (locked) {
+                            R.string.device_state_locked
+                        } else {
+                            R.string.device_state_unlocked
+                        },
+                        highlighted = locked,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Alarm-specific row: status chip, like the web. */
+@Composable
+private fun AlarmRow(device: Device, onOpen: () -> Unit) {
+    val armed = device.state.status == "armedStay" || device.state.status == "armedAway"
+    val statusRes = when (device.state.status) {
+        "armedStay" -> R.string.device_state_armed_stay
+        "armedAway" -> R.string.device_state_armed_away
+        else -> R.string.device_state_disarmed
+    }
+    Card(onClick = onOpen, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            CategoryIcon(icon = Icons.Outlined.NotificationsActive, active = armed)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = device.name,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                StatusChip(textRes = statusRes, highlighted = armed)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryIcon(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    active: Boolean,
+) {
+    val color = MaterialTheme.colorScheme.primary
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .background(color.copy(alpha = if (active) 0.20f else 0.10f)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(imageVector = icon, contentDescription = null, tint = color)
+    }
+}
+
+@Composable
+private fun StatusChip(@StringRes textRes: Int, highlighted: Boolean) {
+    val (background, foreground) = if (highlighted) {
+        MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerHigh to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    Box(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.small)
+            .background(background)
+            .padding(horizontal = 8.dp, vertical = 2.dp),
+    ) {
+        Text(
+            text = stringResource(textRes),
+            style = MaterialTheme.typography.labelSmall,
+            color = foreground,
+        )
+    }
+}
+
+@Composable
+private fun SectionTitle(
+    text: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+) {
+    val rowModifier = if (onClick != null) {
+        modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(top = 4.dp)
+    } else {
+        modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp)
+    }
+    Row(
+        modifier = rowModifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        if (onClick != null) {
+            Spacer(Modifier.width(6.dp))
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
 }
 
 @Composable
@@ -450,16 +1000,6 @@ private fun SectionHint(text: String, modifier: Modifier = Modifier) {
         text = text,
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier,
-    )
-}
-
-@Composable
-private fun NoDevicesEmptyState(modifier: Modifier = Modifier) {
-    EmptyState(
-        icon = Icons.Outlined.DevicesOther,
-        title = stringResource(R.string.dashboard_no_devices_title),
-        subtitle = stringResource(R.string.dashboard_no_devices_subtitle),
         modifier = modifier,
     )
 }

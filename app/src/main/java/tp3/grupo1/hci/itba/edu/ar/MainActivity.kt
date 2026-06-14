@@ -49,6 +49,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.screens.auth.RegisterScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.auth.VerifyAccountScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.DeviceDetailScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.homes.HomesScreen
+import tp3.grupo1.hci.itba.edu.ar.ui.screens.rooms.RoomDetailScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.settings.SettingsScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.theme.LuminaTheme
 import java.net.URLDecoder
@@ -197,6 +198,7 @@ fun LuminaApp(container: AppContainer) {
             composable(Routes.MAIN) {
                 MainScreen(
                     onOpenDevice = { deviceId -> navController.navigate(Routes.deviceDetail(deviceId)) },
+                    onOpenRoom = { roomId -> navController.navigate(Routes.roomDetail(roomId)) },
                     onOpenHomes = { navController.navigate(Routes.HOMES) },
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 )
@@ -208,6 +210,16 @@ fun LuminaApp(container: AppContainer) {
                 DeviceDetailScreen(
                     deviceId = entry.arguments?.getString("deviceId").orEmpty(),
                     onNavigateUp = { navController.navigateUp() },
+                )
+            }
+            composable(
+                route = Routes.ROOM_DETAIL,
+                arguments = listOf(navArgument("roomId") { type = NavType.StringType }),
+            ) { entry ->
+                RoomDetailScreen(
+                    roomId = entry.arguments?.getString("roomId").orEmpty(),
+                    onNavigateUp = { navController.navigateUp() },
+                    onOpenDevice = { deviceId -> navController.navigate(Routes.deviceDetail(deviceId)) },
                 )
             }
             composable(Routes.HOMES) {

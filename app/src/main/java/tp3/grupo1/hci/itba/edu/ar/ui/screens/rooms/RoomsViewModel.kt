@@ -38,8 +38,10 @@ data class RoomsUiState(
     val devices: List<Device> = emptyList(),
     val types: Map<String, DeviceType> = emptyMap(),
     val currentHome: Home? = null,
-    /** Room explicitly opened by the user (bottom sheet / side panel). */
+    /** Room selected in the two-pane side panel (large tablets only). */
     val selectedRoomId: String? = null,
+    /** One-shot: a newly created room the screen should open. */
+    val roomToOpen: String? = null,
     val dialog: RoomsDialog? = null,
     // Create / rename form
     val nameInput: String = "",
@@ -116,6 +118,10 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
         _uiState.update { it.copy(selectedRoomId = roomId) }
     }
 
+    fun onRoomOpened() {
+        _uiState.update { it.copy(roomToOpen = null) }
+    }
+
     // ── Dialogs ──
 
     fun openCreateDialog() {
@@ -189,7 +195,7 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
             try {
                 val room = roomsRepository.create(name, homeId)
                 // Open the new room right away so devices can be added to it
-                _uiState.update { it.copy(saving = false, dialog = null, selectedRoomId = room.id) }
+                _uiState.update { it.copy(saving = false, dialog = null, roomToOpen = room.id) }
             } catch (e: ApiException) {
                 _uiState.update { it.copy(saving = false, dialogErrorRes = e.userMessageRes) }
             }

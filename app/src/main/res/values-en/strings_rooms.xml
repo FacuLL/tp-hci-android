@@ -17,6 +17,11 @@
     <string name="rooms_action_rename">Rename</string>
     <string name="rooms_name_label">Name</string>
 
+    <!-- Room detail -->
+    <string name="rooms_cd_delete_room">Delete room</string>
+    <string name="rooms_missing_title">Room unavailable</string>
+    <string name="rooms_missing_subtitle">The room was deleted or no longer exists.</string>
+
     <!-- Delete room -->
     <string name="rooms_delete_room_title">Delete room</string>
     <string name="rooms_delete_room_message">\"%1$s\" will be deleted. Its devices will be left without a room.</string>

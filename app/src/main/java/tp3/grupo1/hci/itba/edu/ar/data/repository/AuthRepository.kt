@@ -41,9 +41,9 @@ class AuthRepository(
         apiCall { api.users.verifyAccount(VerifyAccountRequest(code)) }
     }
 
-    suspend fun resendVerification(email: String) {
-        apiCall { api.users.sendVerification(EmailRequest(email)) }
-    }
+    /** Returns the OTP code (the testing API echoes it back), or null. */
+    suspend fun resendVerification(email: String): String? =
+        apiCall { api.users.sendVerification(EmailRequest(email)).code }
 
     suspend fun forgotPassword(email: String) {
         apiCall { api.users.forgotPassword(EmailRequest(email)) }

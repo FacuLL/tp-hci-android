@@ -23,7 +23,6 @@ import java.net.URISyntaxException
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
-    val rememberSession: Boolean = true,
     @field:StringRes val emailError: Int? = null,
     @field:StringRes val passwordError: Int? = null,
     @field:StringRes val apiErrorRes: Int? = null,
@@ -57,10 +56,6 @@ class LoginViewModel(private val container: AppContainer) : ViewModel() {
         }
     }
 
-    fun onRememberSessionChange(value: Boolean) {
-        _uiState.update { it.copy(rememberSession = value) }
-    }
-
     fun submit() {
         submitAttempted = true
         val state = _uiState.value
@@ -74,7 +69,7 @@ class LoginViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             _uiState.update { it.copy(submitting = true) }
             try {
-                container.authRepository.login(state.email.trim(), state.password, state.rememberSession)
+                container.authRepository.login(state.email.trim(), state.password, true)
                 _uiState.update { it.copy(submitting = false, loggedIn = true) }
             } catch (e: ApiException) {
                 if (e.userMessageRes == R.string.error_not_verified) {

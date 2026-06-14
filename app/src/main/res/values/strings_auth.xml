@@ -47,6 +47,8 @@
         <item quantity="other">Reenviar en %1$d segundos</item>
     </plurals>
     <string name="auth_resend_success">Código reenviado correctamente</string>
+    <string name="auth_displayed_code_label">Código de verificación</string>
+    <string name="auth_displayed_code_hint">Para esta entrega, el código se muestra acá para facilitar la prueba.</string>
     <string name="auth_verify_success">Cuenta verificada. Iniciá sesión para continuar.</string>
 
     <!-- Forgot password -->

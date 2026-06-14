@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -96,17 +95,7 @@ fun LoginScreen(
                 Text(stringResource(R.string.auth_forgot_password_link))
             }
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(
-                checked = uiState.rememberSession,
-                onCheckedChange = viewModel::onRememberSessionChange,
-            )
-            Text(
-                text = stringResource(R.string.auth_remember_session),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
         LoadingButton(
             text = stringResource(R.string.auth_login_button),
             onClick = viewModel::submit,

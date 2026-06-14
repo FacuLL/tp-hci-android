@@ -2,6 +2,7 @@ package tp3.grupo1.hci.itba.edu.ar.ui.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.Home
@@ -23,6 +24,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.screens.dashboard.DashboardScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.DevicesScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.rooms.RoomsScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.routines.RoutinesScreen
+import tp3.grupo1.hci.itba.edu.ar.ui.screens.statistics.StatisticsScreen
 
 enum class MainTab(
     val route: String,
@@ -30,9 +32,10 @@ enum class MainTab(
     val icon: ImageVector,
 ) {
     DASHBOARD(Routes.TAB_DASHBOARD, R.string.nav_dashboard, Icons.Outlined.Home),
-    DEVICES(Routes.TAB_DEVICES, R.string.nav_devices, Icons.Outlined.Devices),
     ROOMS(Routes.TAB_ROOMS, R.string.nav_rooms, Icons.Outlined.MeetingRoom),
+    DEVICES(Routes.TAB_DEVICES, R.string.nav_devices, Icons.Outlined.Devices),
     ROUTINES(Routes.TAB_ROUTINES, R.string.nav_routines, Icons.Outlined.Bolt),
+    STATISTICS(Routes.TAB_STATISTICS, R.string.nav_statistics, Icons.Outlined.BarChart),
 }
 
 /**
@@ -43,6 +46,7 @@ enum class MainTab(
 @Composable
 fun MainScreen(
     onOpenDevice: (String) -> Unit,
+    onOpenRoom: (String) -> Unit,
     onOpenHomes: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
@@ -79,6 +83,24 @@ fun MainScreen(
                     onOpenDevice = onOpenDevice,
                     onOpenHomes = onOpenHomes,
                     onOpenSettings = onOpenSettings,
+                    onOpenRooms = {
+                        tabNavController.navigate(Routes.TAB_ROOMS) {
+                            popUpTo(tabNavController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onOpenDevices = {
+                        tabNavController.navigate(Routes.TAB_DEVICES) {
+                            popUpTo(tabNavController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                 )
             }
             composable(Routes.TAB_DEVICES) {
@@ -90,11 +112,17 @@ fun MainScreen(
             composable(Routes.TAB_ROOMS) {
                 RoomsScreen(
                     onOpenDevice = onOpenDevice,
+                    onOpenRoom = onOpenRoom,
                     onOpenSettings = onOpenSettings,
                 )
             }
             composable(Routes.TAB_ROUTINES) {
                 RoutinesScreen(
+                    onOpenSettings = onOpenSettings,
+                )
+            }
+            composable(Routes.TAB_STATISTICS) {
+                StatisticsScreen(
                     onOpenSettings = onOpenSettings,
                 )
             }

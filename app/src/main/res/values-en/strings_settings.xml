@@ -4,7 +4,6 @@
     <string name="settings_section_profile">Profile</string>
     <string name="settings_section_security">Security</string>
     <string name="settings_section_personalization">Personalization</string>
-    <string name="settings_section_server">Server connection</string>
     <string name="settings_section_session">Session</string>
 
     <!-- Profile -->
@@ -29,15 +28,6 @@
     <string name="settings_language_system">System default</string>
     <string name="settings_language_spanish">Español</string>
     <string name="settings_language_english">English</string>
-
-    <!-- Server connection -->
-    <string name="settings_server_description">Address of the Lumina API. Change it only if you use your own server.</string>
-    <string name="settings_api_url_label">Server address</string>
-    <string name="settings_api_key_label">API key</string>
-    <string name="settings_validation_api_url">Enter a valid address starting with http:// or https://</string>
-    <string name="settings_api_saved">Settings saved</string>
-    <string name="settings_api_reset">Restore defaults</string>
-    <string name="settings_api_reset_done">Defaults restored</string>
 
     <!-- Session -->
     <string name="settings_logout">Sign out</string>
