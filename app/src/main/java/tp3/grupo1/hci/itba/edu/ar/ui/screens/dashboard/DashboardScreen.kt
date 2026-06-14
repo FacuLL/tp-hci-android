@@ -98,6 +98,7 @@ fun DashboardScreen(
     onOpenDevice: (String) -> Unit,
     onOpenHomes: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenRoom: (String) -> Unit = {},
     onOpenRooms: () -> Unit = {},
     onOpenDevices: () -> Unit = {},
     onOpenNotifications: () -> Unit = {},
@@ -155,6 +156,7 @@ fun DashboardScreen(
                     state = state,
                     onOpenDevice = onOpenDevice,
                     onTogglePower = { device, atom -> viewModel.togglePower(device.id, atom) },
+                    onOpenRoom = onOpenRoom,
                     onOpenRooms = onOpenRooms,
                     onOpenDevices = onOpenDevices,
                 )
@@ -290,30 +292,35 @@ private fun DashboardContent(
     state: DashboardUiState,
     onOpenDevice: (String) -> Unit,
     onTogglePower: (Device, PowerAtom) -> Unit,
+    onOpenRoom: (String) -> Unit,
     onOpenRooms: () -> Unit,
     onOpenDevices: () -> Unit,
 ) {
     val widthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     if (widthClass == WindowWidthSizeClass.COMPACT) {
-        CompactDashboard(state, onOpenDevice, onOpenRooms, onOpenDevices)
+        CompactDashboard(state, onOpenDevice, onTogglePower, onOpenRoom, onOpenRooms, onOpenDevices)
     } else {
-        TwoPaneDashboard(state, onOpenDevice, onTogglePower)
+        TwoPaneDashboard(state, onOpenDevice, onTogglePower, onOpenRoom)
     }
 }
 
 /**
- * Phone portrait — stacked vertical layout matching the prototype:
- *   greeting → "Habitaciones →" carousel of blue room cards → "Cerraduras →"
- *   carousel of lock chip cards. No pager, no swipe between categories.
+ * Phone portrait — stacked vertical layout matching the prototype's three
+ * sections:
+ *   greeting → "Habitaciones →" cards with per-device on/off shortcuts and a
+ *   "Ver detalle" link into the room → "Cerraduras →" cards → "Alarmas →" cards.
  */
 @Composable
 private fun CompactDashboard(
     state: DashboardUiState,
     onOpenDevice: (String) -> Unit,
+    onTogglePower: (Device, PowerAtom) -> Unit,
+    onOpenRoom: (String) -> Unit,
     onOpenRooms: () -> Unit,
     onOpenDevices: () -> Unit,
 ) {
     val lockDevices = state.devices.filter { it.state.lock != null }
+    val alarmDevices = state.devices.filter { it.type.id == DeviceTypeIds.ALARM }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(top = 8.dp, bottom = 96.dp),
@@ -321,6 +328,7 @@ private fun CompactDashboard(
     ) {
         item { GreetingHeader(userName = state.userName) }
 
+        // ── Habitaciones ──────────────────────────────────────────────────
         item {
             SectionTitle(
                 text = stringResource(R.string.nav_rooms),
@@ -345,15 +353,18 @@ private fun CompactDashboard(
                         RoomCard(
                             room = room,
                             roomDevices = devicesInRoom(state.devices, room.id),
+                            deviceTypes = state.deviceTypes,
                             onOpenDevice = onOpenDevice,
-                            onOpenDetail = onOpenRooms,
-                            modifier = Modifier.width(240.dp),
+                            onTogglePower = onTogglePower,
+                            onOpenDetail = { onOpenRoom(room.id) },
+                            modifier = Modifier.width(260.dp),
                         )
                     }
                 }
             }
         }
 
+        // ── Cerraduras ────────────────────────────────────────────────────
         item {
             SectionTitle(
                 text = stringResource(R.string.dashboard_locks_title),
@@ -376,6 +387,38 @@ private fun CompactDashboard(
                 ) {
                     items(lockDevices, key = { it.id }) { device ->
                         LockChipCard(
+                            device = device,
+                            onOpen = { onOpenDevice(device.id) },
+                            modifier = Modifier.width(160.dp),
+                        )
+                    }
+                }
+            }
+        }
+
+        // ── Alarmas ───────────────────────────────────────────────────────
+        item {
+            SectionTitle(
+                text = stringResource(R.string.dashboard_alarms_title),
+                onClick = onOpenDevices,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+        }
+        if (alarmDevices.isEmpty()) {
+            item {
+                SectionHint(
+                    text = stringResource(R.string.dashboard_alarms_empty),
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
+        } else {
+            item {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(alarmDevices, key = { it.id }) { device ->
+                        AlarmChipCard(
                             device = device,
                             onOpen = { onOpenDevice(device.id) },
                             modifier = Modifier.width(160.dp),
@@ -416,6 +459,7 @@ private fun TwoPaneDashboard(
     state: DashboardUiState,
     onOpenDevice: (String) -> Unit,
     onTogglePower: (Device, PowerAtom) -> Unit,
+    onOpenRoom: (String) -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -440,8 +484,10 @@ private fun TwoPaneDashboard(
                     RoomCard(
                         room = room,
                         roomDevices = devicesInRoom(state.devices, room.id),
+                        deviceTypes = state.deviceTypes,
                         onOpenDevice = onOpenDevice,
-                        onOpenDetail = {},
+                        onTogglePower = onTogglePower,
+                        onOpenDetail = { onOpenRoom(room.id) },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -487,7 +533,9 @@ private fun SummaryCard(devices: List<Device>, modifier: Modifier = Modifier) {
 private fun RoomCard(
     room: Room,
     roomDevices: List<Device>,
+    deviceTypes: Map<String, DeviceType>,
     onOpenDevice: (String) -> Unit,
+    onTogglePower: (Device, PowerAtom) -> Unit,
     onOpenDetail: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -518,10 +566,16 @@ private fun RoomCard(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            DeviceTilesRow(
-                devices = roomDevices.take(3),
-                onOpenDevice = onOpenDevice,
-            )
+            if (roomDevices.isEmpty()) {
+                SectionHint(text = stringResource(R.string.dashboard_room_empty))
+            } else {
+                DeviceToggleRow(
+                    devices = roomDevices.take(4),
+                    deviceTypes = deviceTypes,
+                    onOpenDevice = onOpenDevice,
+                    onTogglePower = onTogglePower,
+                )
+            }
             TextButton(
                 onClick = onOpenDetail,
                 modifier = Modifier.align(Alignment.End),
@@ -536,41 +590,123 @@ private fun RoomCard(
     }
 }
 
+/**
+ * Quick-access shortcuts for a room's devices. Tapping a tile toggles power
+ * directly (turnOn/turnOff, lock/unlock, …); devices without a power control
+ * just open their detail screen. Active devices get a filled, tinted tile.
+ */
 @Composable
-private fun DeviceTilesRow(
+private fun DeviceToggleRow(
     devices: List<Device>,
+    deviceTypes: Map<String, DeviceType>,
     onOpenDevice: (String) -> Unit,
+    onTogglePower: (Device, PowerAtom) -> Unit,
 ) {
-    val activeTile = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-    val emptyTile = MaterialTheme.colorScheme.surfaceContainerLow
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        repeat(3) { index ->
-            val device = devices.getOrNull(index)
+        devices.forEach { device ->
+            val powerAtom = deviceTypes[device.type.id]?.let { type ->
+                deviceControls(type, device).filterIsInstance<PowerAtom>().firstOrNull()
+            }
+            DeviceToggleTile(
+                device = device,
+                powerAtom = powerAtom,
+                onToggle = { atom -> onTogglePower(device, atom) },
+                onOpen = { onOpenDevice(device.id) },
+                modifier = Modifier.weight(1f),
+            )
+        }
+        // Pad to a stable 4-column grid so cards keep their width.
+        repeat(4 - devices.size) {
+            Spacer(Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun DeviceToggleTile(
+    device: Device,
+    powerAtom: PowerAtom?,
+    onToggle: (PowerAtom) -> Unit,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val active = powerAtom?.active == true
+    val primary = MaterialTheme.colorScheme.primary
+    Box(
+        modifier = modifier
+            .height(56.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (active) primary else primary.copy(alpha = 0.12f))
+            .clickable {
+                if (powerAtom != null) onToggle(powerAtom) else onOpen()
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = deviceTypeIcon(device.type.id),
+            contentDescription = device.name,
+            tint = if (active) MaterialTheme.colorScheme.onPrimary else primary,
+            modifier = Modifier.size(28.dp),
+        )
+    }
+}
+
+@Composable
+private fun AlarmChipCard(
+    device: Device,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val armed = device.state.status == "armedStay" || device.state.status == "armedAway"
+    val statusRes = when (device.state.status) {
+        "armedStay" -> R.string.device_state_armed_stay
+        "armedAway" -> R.string.device_state_armed_away
+        else -> R.string.device_state_disarmed
+    }
+    OutlinedCard(
+        modifier = modifier,
+        onClick = onOpen,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (armed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .height(72.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (device != null) activeTile else emptyTile)
-                    .then(
-                        if (device != null) {
-                            Modifier.clickable { onOpenDevice(device.id) }
-                        } else Modifier,
-                    ),
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center,
             ) {
-                if (device != null) {
-                    Icon(
-                        imageVector = deviceTypeIcon(device.type.id),
-                        contentDescription = device.name,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(30.dp),
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Outlined.NotificationsActive,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
             }
+            Text(
+                text = device.name.uppercase(),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = stringResource(statusRes),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

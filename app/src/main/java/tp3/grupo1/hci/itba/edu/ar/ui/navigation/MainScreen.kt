@@ -81,6 +81,7 @@ fun MainScreen(
             composable(Routes.TAB_DASHBOARD) {
                 DashboardScreen(
                     onOpenDevice = onOpenDevice,
+                    onOpenRoom = onOpenRoom,
                     onOpenHomes = onOpenHomes,
                     onOpenSettings = onOpenSettings,
                     onOpenRooms = {
