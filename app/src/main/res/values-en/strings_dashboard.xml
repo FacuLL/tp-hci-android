@@ -15,5 +15,17 @@
     <string name="dashboard_manage_homes">Manage homes</string>
     <string name="dashboard_cd_change_home">Switch home</string>
     <string name="dashboard_cd_current_home">Current home</string>
+    <string name="dashboard_locks_title">Locks</string>
+    <string name="dashboard_locks_empty">No locks.</string>
+    <string name="dashboard_alarms_title">Alarms</string>
+    <string name="dashboard_alarms_empty">No alarms.</string>
+    <string name="dashboard_greeting_with_name">Welcome back, %1$s</string>
+    <string name="dashboard_greeting_generic">Welcome back</string>
+    <string name="dashboard_status_ok">Everything is working properly.</string>
+    <string name="dashboard_room_devices_label">DEVICES</string>
     <string name="dashboard_room_empty">No devices.</string>
+    <string name="dashboard_room_view_detail">View detail →</string>
+    <string name="dashboard_section_arrow">→</string>
+    <string name="dashboard_cd_quick_add">Add</string>
+    <string name="dashboard_cd_section_navigate">Go to %1$s</string>
 </resources>

@@ -52,7 +52,64 @@ android {
     buildFeatures {
         compose = true
     }
+    lint {
+        // Every translatable string must exist in all locales (es default + en).
+        error += listOf("MissingTranslation", "ExtraTranslation")
+        abortOnError = true
+    }
 }
+
+// ── i18n enforcement ─────────────────────────────────────────────────────────
+// Hard gate run before every build: fails compilation when a user-facing string
+// is hardcoded in the UI, or when the es/en string catalogs drift apart.
+val verifyI18n by tasks.registering {
+    group = "verification"
+    description = "Fails on hardcoded UI strings and on es/en string-resource mismatches."
+
+    val uiDir = layout.projectDirectory.dir("src/main/java/tp3/grupo1/hci/itba/edu/ar/ui")
+    val resDir = layout.projectDirectory.dir("src/main/res")
+    inputs.dir(uiDir)
+    inputs.dir(resDir)
+
+    doLast {
+        val problems = mutableListOf<String>()
+
+        // 1) Hardcoded user-facing string literals in Compose code.
+        //    Matches Text("…"), Text(text = "…") and contentDescription = "…".
+        //    Add `// i18n-ok` on a line to whitelist a deliberate exception.
+        val hardcoded = Regex("""Text\s*\(\s*(text\s*=\s*)?"|contentDescription\s*=\s*"""")
+        uiDir.asFile.walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .forEach { file ->
+                file.readLines().forEachIndexed { index, line ->
+                    if (hardcoded.containsMatchIn(line) && !line.contains("// i18n-ok")) {
+                        problems += "Hardcoded string: ${file.name}:${index + 1}  ->${line.trim()}"
+                    }
+                }
+            }
+
+        // 2) String-resource parity between the default (es) and en catalogs.
+        fun keysIn(dirName: String): Set<String> {
+            val dir = resDir.dir(dirName).asFile
+            val files = dir.listFiles { f -> f.name.startsWith("strings") && f.extension == "xml" }
+                ?: return emptySet()
+            val nameRx = Regex("""name="([^"]+)"""")
+            return files.flatMap { f -> nameRx.findAll(f.readText()).map { it.groupValues[1] } }.toSet()
+        }
+        val es = keysIn("values")
+        val en = keysIn("values-en")
+        (es - en).sorted().forEach { problems += "Missing EN translation: $it" }
+        (en - es).sorted().forEach { problems += "Missing ES (default) string: $it" }
+
+        if (problems.isNotEmpty()) {
+            throw GradleException(
+                "i18n check failed (${problems.size}):\n" + problems.joinToString("\n"),
+            )
+        }
+    }
+}
+
+tasks.named("preBuild") { dependsOn(verifyI18n) }
 
 dependencies {
     implementation(libs.androidx.core.ktx)
