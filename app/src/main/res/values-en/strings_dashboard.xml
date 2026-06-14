@@ -15,4 +15,5 @@
     <string name="dashboard_manage_homes">Manage homes</string>
     <string name="dashboard_cd_change_home">Switch home</string>
     <string name="dashboard_cd_current_home">Current home</string>
+    <string name="dashboard_room_empty">No devices.</string>
 </resources>

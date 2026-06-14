@@ -2,14 +2,15 @@ package tp3.grupo1.hci.itba.edu.ar.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Lumina palette, carried over from the web app (global.css)
-val LuminaPrimary = Color(0xFF2890D0)
-val LuminaPrimaryLight = Color(0xFF62B8E8)
-val LuminaBackground = Color(0xFFFBFCFD)
-val LuminaSurface1 = Color(0xFFEBEFF7)
-val LuminaSurface2 = Color(0xFFD3D9E8)
-val LuminaCard = Color(0xFF85B5E8)
-val LuminaCardActive = Color(0xFF72A5DC)
+// Lumina palette — softer pastel sky-blue (friendlier than the web prototype's
+// deeper #2890D0). Primary lightened, containers shifted toward pale celeste.
+val LuminaPrimary = Color(0xFF5FB4E2)
+val LuminaPrimaryLight = Color(0xFF9AD6F2)
+val LuminaBackground = Color(0xFFFBFDFE)
+val LuminaSurface1 = Color(0xFFEAF4FB)
+val LuminaSurface2 = Color(0xFFD2E7F4)
+val LuminaCard = Color(0xFFC6E6F8)
+val LuminaCardActive = Color(0xFFAADAF2)
 val LuminaContent = Color(0xFF011623)
 val LuminaMuted = Color(0xFF5F6F78)
 val LuminaOnDark = Color(0xFF0F2E72)

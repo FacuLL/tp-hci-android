@@ -49,6 +49,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.screens.auth.RegisterScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.auth.VerifyAccountScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.DeviceDetailScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.homes.HomesScreen
+import tp3.grupo1.hci.itba.edu.ar.ui.screens.routines.RoutineEditScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.rooms.RoomDetailScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.settings.SettingsScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.theme.LuminaTheme
@@ -201,6 +202,8 @@ fun LuminaApp(container: AppContainer) {
                     onOpenRoom = { roomId -> navController.navigate(Routes.roomDetail(roomId)) },
                     onOpenHomes = { navController.navigate(Routes.HOMES) },
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                    onCreateRoutine = { navController.navigate(Routes.ROUTINE_NEW) },
+                    onEditRoutine = { routineId -> navController.navigate(Routes.routineEdit(routineId)) },
                 )
             }
             composable(
@@ -220,6 +223,21 @@ fun LuminaApp(container: AppContainer) {
                     roomId = entry.arguments?.getString("roomId").orEmpty(),
                     onNavigateUp = { navController.navigateUp() },
                     onOpenDevice = { deviceId -> navController.navigate(Routes.deviceDetail(deviceId)) },
+                )
+            }
+            composable(Routes.ROUTINE_NEW) {
+                RoutineEditScreen(
+                    routineId = null,
+                    onNavigateUp = { navController.navigateUp() },
+                )
+            }
+            composable(
+                route = Routes.ROUTINE_EDIT,
+                arguments = listOf(navArgument("routineId") { type = NavType.StringType }),
+            ) { entry ->
+                RoutineEditScreen(
+                    routineId = entry.arguments?.getString("routineId"),
+                    onNavigateUp = { navController.navigateUp() },
                 )
             }
             composable(Routes.HOMES) {

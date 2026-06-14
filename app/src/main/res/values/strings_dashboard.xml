@@ -24,6 +24,7 @@
     <string name="dashboard_greeting_generic">Bienvenido de nuevo</string>
     <string name="dashboard_status_ok">Todo funciona correctamente.</string>
     <string name="dashboard_room_devices_label">DISPOSITIVOS</string>
+    <string name="dashboard_room_empty">Sin dispositivos.</string>
     <string name="dashboard_room_view_detail">Ver detalle →</string>
     <string name="dashboard_section_arrow">→</string>
     <string name="dashboard_cd_quick_add">Agregar</string>

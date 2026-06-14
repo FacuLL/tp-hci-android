@@ -10,6 +10,8 @@ object Routes {
     const val MAIN = "main"
     const val DEVICE_DETAIL = "device/{deviceId}"
     const val ROOM_DETAIL = "room/{roomId}"
+    const val ROUTINE_NEW = "routine/new"
+    const val ROUTINE_EDIT = "routine/edit/{routineId}"
     const val HOMES = "homes"
     const val SETTINGS = "settings"
 
@@ -25,4 +27,6 @@ object Routes {
     fun deviceDetail(deviceId: String): String = "device/$deviceId"
 
     fun roomDetail(roomId: String): String = "room/$roomId"
+
+    fun routineEdit(routineId: String): String = "routine/edit/$routineId"
 }

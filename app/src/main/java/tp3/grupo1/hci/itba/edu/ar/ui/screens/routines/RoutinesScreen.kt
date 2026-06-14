@@ -20,8 +20,11 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
@@ -29,6 +32,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -67,22 +71,26 @@ import tp3.grupo1.hci.itba.edu.ar.domain.deviceTypeColor
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceTypeIcon
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceValueLabel
 import tp3.grupo1.hci.itba.edu.ar.ui.components.CenteredLoading
+import tp3.grupo1.hci.itba.edu.ar.ui.components.ConfirmDialog
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 
 /**
- * Routines tab (RF11/RF12): routines are listed and executed here, while
- * creation and editing remain a web-only feature.
+ * Routines tab (RF11/RF12): routines are listed, executed, created, edited
+ * and deleted here.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutinesScreen(
     onOpenSettings: () -> Unit,
+    onCreateRoutine: () -> Unit,
+    onEditRoutine: (String) -> Unit,
 ) {
     val viewModel: RoutinesViewModel = viewModel(factory = RoutinesViewModel.Factory)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    var routineToDelete by remember { mutableStateOf<Routine?>(null) }
 
     val snackbarMessage = state.snackbarMessageRes?.let { stringResource(it) }
     LaunchedEffect(snackbarMessage) {
@@ -110,6 +118,11 @@ fun RoutinesScreen(
                 },
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onCreateRoutine) {
+                Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.routine_cd_add))
+            }
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         when {
@@ -136,6 +149,8 @@ fun RoutinesScreen(
                             icon = Icons.Outlined.Bolt,
                             title = stringResource(R.string.routines_empty_title),
                             subtitle = stringResource(R.string.routines_empty_subtitle),
+                            actionLabel = stringResource(R.string.routine_new_title),
+                            onAction = onCreateRoutine,
                         )
                     }
                 }
@@ -162,10 +177,24 @@ fun RoutinesScreen(
                             devicesById = state.devicesById,
                             executing = state.executingId == routine.id,
                             onExecute = { viewModel.execute(routine.id) },
+                            onEdit = { onEditRoutine(routine.id) },
+                            onDelete = { routineToDelete = routine },
                         )
                     }
                 }
         }
+    }
+
+    routineToDelete?.let { routine ->
+        ConfirmDialog(
+            title = stringResource(R.string.routine_delete_title),
+            text = stringResource(R.string.routine_delete_text, routine.name),
+            onConfirm = {
+                viewModel.delete(routine.id)
+                routineToDelete = null
+            },
+            onDismiss = { routineToDelete = null },
+        )
     }
 }
 
@@ -176,6 +205,8 @@ private fun RoutineCard(
     devicesById: Map<String, Device>,
     executing: Boolean,
     onExecute: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -220,6 +251,20 @@ private fun RoutineCard(
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = stringResource(R.string.routine_cd_edit),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = stringResource(R.string.routine_cd_delete),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 Icon(
