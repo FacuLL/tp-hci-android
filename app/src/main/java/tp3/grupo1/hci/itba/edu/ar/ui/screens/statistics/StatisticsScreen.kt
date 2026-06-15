@@ -26,7 +26,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import tp3.grupo1.hci.itba.edu.ar.ui.components.FloatingTopBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.window.core.layout.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -90,7 +90,7 @@ private fun StatisticsScaffold(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
+            FloatingTopBar(
                 title = { Text(stringResource(R.string.statistics_title)) },
                 actions = {
                     ProfileAvatar(onClick = onOpenSettings)
