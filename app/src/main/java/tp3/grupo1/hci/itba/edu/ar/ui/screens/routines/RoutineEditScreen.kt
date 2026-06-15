@@ -234,7 +234,7 @@ fun RoutineEditScreen(
                 text = stringResource(R.string.routine_save),
                 onClick = viewModel::save,
                 loading = state.saving,
-                enabled = state.canSave,
+                enabled = state.canSave && !state.saving && !state.saved,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

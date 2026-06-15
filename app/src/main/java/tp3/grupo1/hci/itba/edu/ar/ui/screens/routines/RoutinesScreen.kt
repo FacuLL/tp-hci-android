@@ -18,6 +18,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -138,7 +142,11 @@ fun RoutinesScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onCreateRoutine) {
+            FloatingActionButton(
+                onClick = onCreateRoutine,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ) {
                 Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.routine_cd_add))
             }
         },
@@ -246,9 +254,6 @@ private fun RoutineCard(
         targetValue = if (expanded) 180f else 0f,
         label = "chevronRotation",
     )
-    val showChips = !schedule.enabled ||
-        (schedule.isScheduled && (schedule.time != null || schedule.days.isNotEmpty()))
-
     OutlinedCard(
         onClick = { expanded = !expanded },
         modifier = modifier.fillMaxWidth(),
@@ -274,13 +279,15 @@ private fun RoutineCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = pluralStringResource(
-                            R.plurals.routines_action_count,
-                            routine.actions.size,
-                            routine.actions.size,
-                        ),
+                        text = if (!schedule.isScheduled || schedule.time == null) {
+                            stringResource(R.string.routines_manual)
+                        } else {
+                            stringResource(R.string.routines_time, schedule.time)
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
                 Box {
@@ -332,45 +339,31 @@ private fun RoutineCard(
                 )
             }
 
-            if (showChips) {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
+            if (schedule.isScheduled && schedule.days.isNotEmpty()) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    if (schedule.isScheduled) {
-                        schedule.time?.let { time ->
-                            AssistChip(
-                                onClick = { expanded = !expanded },
-                                label = { Text(time) },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Schedule,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(AssistChipDefaults.IconSize),
-                                    )
-                                },
+                    DAY_ORDER.forEach { day ->
+                        val selected = day in schedule.days
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(30.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(
+                                    if (selected) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surfaceVariant
+                                ),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = dayShortLabel(context, day),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (selected) MaterialTheme.colorScheme.onPrimary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        if (schedule.days.isNotEmpty()) {
-                            AssistChip(
-                                onClick = { expanded = !expanded },
-                                label = { Text(scheduleDaysLabel(context, schedule.days)) },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.CalendarToday,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(AssistChipDefaults.IconSize),
-                                    )
-                                },
-                            )
-                        }
-                    }
-                    if (!schedule.enabled) {
-                        AssistChip(
-                            onClick = {},
-                            enabled = false,
-                            label = { Text(stringResource(R.string.routines_inactive)) },
-                        )
                     }
                 }
             }
@@ -465,17 +458,10 @@ private fun dayLabelRes(day: String): Int? = when (day) {
     else -> null
 }
 
-/** Full day names in canonical order, comma separated and capitalized. */
-private fun scheduleDaysLabel(context: Context, days: List<String>): String =
-    days.map { it.lowercase() }
-        .sortedBy { day ->
-            val index = DAY_ORDER.indexOf(day.take(2))
-            if (index == -1) DAY_ORDER.size else index
-        }
-        .joinToString(", ") { day ->
-            dayLabelRes(day)?.let(context::getString)
-                ?: day.replaceFirstChar { it.uppercaseChar() }
-        }
+/** Two-letter day label (e.g. "Lu", "Ma") for the day grid. */
+private fun dayShortLabel(context: Context, day: String): String =
+    dayLabelRes(day)?.let { context.getString(it).take(2) }
+        ?: day.take(2).replaceFirstChar { it.uppercaseChar() }
 
 /** Header subtitle: active routine count plus the time until the next run. */
 @Composable
