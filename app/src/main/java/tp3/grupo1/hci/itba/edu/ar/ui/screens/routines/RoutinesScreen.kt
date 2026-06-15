@@ -8,9 +8,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +20,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -45,9 +51,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import tp3.grupo1.hci.itba.edu.ar.ui.components.FloatingTopBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -87,10 +94,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ProfileAvatar
 
-/**
- * Routines tab (RF11/RF12): routines are listed, executed, created, edited
- * and deleted here.
- */
+// Pestania de rutinas (RF11/RF12): listar, ejecutar, crear, editar y eliminar.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutinesScreen(
@@ -111,13 +115,19 @@ fun RoutinesScreen(
         }
     }
 
-    // RNF4/RNF5: single column on phones, two-column grid on wider layouts.
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val columns = if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) 1 else 2
+    // RNF4/RNF5: escala por ancho: 1 columna en telefonos, 2 en horizontal/tablet
+    // chica, 3+ en tablet horizontal (Adaptive elige la mayor cantidad cuyo ancho
+    // de tarjeta sea >= minSize).
+    val widthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
     Scaffold(
+        // El outer NavigationSuiteScaffold ya consumio los insets del sistema
+        // y posiciona el contenido arriba del bottom nav. Sin esto el Scaffold
+        // interno re-aplica safeDrawing (default), dejando innerPadding.bottom=0
+        // y forzando hacks como contentPadding(bottom = 96.dp).
+        contentWindowInsets = WindowInsets(0),
         topBar = {
-            TopAppBar(
+            FloatingTopBar(
                 title = {
                     Column {
                         Text(stringResource(R.string.nav_routines))
@@ -145,27 +155,35 @@ fun RoutinesScreen(
 
             state.routines.isEmpty() -> {
                 val loadErrorRes = state.loadErrorRes
-                Column(
+                // Centrado y con ancho limitado para que el estado vacio/error no se
+                // estire en horizontal/tablet (ErrorBanner usa fillMaxWidth internamente).
+                Box(
                     modifier = Modifier
                         .padding(innerPadding)
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    if (loadErrorRes != null) {
-                        ErrorBanner(stringResource(loadErrorRes))
-                        Button(onClick = { viewModel.refresh() }) {
-                            Text(stringResource(R.string.action_retry))
+                    Column(
+                        modifier = Modifier
+                            .widthIn(max = 480.dp)
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        if (loadErrorRes != null) {
+                            ErrorBanner(stringResource(loadErrorRes))
+                            Button(onClick = { viewModel.refresh() }) {
+                                Text(stringResource(R.string.action_retry))
+                            }
+                        } else {
+                            EmptyState(
+                                icon = Icons.Outlined.Bolt,
+                                title = stringResource(R.string.routines_empty_title),
+                                subtitle = stringResource(R.string.routines_empty_subtitle),
+                                actionLabel = stringResource(R.string.routine_new_title),
+                                onAction = onCreateRoutine,
+                            )
                         }
-                    } else {
-                        EmptyState(
-                            icon = Icons.Outlined.Bolt,
-                            title = stringResource(R.string.routines_empty_title),
-                            subtitle = stringResource(R.string.routines_empty_subtitle),
-                            actionLabel = stringResource(R.string.routine_new_title),
-                            onAction = onCreateRoutine,
-                        )
                     }
                 }
             }
@@ -178,10 +196,35 @@ fun RoutinesScreen(
                         .padding(innerPadding)
                         .fillMaxSize(),
                 ) {
+                    // En no-COMPACT (landscape phone, tablet) capeamos el
+                    // ancho a 880dp y centramos para que las cards no se
+                    // estiren edge-to-edge. En COMPACT no hay margen: una
+                    // sola columna ocupando todo el ancho.
+                    val gridModifier = if (widthClass == WindowWidthSizeClass.COMPACT) {
+                        Modifier.fillMaxSize()
+                    } else {
+                        Modifier
+                            .fillMaxSize()
+                            .widthIn(max = 880.dp)
+                            .align(Alignment.TopCenter)
+                    }
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(columns),
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
+                        columns = if (widthClass == WindowWidthSizeClass.COMPACT) {
+                            GridCells.Fixed(1)
+                        } else {
+                            // 280dp permite 2 columnas en landscape phone aun
+                            // con el contentPadding horizontal de 48dp que
+                            // deja mas aire a los costados.
+                            GridCells.Adaptive(minSize = 280.dp)
+                        },
+                        modifier = gridModifier,
+                        // 48dp horizontal en landscape — el usuario pidio
+                        // mas margen a los costados. Vertical 16dp.
+                        contentPadding = if (widthClass == WindowWidthSizeClass.COMPACT) {
+                            PaddingValues(16.dp)
+                        } else {
+                            PaddingValues(horizontal = 48.dp, vertical = 16.dp)
+                        },
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
@@ -241,9 +284,6 @@ private fun RoutineCard(
         targetValue = if (expanded) 180f else 0f,
         label = "chevronRotation",
     )
-    val showChips = !schedule.enabled ||
-        (schedule.isScheduled && (schedule.time != null || schedule.days.isNotEmpty()))
-
     OutlinedCard(
         onClick = { expanded = !expanded },
         modifier = modifier.fillMaxWidth(),
@@ -257,8 +297,8 @@ private fun RoutineCard(
         ),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
@@ -269,13 +309,15 @@ private fun RoutineCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = pluralStringResource(
-                            R.plurals.routines_action_count,
-                            routine.actions.size,
-                            routine.actions.size,
-                        ),
+                        text = if (!schedule.isScheduled || schedule.time == null) {
+                            stringResource(R.string.routines_manual)
+                        } else {
+                            stringResource(R.string.routines_time, schedule.time)
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
                 Box {
@@ -305,14 +347,19 @@ private fun RoutineCard(
                         )
                     }
                 }
-                // Only scheduled (automatic) routines can be enabled/disabled;
-                // manual ones are always run on demand. Sits right of the menu,
-                // before the expand chevron.
+                // Solo las rutinas programadas (automaticas) se pueden activar/desactivar;
+                // las manuales se ejecutan a demanda.
                 if (schedule.isScheduled) {
                     Switch(
                         checked = schedule.enabled,
                         onCheckedChange = onSetEnabled,
                         enabled = !toggling,
+                        // El thumb apagado por defecto usa `outline` (muy palido en claro) y se
+                        // pierde sobre el track. Solo se ajusta su color; borde y track quedan
+                        // en el default para no romper consistencia con los demas switches.
+                        colors = SwitchDefaults.colors(
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
                     )
                     Spacer(Modifier.width(4.dp))
                 }
@@ -327,47 +374,58 @@ private fun RoutineCard(
                 )
             }
 
-            if (showChips) {
-                FlowRow(
+            if (schedule.isScheduled && schedule.days.isNotEmpty()) {
+                // Dias + boton Run en una sola fila. Antes el Run estaba
+                // en una fila propia debajo (~40dp extra). Asi la card es
+                // ~50dp mas baja y entran mas routines en landscape.
+                Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    if (schedule.isScheduled) {
-                        schedule.time?.let { time ->
-                            AssistChip(
-                                onClick = { expanded = !expanded },
-                                label = { Text(time) },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Schedule,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(AssistChipDefaults.IconSize),
-                                    )
-                                },
-                            )
-                        }
-                        if (schedule.days.isNotEmpty()) {
-                            AssistChip(
-                                onClick = { expanded = !expanded },
-                                label = { Text(scheduleDaysLabel(context, schedule.days)) },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.CalendarToday,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(AssistChipDefaults.IconSize),
-                                    )
-                                },
-                            )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        DAY_ORDER.forEach { day ->
+                            val selected = day in schedule.days
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(26.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(
+                                        if (selected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.surfaceVariant
+                                    ),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = dayShortLabel(context, day),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (selected) MaterialTheme.colorScheme.onPrimary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
                     }
-                    if (!schedule.enabled) {
-                        AssistChip(
-                            onClick = {},
-                            enabled = false,
-                            label = { Text(stringResource(R.string.routines_inactive)) },
-                        )
-                    }
+                    LoadingButton(
+                        text = stringResource(R.string.routines_execute),
+                        onClick = onExecute,
+                        enabled = schedule.enabled,
+                        loading = executing,
+                    )
                 }
+            } else {
+                // Routine manual (sin dias) -> Run a la derecha en su
+                // propia fila pero igual mas compacta.
+                LoadingButton(
+                    text = stringResource(R.string.routines_execute),
+                    onClick = onExecute,
+                    modifier = Modifier.align(Alignment.End),
+                    enabled = schedule.enabled,
+                    loading = executing,
+                )
             }
 
             AnimatedVisibility(visible = expanded) {
@@ -388,14 +446,6 @@ private fun RoutineCard(
                     }
                 }
             }
-
-            LoadingButton(
-                text = stringResource(R.string.routines_execute),
-                onClick = onExecute,
-                modifier = Modifier.align(Alignment.End),
-                enabled = schedule.enabled,
-                loading = executing,
-            )
         }
     }
 }
@@ -430,7 +480,6 @@ private fun RoutineActionRow(action: RoutineAction, device: Device?) {
     }
 }
 
-/** Localized action name plus its parameters, when present. */
 private fun actionLabel(context: Context, action: RoutineAction): String {
     val name = deviceActionName(context, action.actionName)
     val params = action.params
@@ -445,7 +494,7 @@ private fun actionLabel(context: Context, action: RoutineAction): String {
     }
 }
 
-/** Day codes persisted by the web client inside routine metadata ("lu".."do"). */
+// Codigos de dia que el cliente web persiste en la metadata de la rutina ("lu".."do").
 private val DAY_ORDER = listOf("lu", "ma", "mi", "ju", "vi", "sa", "do")
 
 @StringRes
@@ -460,19 +509,10 @@ private fun dayLabelRes(day: String): Int? = when (day) {
     else -> null
 }
 
-/** Full day names in canonical order, comma separated and capitalized. */
-private fun scheduleDaysLabel(context: Context, days: List<String>): String =
-    days.map { it.lowercase() }
-        .sortedBy { day ->
-            val index = DAY_ORDER.indexOf(day.take(2))
-            if (index == -1) DAY_ORDER.size else index
-        }
-        .joinToString(", ") { day ->
-            dayLabelRes(day)?.let(context::getString)
-                ?: day.replaceFirstChar { it.uppercaseChar() }
-        }
+private fun dayShortLabel(context: Context, day: String): String =
+    dayLabelRes(day)?.let { context.getString(it).take(2) }
+        ?: day.take(2).replaceFirstChar { it.uppercaseChar() }
 
-/** Header subtitle: active routine count plus the time until the next run. */
 @Composable
 private fun RoutinesSubtitle(routines: List<Routine>) {
     val context = LocalContext.current
@@ -503,10 +543,7 @@ private val DAY_CODE_TO_DOW = mapOf(
     "do" to DayOfWeek.SUNDAY,
 )
 
-/**
- * Minutes from now until the next scheduled+enabled routine fires, or null when
- * none is scheduled. Empty day list means the routine runs every day.
- */
+// Lista de dias vacia significa que la rutina corre todos los dias.
 private fun nextRoutineMinutes(routines: List<Routine>): Long? {
     val now = LocalDateTime.now()
     var best: Long? = null

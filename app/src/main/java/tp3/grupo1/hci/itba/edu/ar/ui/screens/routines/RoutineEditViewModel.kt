@@ -179,6 +179,10 @@ class RoutineEditViewModel(
 
     fun save() {
         val state = _uiState.value
+        // Evita el doble alta: una vez que se esta guardando o ya se guardo, se
+        // ignoran taps repetidos (la animacion de salida deja el boton clickeable
+        // un instante y permitia crear la rutina dos veces).
+        if (state.saving || state.saved) return
         _uiState.update { it.copy(submitted = true) }
         if (!state.canSave) return
         viewModelScope.launch {

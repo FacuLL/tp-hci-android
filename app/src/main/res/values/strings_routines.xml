@@ -66,4 +66,6 @@
     <string name="routines_duration_hm">%1$dh %2$dmin</string>
     <string name="routines_duration_m">%1$dmin</string>
     <string name="routines_cd_enabled">Activar o desactivar la rutina</string>
+    <string name="routines_manual">Ejecución manual</string>
+    <string name="routines_time">%1$s hs</string>
 </resources>
