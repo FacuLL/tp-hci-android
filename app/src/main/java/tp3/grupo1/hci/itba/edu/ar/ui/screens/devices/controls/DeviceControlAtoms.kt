@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
@@ -88,7 +92,9 @@ internal fun ControlAtomCard(
     deviceLock: String?,
     dispensing: Boolean,
     rooms: List<Room>,
+    recentColors: List<String>,
     onExecute: (String, List<JsonElement>) -> Unit,
+    onPickCustomColor: (String, String) -> Unit,
     onDispense: (String, Int, String) -> Unit,
     onOpenDialog: (DeviceDetailDialog) -> Unit,
 ) {
@@ -97,15 +103,16 @@ internal fun ControlAtomCard(
         is PowerAtom -> PowerControl(atom, accent, deviceStatus, deviceLock, onExecute)
         is SliderAtom -> SliderControl(atom, accent, onExecute)
         is SelectAtom -> SelectControl(atom, onExecute)
-        is ColorAtom -> ColorControl(atom, onExecute)
+        is ColorAtom -> ColorControl(atom, recentColors, onExecute, onPickCustomColor)
         is ButtonAtom -> ButtonControl(atom, onExecute)
         is AlarmStatusAtom -> AlarmStatusControl(atom)
         is AlarmAtom -> AlarmControl(atom, deviceStatus, onOpenDialog)
         ChangeCodeAtom -> ChangeCodeControl(onOpenDialog)
         is DispenseAtom -> DispenseControl(atom, accent, deviceStatus, dispensing, onDispense)
-        is PlaybackAtom -> PlaybackControl(atom, accent, onExecute)
+        is PlaybackAtom -> PlaybackControl(atom, accent, onExecute, onOpenDialog)
         is PlaylistAtom -> PlaylistControl(onOpenDialog)
         is SetLocationAtom -> SetLocationControl(atom, rooms, onExecute)
+        is tp3.grupo1.hci.itba.edu.ar.domain.VacuumAtom -> VacuumControl(atom, onExecute)
     }
 }
 
@@ -210,6 +217,49 @@ internal fun DropdownSelect(
     }
 }
 
+// Variante de DropdownSelect con item custom: cada opcion (y el anchor seleccionado) muestra un
+// icono opcional + el label formateado. Se usa para FAN_SPEED y SWING_* en el AC.
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun DropdownSelectCustom(
+    label: String,
+    options: List<String>,
+    value: String,
+    optionLabel: @Composable (String) -> String,
+    leadingIcon: (@Composable (String) -> Unit)? = null,
+    onSelect: (String) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+    ) {
+        OutlinedTextField(
+            value = optionLabel(value),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            leadingIcon = leadingIcon?.let { icon -> { icon(value) } },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth(),
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(optionLabel(option)) },
+                    leadingIcon = leadingIcon?.let { icon -> { icon(option) } },
+                    onClick = {
+                        expanded = false
+                        onSelect(option)
+                    },
+                )
+            }
+        }
+    }
+}
+
 internal fun parseHexColor(hex: String): Color = try {
     Color(android.graphics.Color.parseColor(hex))
 } catch (_: IllegalArgumentException) {
@@ -261,11 +311,15 @@ private fun SliderControl(
     onExecute: (String, List<JsonElement>) -> Unit,
 ) {
     val label = atom.labelRes?.let { stringResource(it) } ?: atom.rawName
+    // El rango puede venir invertido del API (ej. freezer -8..-20): lo normalizamos para no romper
+    // el Slider (valueRange exige lo <= hi) y encajamos el valor dentro de [lo,hi].
+    val lo = minOf(atom.min, atom.max).toFloat()
+    val hi = maxOf(atom.min, atom.max).toFloat()
     // Valor local mientras se arrastra; la API solo se llama al soltar y los updates externos se ignoran durante el drag.
-    var sliderValue by remember { mutableFloatStateOf(atom.value.toFloat()) }
+    var sliderValue by remember { mutableFloatStateOf(atom.value.toFloat().coerceIn(lo, hi)) }
     var dragging by remember { mutableStateOf(false) }
     LaunchedEffect(atom.value) {
-        if (!dragging) sliderValue = atom.value.toFloat()
+        if (!dragging) sliderValue = atom.value.toFloat().coerceIn(lo, hi)
     }
     ControlCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -287,8 +341,8 @@ private fun SliderControl(
                 dragging = true
                 sliderValue = it
             },
-            valueRange = atom.min.toFloat()..atom.max.toFloat(),
-            steps = (atom.max - atom.min - 1).coerceAtLeast(0),
+            valueRange = lo..hi,
+            steps = (hi - lo - 1).roundToInt().coerceAtLeast(0),
             onValueChangeFinished = {
                 dragging = false
                 onExecute(atom.action, listOf(JsonPrimitive(sliderValue.roundToInt())))
@@ -307,41 +361,100 @@ private fun SelectControl(
     val context = LocalContext.current
     val label = atom.labelRes?.let { stringResource(it) } ?: atom.rawName
     ControlCard {
-        if (atom.kind == SelectKind.MODE) {
-            SectionLabel(label)
-            if (atom.options.size <= MAX_SEGMENTED_OPTIONS) {
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                    atom.options.forEachIndexed { index, option ->
-                        SegmentedButton(
-                            selected = option == atom.value,
-                            onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
-                            shape = SegmentedButtonDefaults.itemShape(index = index, count = atom.options.size),
-                        ) {
-                            Text(deviceValueLabel(context, option), maxLines = 1)
+        when (atom.kind) {
+            SelectKind.MODE -> {
+                SectionLabel(label)
+                if (atom.options.size <= MAX_SEGMENTED_OPTIONS) {
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        atom.options.forEachIndexed { index, option ->
+                            SegmentedButton(
+                                selected = option == atom.value,
+                                onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = atom.options.size),
+                            ) {
+                                Text(deviceValueLabel(context, option), maxLines = 1)
+                            }
+                        }
+                    }
+                } else {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        atom.options.forEach { option ->
+                            FilterChip(
+                                selected = option == atom.value,
+                                onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
+                                label = { Text(deviceValueLabel(context, option)) },
+                            )
                         }
                     }
                 }
-            } else {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    atom.options.forEach { option ->
-                        FilterChip(
-                            selected = option == atom.value,
-                            onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
-                            label = { Text(deviceValueLabel(context, option)) },
-                        )
-                    }
-                }
             }
-        } else {
-            DropdownSelect(
-                label = label,
-                options = atom.options,
-                value = atom.value,
-                optionLabel = { deviceValueLabel(context, it) },
-                onSelect = { onExecute(atom.action, listOf(JsonPrimitive(it))) },
-            )
+            SelectKind.FAN_SPEED -> {
+                DropdownSelectCustom(
+                    label = label,
+                    options = atom.options,
+                    value = atom.value,
+                    optionLabel = { fanSpeedLabel(it) },
+                    onSelect = { onExecute(atom.action, listOf(JsonPrimitive(it))) },
+                )
+            }
+            SelectKind.SWING_VERTICAL, SelectKind.SWING_HORIZONTAL -> {
+                DropdownSelectCustom(
+                    label = label,
+                    options = atom.options,
+                    value = atom.value,
+                    optionLabel = { swingLabel(it) },
+                    leadingIcon = { SwingOptionIcon(it, atom.kind) },
+                    onSelect = { onExecute(atom.action, listOf(JsonPrimitive(it))) },
+                )
+            }
+            SelectKind.GENERIC -> {
+                DropdownSelect(
+                    label = label,
+                    options = atom.options,
+                    value = atom.value,
+                    optionLabel = { deviceValueLabel(context, it) },
+                    onSelect = { onExecute(atom.action, listOf(JsonPrimitive(it))) },
+                )
+            }
         }
     }
+}
+
+// "auto" -> "Auto"; numero crudo del supportedValue -> "NN %" (no cambia el dato enviado al API).
+@Composable
+private fun fanSpeedLabel(option: String): String =
+    if (option == "auto") stringResource(R.string.device_value_auto_short) else "$option %"
+
+// "auto" -> "Auto"; numero crudo -> "NN°" con sufijo de grados.
+@Composable
+private fun swingLabel(option: String): String =
+    if (option == "auto") stringResource(R.string.device_value_auto_short) else "$option°"
+
+// Flechita de direccion rotada al angulo (como la web): vertical parte apuntando a la derecha y
+// horizontal hacia abajo, ambas rotadas por el grado; "auto" usa el icono de refresco.
+@Composable
+private fun SwingOptionIcon(option: String, kind: SelectKind) {
+    if (option == "auto") {
+        Icon(
+            imageVector = Icons.Outlined.Refresh,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+        )
+        return
+    }
+    val degrees = option.toFloatOrNull() ?: 0f
+    val base = if (kind == SelectKind.SWING_HORIZONTAL) {
+        Icons.Filled.ArrowDownward
+    } else {
+        Icons.AutoMirrored.Filled.ArrowForward
+    }
+    Icon(
+        imageVector = base,
+        contentDescription = null,
+        modifier = Modifier
+            .size(16.dp)
+            .rotate(degrees),
+    )
 }
 
 // Swatches con nombre en vez de un picker hex libre, para que cada color se anuncie por accesibilidad.
@@ -366,23 +479,63 @@ private val COLOR_SWATCHES: List<Pair<String, Int>> = listOf(
 @Composable
 private fun ColorControl(
     atom: ColorAtom,
+    recentColors: List<String>,
     onExecute: (String, List<JsonElement>) -> Unit,
+    onPickCustomColor: (String, String) -> Unit,
 ) {
+    // El API devuelve el color inicial como nombre ("white"), asi que lo normalizamos a Color
+    // (parseHexColor sabe parsear nombres) antes de compararlo con los swatches hex.
+    val selectedColor = parseHexColor(atom.value)
+    var showCustomDialog by remember { mutableStateOf(false) }
     ControlCard {
         SectionLabel(stringResource(R.string.device_action_set_color))
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             COLOR_SWATCHES.forEach { (hex, nameRes) ->
                 ColorSwatch(
                     hex = hex,
                     name = stringResource(nameRes),
-                    selected = atom.value.equals(hex, ignoreCase = true),
+                    selected = parseHexColor(hex) == selectedColor,
                     onClick = { onExecute(atom.action, listOf(JsonPrimitive(hex))) },
                 )
             }
         }
+        OutlinedButton(
+            onClick = { showCustomDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.device_color_custom))
+        }
+        if (recentColors.isNotEmpty()) {
+            SectionLabel(stringResource(R.string.device_color_recent))
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                recentColors.forEach { hex ->
+                    ColorSwatch(
+                        hex = hex,
+                        name = hex,
+                        selected = parseHexColor(hex) == selectedColor,
+                        onClick = { onPickCustomColor(atom.action, hex) },
+                    )
+                }
+            }
+        }
+    }
+    if (showCustomDialog) {
+        CustomColorDialog(
+            initialColor = selectedColor,
+            onConfirm = { hex ->
+                showCustomDialog = false
+                onPickCustomColor(atom.action, hex)
+            },
+            onDismiss = { showCustomDialog = false },
+        )
     }
 }
 
@@ -437,9 +590,11 @@ private fun LampPreviewControl(atom: LampPreviewAtom) {
                 .size(112.dp)
                 .clip(CircleShape)
                 .background(fill)
+                // Borde sutil siempre presente: en modo claro con color blanco, sin borde el
+                // circulo se funde con el fondo y no se ve donde esta.
                 .border(
-                    width = 2.dp,
-                    color = if (atom.active) color else MaterialTheme.colorScheme.outline,
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
                     shape = CircleShape,
                 ),
         )

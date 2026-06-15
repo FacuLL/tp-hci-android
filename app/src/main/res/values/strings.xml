@@ -88,6 +88,7 @@
     <string name="device_action_set_location">Enviar a habitación</string>
     <string name="device_action_lock">Bloquear</string>
     <string name="device_action_unlock">Desbloquear</string>
+    <string name="device_section_lock">Cerradura</string>
     <string name="device_action_arm_stay">Activar en casa</string>
     <string name="device_action_arm_away">Activar ausente</string>
     <string name="device_action_disarm">Desactivar</string>
@@ -111,6 +112,7 @@
     <string name="device_action_dock">Volver a la base</string>
     <string name="device_action_dispense">Dispensar</string>
     <string name="device_action_get_playlist">Ver lista de reproducción</string>
+    <string name="device_detail_player_volume">Volumen %1$d</string>
 
     <!-- Device option values -->
     <string name="device_value_cool">Frío</string>
@@ -118,6 +120,7 @@
     <string name="device_value_fan">Ventilador</string>
     <string name="device_value_dry">Seco</string>
     <string name="device_value_auto">Automático</string>
+    <string name="device_value_auto_short">Auto</string>
     <string name="device_value_conventional">Convencional</string>
     <string name="device_value_bottom">Inferior</string>
     <string name="device_value_top">Superior</string>
@@ -154,6 +157,7 @@
     <string name="device_state_unlocked">Desbloqueada</string>
     <string name="device_state_playing">Reproduciendo</string>
     <string name="device_state_stopped">Detenido</string>
+    <string name="device_state_paused">Pausado</string>
     <string name="device_state_up">Arriba</string>
     <string name="device_state_down">Abajo</string>
     <string name="device_state_opened_level">Abierta · %1$d%%</string>

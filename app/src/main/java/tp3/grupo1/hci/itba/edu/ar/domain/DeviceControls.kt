@@ -94,6 +94,11 @@ data class PlaybackAtom(
     val next: String?,
     val prev: String?,
     val status: String?,
+    // Datos de solo lectura para la cabecera del reproductor; el estado del parlante no expone la cancion actual.
+    val genre: String?,
+    val volume: Int?,
+    // Accion getPlaylist plegada dentro del reproductor (si el tipo la soporta).
+    val playlistAction: String?,
 ) : ControlAtom
 
 data class PlaylistAtom(
@@ -104,6 +109,14 @@ data class PlaylistAtom(
 data class SetLocationAtom(
     val action: String,
     val paramName: String,
+) : ControlAtom
+
+// Control dedicado del aspirador: un solo boton Iniciar/Pausa + volver a la base, con el estado real.
+data class VacuumAtom(
+    val startAction: String,
+    val pauseAction: String,
+    val dockAction: String?,
+    val status: String?,
 ) : ControlAtom
 
 private val POWER_PAIRS: List<Pair<String, String>> = listOf(
@@ -196,6 +209,10 @@ private fun detectPlayback(
     if (findAction(actions, "nextSong") == null && findAction(actions, "previousSong") == null) return null
     val names = listOf("play", "stop", "pause", "resume", "nextSong", "previousSong")
     names.forEach { if (findAction(actions, it) != null) used.add(it) }
+    // La lista de reproduccion se integra en la cabecera del reproductor: la consumimos aca para no
+    // renderizarla ademas como una card suelta.
+    val playlistAction = "getPlaylist".takeIf { findAction(actions, it) != null }
+    if (playlistAction != null) used.add(playlistAction)
     return PlaybackAtom(
         play = "play".takeIf { findAction(actions, it) != null },
         stop = "stop".takeIf { findAction(actions, it) != null },
@@ -204,6 +221,9 @@ private fun detectPlayback(
         next = "nextSong".takeIf { findAction(actions, it) != null },
         prev = "previousSong".takeIf { findAction(actions, it) != null },
         status = device.state.status,
+        genre = device.state.genre,
+        volume = device.state.volume,
+        playlistAction = playlistAction,
     )
 }
 
@@ -265,7 +285,7 @@ private fun detectLock(
         active = device.state.lock == "locked",
         activeLabelRes = R.string.device_state_locked,
         inactiveLabelRes = R.string.device_state_unlocked,
-        sectionLabelRes = R.string.device_action_lock,
+        sectionLabelRes = R.string.device_section_lock,
     )
 }
 
@@ -302,12 +322,17 @@ private fun detectSliders(
     if (!param.isNumeric || min == null || max == null) return@mapNotNull null
     used.add(action.name)
     val stateKey = if (action.name == "setFreezerTemperature") "freezerTemperature" else param.name.orEmpty()
+    // El API puede declarar el rango en orden descendente (ej. freezer -8..-20); lo normalizamos.
+    val lo = minOf(min.toInt(), max.toInt())
+    val hi = maxOf(min.toInt(), max.toInt())
     SliderAtom(
         action = action.name,
         paramName = param.name.orEmpty(),
-        min = min.toInt(),
-        max = max.toInt(),
-        value = numericStateValue(device.state, stateKey) ?: min.toInt(),
+        min = lo,
+        max = hi,
+        // Apagado, el estado puede traer un valor fuera de rango (ej. horno off -> 0): lo encajamos
+        // dentro de [lo,hi] para que la temperatura quede regulable y se muestre bien.
+        value = (numericStateValue(device.state, stateKey) ?: lo).coerceIn(lo, hi),
         labelRes = deviceActionNameRes(action.name),
         rawName = action.name,
         unit = sliderUnit(action.name),
@@ -379,6 +404,27 @@ private fun detectSetLocation(actions: List<DeviceTypeAction>, used: MutableSet<
     )
 }
 
+private fun detectVacuum(
+    actions: List<DeviceTypeAction>,
+    device: Device,
+    used: MutableSet<String>,
+): VacuumAtom? {
+    if (device.type.id != DeviceTypeIds.VACUUM) return null
+    findAction(actions, "start") ?: return null
+    used.add("start")
+    used.add("pause")
+    val dock = findAction(actions, "dock")?.let {
+        used.add("dock")
+        "dock"
+    }
+    return VacuumAtom(
+        startAction = "start",
+        pauseAction = "pause",
+        dockAction = dock,
+        status = device.state.status,
+    )
+}
+
 fun deviceControls(deviceType: DeviceType, device: Device): List<ControlAtom> {
     val actions = deviceType.actions
     val used = mutableSetOf<String>()
@@ -387,6 +433,7 @@ fun deviceControls(deviceType: DeviceType, device: Device): List<ControlAtom> {
 
     return listOfNotNull(
         detectLampPreview(device),
+        detectVacuum(actions, device, used),
         detectPlayback(actions, device, used),
         detectPower(actions, device, used),
         detectLock(actions, device, used),

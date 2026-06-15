@@ -26,10 +26,14 @@
     <string name="device_detail_set_location">Send to room</string>
     <string name="device_detail_set_location_placeholder">Choose a room</string>
 
+    <!-- Door lock feedback -->
+    <string name="device_detail_door_locked">Door locked</string>
+    <string name="device_detail_door_unlocked">Door unlocked</string>
+
     <!-- Dispense -->
     <string name="device_detail_quantity_label">Quantity</string>
     <string name="device_detail_unit_label">Unit</string>
-    <string name="device_detail_dispense_closed">Open the faucet to dispense.</string>
+    <string name="device_detail_dispense_open">Close the faucet to dispense.</string>
 
     <!-- Playlist -->
     <string name="device_detail_playlist_title">Playlist</string>
@@ -51,4 +55,20 @@
     <string name="device_color_teal">Teal</string>
     <string name="device_color_gray">Gray</string>
     <string name="device_color_lavender">Lavender</string>
+
+    <!-- Lamp custom color picker -->
+    <string name="device_color_custom">Custom</string>
+    <string name="device_color_recent">Recent</string>
+    <string name="device_color_custom_title">Custom color</string>
+    <string name="device_color_channel_red">Red</string>
+    <string name="device_color_channel_green">Green</string>
+    <string name="device_color_channel_blue">Blue</string>
+
+    <!-- Vacuum control -->
+    <string name="vacuum_status_docked">At base</string>
+    <string name="vacuum_status_cleaning">Cleaning</string>
+    <string name="vacuum_status_paused">Paused</string>
+    <string name="vacuum_start">Start</string>
+    <string name="vacuum_pause">Pause</string>
+    <string name="vacuum_dock">Return to base</string>
 </resources>

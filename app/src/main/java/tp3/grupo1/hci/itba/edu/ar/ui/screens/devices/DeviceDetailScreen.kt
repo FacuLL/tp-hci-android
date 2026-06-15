@@ -162,6 +162,7 @@ private fun DeviceDetailBody(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val recentColors by viewModel.recentColors.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
@@ -194,7 +195,9 @@ private fun DeviceDetailBody(
                     state = state,
                     device = device,
                     showManagementActions = showManagementActions,
+                    recentColors = recentColors,
                     onExecute = viewModel::execute,
+                    onPickCustomColor = viewModel::onPickCustomColor,
                     onDispense = viewModel::dispense,
                     onOpenDialog = viewModel::openDialog,
                 )
@@ -255,7 +258,9 @@ private fun DeviceDetailLayout(
     state: DeviceDetailUiState,
     device: Device,
     showManagementActions: Boolean,
+    recentColors: List<String>,
     onExecute: (String, List<JsonElement>) -> Unit,
+    onPickCustomColor: (String, String) -> Unit,
     onDispense: (String, Int, String) -> Unit,
     onOpenDialog: (DeviceDetailDialog) -> Unit,
 ) {
@@ -288,7 +293,9 @@ private fun DeviceDetailLayout(
                     deviceLock = device.state.lock,
                     dispensing = state.dispensing,
                     rooms = state.rooms,
+                    recentColors = recentColors,
                     onExecute = onExecute,
+                    onPickCustomColor = onPickCustomColor,
                     onDispense = onDispense,
                     onOpenDialog = onOpenDialog,
                 )

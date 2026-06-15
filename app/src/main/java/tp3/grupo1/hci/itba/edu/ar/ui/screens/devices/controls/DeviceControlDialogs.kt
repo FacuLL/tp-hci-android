@@ -1,6 +1,8 @@
 package tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.controls
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,8 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MusicNote
@@ -18,21 +22,26 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
@@ -144,6 +153,88 @@ internal fun ChangeCodeDialog(
             }
         },
     )
+}
+
+// Selector de color custom: 3 sliders R/G/B (0-255) con preview en vivo. Devuelve el hex en "#RRGGBB"
+// para que despache igual que los swatches. El color inicial se usa para arrancar los sliders.
+@Composable
+internal fun CustomColorDialog(
+    initialColor: Color,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var red by rememberSaveable { mutableFloatStateOf((initialColor.red * 255f).roundToInt().toFloat()) }
+    var green by rememberSaveable { mutableFloatStateOf((initialColor.green * 255f).roundToInt().toFloat()) }
+    var blue by rememberSaveable { mutableFloatStateOf((initialColor.blue * 255f).roundToInt().toFloat()) }
+    val hex = "#%02X%02X%02X".format(red.roundToInt(), green.roundToInt(), blue.roundToInt())
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.device_color_custom_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .clip(CircleShape)
+                            .background(Color(red.roundToInt(), green.roundToInt(), blue.roundToInt()))
+                            .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
+                    )
+                }
+                Text(
+                    text = hex,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                ColorChannelSlider(R.string.device_color_channel_red, red) { red = it }
+                ColorChannelSlider(R.string.device_color_channel_green, green) { green = it }
+                ColorChannelSlider(R.string.device_color_channel_blue, blue) { blue = it }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(hex) }) {
+                Text(stringResource(R.string.action_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        },
+    )
+}
+
+@Composable
+private fun ColorChannelSlider(
+    @StringRes labelRes: Int,
+    value: Float,
+    onValueChange: (Float) -> Unit,
+) {
+    Column {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(labelRes),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = value.roundToInt().toString(),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = 0f..255f,
+        )
+    }
 }
 
 @Composable

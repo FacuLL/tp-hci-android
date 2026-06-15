@@ -32,9 +32,14 @@ class AppPreferences(private val context: Context) {
         private val THEME_MODE = stringPreferencesKey("theme_mode")
         private val LANGUAGE = stringPreferencesKey("language")
         private val NOTIF_CATEGORIES = stringSetPreferencesKey("notif_categories_enabled")
+        private val RECENT_COLORS = stringPreferencesKey("recent_colors")
 
         private const val BOOTSTRAP_PREFS = "lumina_bootstrap"
         private const val BOOTSTRAP_LANGUAGE = "language"
+
+        // Cuantos colores custom recordamos y como los serializamos (lista delimitada en una sola clave).
+        private const val MAX_RECENT_COLORS = 5
+        private const val RECENT_COLORS_SEPARATOR = ","
     }
 
     // El idioma debe leerse sincronicamente en attachBaseContext, antes de que una corutina pueda leer DataStore.
@@ -86,6 +91,30 @@ class AppPreferences(private val context: Context) {
             }.toSet()
         }
         .distinctUntilChanged()
+
+    // Ultimos colores custom elegidos en la lampara, mas reciente primero. Persistidos como hex delimitados.
+    val recentColors: Flow<List<String>> = context.dataStore.data
+        .map { prefs ->
+            prefs[RECENT_COLORS]
+                ?.split(RECENT_COLORS_SEPARATOR)
+                ?.filter { it.isNotBlank() }
+                ?: emptyList()
+        }
+        .distinctUntilChanged()
+
+    // Antepone el color elegido, deduplica y recorta al tope para que la fila de "Recientes" no crezca sin limite.
+    suspend fun addRecentColor(hex: String) {
+        context.dataStore.edit { prefs ->
+            val current = prefs[RECENT_COLORS]
+                ?.split(RECENT_COLORS_SEPARATOR)
+                ?.filter { it.isNotBlank() }
+                ?: emptyList()
+            val updated = (listOf(hex) + current)
+                .distinct()
+                .take(MAX_RECENT_COLORS)
+            prefs[RECENT_COLORS] = updated.joinToString(RECENT_COLORS_SEPARATOR)
+        }
+    }
 
     suspend fun setNotificationCategoryEnabled(category: NotificationCategory, enabled: Boolean) {
         context.dataStore.edit { prefs ->
