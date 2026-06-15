@@ -12,12 +12,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
 import tp3.grupo1.hci.itba.edu.ar.AppContainer
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceType
 import tp3.grupo1.hci.itba.edu.ar.data.model.Room
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiException
+import tp3.grupo1.hci.itba.edu.ar.data.repository.ROOM_META_DEVICE_ORDER
 import tp3.grupo1.hci.itba.edu.ar.domain.PowerAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.Validators
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceControls
@@ -38,11 +42,17 @@ data class RoomDetailUiState(
     val refreshing: Boolean = false,
     val room: Room? = null,
     val rooms: List<Room> = emptyList(),
+    /** Devices in this room, sorted by the saved order (unknown ids append). */
     val roomDevices: List<Device> = emptyList(),
     val unassignedDevices: List<Device> = emptyList(),
     val types: Map<String, DeviceType> = emptyMap(),
     val pendingDeviceIds: Set<String> = emptySet(),
     val dialog: RoomDetailDialog? = null,
+    // Reorder mode
+    val editMode: Boolean = false,
+    /** Working copy shown while editing. Empty when not in editMode. */
+    val draftOrder: List<Device> = emptyList(),
+    val savingOrder: Boolean = false,
     // Create-device form
     val creatingDevice: Boolean = false,
     @field:StringRes val createDeviceErrorRes: Int? = null,
@@ -95,17 +105,51 @@ class RoomDetailViewModel(
                 deviceTypesRepository.types,
                 ::RoomSnapshot,
             ).collect { snapshot ->
+                val room = snapshot.rooms.firstOrNull { it.id == roomId }
+                val ordered = sortByPreferredOrder(
+                    devices = devicesInRoom(snapshot.devices, roomId),
+                    preferred = preferredOrderFrom(room),
+                )
                 _uiState.update {
                     it.copy(
-                        room = snapshot.rooms.firstOrNull { room -> room.id == roomId },
+                        room = room,
                         rooms = snapshot.rooms,
-                        roomDevices = devicesInRoom(snapshot.devices, roomId),
+                        roomDevices = ordered,
+                        // Edit mode keeps its draft but reflects added/removed devices
+                        // by syncing draftOrder against the live set, preserving the
+                        // user's in-progress ordering.
+                        draftOrder = if (it.editMode) syncDraft(it.draftOrder, ordered) else emptyList(),
                         unassignedDevices = unassignedDevices(snapshot.devices),
                         types = snapshot.types,
                     )
                 }
             }
         }
+    }
+
+    private fun preferredOrderFrom(room: Room?): List<String> {
+        val raw = room?.metadata?.get(ROOM_META_DEVICE_ORDER) as? JsonArray ?: return emptyList()
+        return raw.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }
+    }
+
+    private fun sortByPreferredOrder(devices: List<Device>, preferred: List<String>): List<Device> {
+        if (preferred.isEmpty()) return devices
+        val byId = devices.associateBy { it.id }
+        val seen = mutableSetOf<String>()
+        val ordered = preferred.mapNotNull { id ->
+            seen += id
+            byId[id]
+        }
+        val tail = devices.filter { it.id !in seen }
+        return ordered + tail
+    }
+
+    private fun syncDraft(draft: List<Device>, current: List<Device>): List<Device> {
+        val currentById = current.associateBy { it.id }
+        val kept = draft.mapNotNull { currentById[it.id] }
+        val keptIds = kept.map { it.id }.toSet()
+        val newcomers = current.filter { it.id !in keptIds }
+        return kept + newcomers
     }
 
     /** Pull-to-refresh: re-fetch rooms and devices keeping content visible. */
@@ -250,6 +294,51 @@ class RoomDetailViewModel(
 
     fun onSnackbarShown() {
         _uiState.update { it.copy(snackbarMessageRes = null) }
+    }
+
+    // ── Reorder ──
+
+    fun enterReorderMode() {
+        val current = _uiState.value
+        if (current.editMode || current.roomDevices.isEmpty()) return
+        _uiState.update { it.copy(editMode = true, draftOrder = current.roomDevices.toList()) }
+    }
+
+    fun cancelReorder() {
+        if (_uiState.value.savingOrder) return
+        _uiState.update { it.copy(editMode = false, draftOrder = emptyList()) }
+    }
+
+    /** Drag-to-reorder: move the device at [from] to position [to] in the draft. */
+    fun moveDevice(from: Int, to: Int) {
+        val draft = _uiState.value.draftOrder
+        if (from == to || from !in draft.indices || to !in draft.indices) return
+        val updated = draft.toMutableList().apply { add(to, removeAt(from)) }
+        _uiState.update { it.copy(draftOrder = updated) }
+    }
+
+    fun saveOrder() {
+        val current = _uiState.value
+        val room = current.room
+        if (!current.editMode || current.savingOrder || room == null) return
+        val ids = current.draftOrder.map { it.id }
+        viewModelScope.launch {
+            _uiState.update { it.copy(savingOrder = true) }
+            try {
+                roomsRepository.setDeviceOrder(room, ids)
+                _uiState.update {
+                    it.copy(
+                        savingOrder = false,
+                        editMode = false,
+                        draftOrder = emptyList(),
+                    )
+                }
+            } catch (e: ApiException) {
+                _uiState.update {
+                    it.copy(savingOrder = false, snackbarMessageRes = e.userMessageRes)
+                }
+            }
+        }
     }
 
     companion object {

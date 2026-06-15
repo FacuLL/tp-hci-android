@@ -18,7 +18,6 @@
     <!-- Login -->
     <string name="auth_login_title">Welcome back</string>
     <string name="auth_login_subtitle">Enter your details to access your home</string>
-    <string name="auth_remember_session">Keep me signed in</string>
     <string name="auth_login_button">Sign in</string>
     <string name="auth_forgot_password_link">Forgot your password?</string>
     <string name="auth_no_account">Don\'t have an account?</string>

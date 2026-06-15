@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.MeetingRoom
+import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -84,26 +87,52 @@ fun RoomDetailScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
+                    IconButton(
+                        onClick = if (state.editMode) viewModel::cancelReorder else onNavigateUp,
+                        enabled = !state.savingOrder,
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.cd_navigate_back),
+                            imageVector = if (state.editMode) Icons.Outlined.Close else Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(
+                                if (state.editMode) R.string.rooms_reorder_cancel else R.string.cd_navigate_back,
+                            ),
                         )
                     }
                 },
                 actions = {
                     if (state.room != null) {
-                        IconButton(onClick = viewModel::openRenameDialog) {
-                            Icon(
-                                imageVector = Icons.Outlined.Edit,
-                                contentDescription = stringResource(R.string.rooms_action_rename),
-                            )
-                        }
-                        IconButton(onClick = viewModel::openDeleteDialog) {
-                            Icon(
-                                imageVector = Icons.Outlined.Delete,
-                                contentDescription = stringResource(R.string.rooms_cd_delete_room),
-                            )
+                        if (state.editMode) {
+                            IconButton(
+                                onClick = viewModel::saveOrder,
+                                enabled = !state.savingOrder,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Check,
+                                    contentDescription = stringResource(R.string.rooms_reorder_save),
+                                )
+                            }
+                        } else {
+                            IconButton(
+                                onClick = viewModel::enterReorderMode,
+                                enabled = state.roomDevices.size > 1,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.SwapVert,
+                                    contentDescription = stringResource(R.string.rooms_action_reorder),
+                                )
+                            }
+                            IconButton(onClick = viewModel::openRenameDialog) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Edit,
+                                    contentDescription = stringResource(R.string.rooms_action_rename),
+                                )
+                            }
+                            IconButton(onClick = viewModel::openDeleteDialog) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Delete,
+                                    contentDescription = stringResource(R.string.rooms_cd_delete_room),
+                                )
+                            }
                         }
                     }
                 },
@@ -135,12 +164,15 @@ fun RoomDetailScreen(
             ) {
                 RoomDetailContent(
                     room = room,
-                    devices = state.roomDevices,
+                    devices = if (state.editMode) state.draftOrder else state.roomDevices,
                     types = state.types,
                     pendingDeviceIds = state.pendingDeviceIds,
+                    showTitle = false,
+                    editMode = state.editMode,
                     onOpenDevice = onOpenDevice,
                     onToggleDevice = viewModel::toggleDevice,
                     onAddDevice = viewModel::openAddDeviceDialog,
+                    onMoveDevice = viewModel::moveDevice,
                 )
             }
         }
