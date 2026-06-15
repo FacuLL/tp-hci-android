@@ -18,7 +18,6 @@ import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.QueueMusic
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
-import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -329,21 +328,6 @@ internal fun PlaybackControl(
                         imageVector = Icons.Outlined.SkipNext,
                         contentDescription = actionLabel(next),
                         modifier = Modifier.size(28.dp),
-                    )
-                }
-            }
-        }
-        // Detener queda como accion secundaria centrada bajo el transporte (no se pierde la accion).
-        atom.stop?.let { stop ->
-            if (playing || paused) {
-                IconButton(
-                    onClick = { onExecute(stop, emptyList()) },
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Stop,
-                        contentDescription = actionLabel(stop),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
