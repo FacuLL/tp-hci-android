@@ -63,4 +63,12 @@
     <string name="device_color_channel_red">Rojo</string>
     <string name="device_color_channel_green">Verde</string>
     <string name="device_color_channel_blue">Azul</string>
+
+    <!-- Vacuum control -->
+    <string name="vacuum_status_docked">En base</string>
+    <string name="vacuum_status_cleaning">Limpiando</string>
+    <string name="vacuum_status_paused">Pausada</string>
+    <string name="vacuum_start">Iniciar</string>
+    <string name="vacuum_pause">Pausa</string>
+    <string name="vacuum_dock">Volver a la base</string>
 </resources>

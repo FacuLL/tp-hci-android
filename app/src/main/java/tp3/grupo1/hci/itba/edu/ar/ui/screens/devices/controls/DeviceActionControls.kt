@@ -19,6 +19,10 @@ import androidx.compose.material.icons.outlined.QueueMusic
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material.icons.outlined.VolumeUp
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import tp3.grupo1.hci.itba.edu.ar.domain.VacuumAtom
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledIconButton
@@ -137,6 +141,71 @@ internal fun AlarmControl(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(stringResource(R.string.device_action_disarm))
+        }
+    }
+}
+
+@Composable
+internal fun VacuumControl(
+    atom: VacuumAtom,
+    onExecute: (String, List<JsonElement>) -> Unit,
+) {
+    val status = atom.status
+    val docked = status == "docked"
+    val paused = status == "paused"
+    // El API solo documenta "docked"; cualquier estado que no sea base ni pausa se trata como
+    // "limpiando" (el string real de limpieza lo reconcilia el evento de WebSocket).
+    val running = !docked && !paused && !status.isNullOrBlank()
+    val statusRes = when {
+        running -> R.string.vacuum_status_cleaning
+        paused -> R.string.vacuum_status_paused
+        else -> R.string.vacuum_status_docked
+    }
+    ControlCard {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (running) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+            )
+            Text(
+                text = stringResource(statusRes),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        Button(
+            onClick = { onExecute(if (running) atom.pauseAction else atom.startAction, emptyList()) },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (running) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primary,
+                contentColor = if (running) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimary,
+            ),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Icon(
+                imageVector = if (running) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                contentDescription = null,
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(if (running) R.string.vacuum_pause else R.string.vacuum_start))
+        }
+        atom.dockAction?.let { dock ->
+            OutlinedButton(
+                onClick = { onExecute(dock, emptyList()) },
+                enabled = !docked,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Outlined.Home, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.vacuum_dock))
+            }
         }
     }
 }

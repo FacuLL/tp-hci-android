@@ -111,6 +111,14 @@ data class SetLocationAtom(
     val paramName: String,
 ) : ControlAtom
 
+// Control dedicado del aspirador: un solo boton Iniciar/Pausa + volver a la base, con el estado real.
+data class VacuumAtom(
+    val startAction: String,
+    val pauseAction: String,
+    val dockAction: String?,
+    val status: String?,
+) : ControlAtom
+
 private val POWER_PAIRS: List<Pair<String, String>> = listOf(
     "turnOn" to "turnOff",
     "open" to "close",
@@ -396,6 +404,27 @@ private fun detectSetLocation(actions: List<DeviceTypeAction>, used: MutableSet<
     )
 }
 
+private fun detectVacuum(
+    actions: List<DeviceTypeAction>,
+    device: Device,
+    used: MutableSet<String>,
+): VacuumAtom? {
+    if (device.type.id != DeviceTypeIds.VACUUM) return null
+    findAction(actions, "start") ?: return null
+    used.add("start")
+    used.add("pause")
+    val dock = findAction(actions, "dock")?.let {
+        used.add("dock")
+        "dock"
+    }
+    return VacuumAtom(
+        startAction = "start",
+        pauseAction = "pause",
+        dockAction = dock,
+        status = device.state.status,
+    )
+}
+
 fun deviceControls(deviceType: DeviceType, device: Device): List<ControlAtom> {
     val actions = deviceType.actions
     val used = mutableSetOf<String>()
@@ -404,6 +433,7 @@ fun deviceControls(deviceType: DeviceType, device: Device): List<ControlAtom> {
 
     return listOfNotNull(
         detectLampPreview(device),
+        detectVacuum(actions, device, used),
         detectPlayback(actions, device, used),
         detectPower(actions, device, used),
         detectLock(actions, device, used),

@@ -112,6 +112,7 @@ internal fun ControlAtomCard(
         is PlaybackAtom -> PlaybackControl(atom, accent, onExecute, onOpenDialog)
         is PlaylistAtom -> PlaylistControl(onOpenDialog)
         is SetLocationAtom -> SetLocationControl(atom, rooms, onExecute)
+        is tp3.grupo1.hci.itba.edu.ar.domain.VacuumAtom -> VacuumControl(atom, onExecute)
     }
 }
 
