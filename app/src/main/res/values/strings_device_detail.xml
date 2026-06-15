@@ -55,4 +55,12 @@
     <string name="device_color_teal">Turquesa</string>
     <string name="device_color_gray">Gris</string>
     <string name="device_color_lavender">Lavanda</string>
+
+    <!-- Lamp custom color picker -->
+    <string name="device_color_custom">Personalizado</string>
+    <string name="device_color_recent">Recientes</string>
+    <string name="device_color_custom_title">Color personalizado</string>
+    <string name="device_color_channel_red">Rojo</string>
+    <string name="device_color_channel_green">Verde</string>
+    <string name="device_color_channel_blue">Azul</string>
 </resources>

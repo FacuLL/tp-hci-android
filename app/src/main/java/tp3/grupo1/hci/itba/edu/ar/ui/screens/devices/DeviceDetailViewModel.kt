@@ -10,9 +10,11 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonArray
@@ -89,6 +91,10 @@ class DeviceDetailViewModel(
     private val _messages = MutableSharedFlow<Int>(extraBufferCapacity = 4)
     val messages: SharedFlow<Int> = _messages.asSharedFlow()
 
+    // Colores custom recientes de la lampara, persistidos localmente (mas reciente primero).
+    val recentColors: StateFlow<List<String>> = container.preferences.recentColors
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     init {
         viewModelScope.launch {
             try {
@@ -150,6 +156,14 @@ class DeviceDetailViewModel(
                 _messages.emit(e.userMessageRes)
             }
         }
+    }
+
+    // Color custom de la lampara: lo persiste en recientes y lo despacha como setColor (mismo formato "#RRGGBB" que los swatches).
+    fun onPickCustomColor(action: String, hex: String) {
+        viewModelScope.launch {
+            container.preferences.addRecentColor(hex)
+        }
+        execute(action, listOf(JsonPrimitive(hex)))
     }
 
     fun dispense(action: String, quantity: Int, unit: String) {

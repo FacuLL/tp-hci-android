@@ -92,7 +92,9 @@ internal fun ControlAtomCard(
     deviceLock: String?,
     dispensing: Boolean,
     rooms: List<Room>,
+    recentColors: List<String>,
     onExecute: (String, List<JsonElement>) -> Unit,
+    onPickCustomColor: (String, String) -> Unit,
     onDispense: (String, Int, String) -> Unit,
     onOpenDialog: (DeviceDetailDialog) -> Unit,
 ) {
@@ -101,7 +103,7 @@ internal fun ControlAtomCard(
         is PowerAtom -> PowerControl(atom, accent, deviceStatus, deviceLock, onExecute)
         is SliderAtom -> SliderControl(atom, accent, onExecute)
         is SelectAtom -> SelectControl(atom, onExecute)
-        is ColorAtom -> ColorControl(atom, onExecute)
+        is ColorAtom -> ColorControl(atom, recentColors, onExecute, onPickCustomColor)
         is ButtonAtom -> ButtonControl(atom, onExecute)
         is AlarmStatusAtom -> AlarmStatusControl(atom)
         is AlarmAtom -> AlarmControl(atom, deviceStatus, onOpenDialog)
@@ -439,11 +441,14 @@ private val COLOR_SWATCHES: List<Pair<String, Int>> = listOf(
 @Composable
 private fun ColorControl(
     atom: ColorAtom,
+    recentColors: List<String>,
     onExecute: (String, List<JsonElement>) -> Unit,
+    onPickCustomColor: (String, String) -> Unit,
 ) {
     // El API devuelve el color inicial como nombre ("white"), asi que lo normalizamos a Color
     // (parseHexColor sabe parsear nombres) antes de compararlo con los swatches hex.
     val selectedColor = parseHexColor(atom.value)
+    var showCustomDialog by remember { mutableStateOf(false) }
     ControlCard {
         SectionLabel(stringResource(R.string.device_action_set_color))
         FlowRow(
@@ -459,6 +464,38 @@ private fun ColorControl(
                 )
             }
         }
+        OutlinedButton(
+            onClick = { showCustomDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.device_color_custom))
+        }
+        if (recentColors.isNotEmpty()) {
+            SectionLabel(stringResource(R.string.device_color_recent))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                recentColors.forEach { hex ->
+                    ColorSwatch(
+                        hex = hex,
+                        name = hex,
+                        selected = parseHexColor(hex) == selectedColor,
+                        onClick = { onPickCustomColor(atom.action, hex) },
+                    )
+                }
+            }
+        }
+    }
+    if (showCustomDialog) {
+        CustomColorDialog(
+            initialColor = selectedColor,
+            onConfirm = { hex ->
+                showCustomDialog = false
+                onPickCustomColor(atom.action, hex)
+            },
+            onDismiss = { showCustomDialog = false },
+        )
     }
 }
 
