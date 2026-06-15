@@ -50,6 +50,7 @@ fun MainScreen(
     onOpenHomes: () -> Unit,
     onOpenSettings: () -> Unit,
     onOpenNotifications: () -> Unit,
+    onOpenRegistros: () -> Unit,
     onCreateRoutine: () -> Unit,
     onEditRoutine: (String) -> Unit,
 ) {
@@ -147,6 +148,7 @@ fun MainScreen(
             composable(Routes.TAB_STATISTICS) {
                 StatisticsScreen(
                     onOpenSettings = onOpenSettings,
+                    onOpenRegistros = onOpenRegistros,
                 )
             }
         }

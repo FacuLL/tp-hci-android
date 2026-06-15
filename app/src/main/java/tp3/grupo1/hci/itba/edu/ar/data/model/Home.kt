@@ -2,6 +2,11 @@ package tp3.grupo1.hci.itba.edu.ar.data.model
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.jsonPrimitive
+
+// Tarifa por defecto (ARS por kWh) cuando el hogar todavia no la configuro en su metadata.
+const val DEFAULT_TARIFF: Double = 100.0
 
 @Serializable
 data class Home(
@@ -9,7 +14,12 @@ data class Home(
     val name: String,
     val metadata: JsonObject? = null,
     val sharedWith: List<HomeSharedUser> = emptyList(),
-)
+) {
+    // Precio por kWh guardado en metadata["tariff"]; cae al default si falta o es invalido.
+    val tariff: Double
+        get() = runCatching { metadata?.get("tariff")?.jsonPrimitive?.doubleOrNull }
+            .getOrNull() ?: DEFAULT_TARIFF
+}
 
 @Serializable
 data class HomeSharedUser(

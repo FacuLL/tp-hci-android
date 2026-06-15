@@ -1,6 +1,7 @@
 package tp3.grupo1.hci.itba.edu.ar.ui.screens.notifications
 
 import android.text.format.DateUtils
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +48,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.notifications.StoredNotification
 @Composable
 fun NotificationsScreen(
     onNavigateUp: () -> Unit,
+    onOpenDevice: (String) -> Unit,
 ) {
     val viewModel: NotificationsViewModel = viewModel(factory = NotificationsViewModel.Factory)
     val notifications by viewModel.notifications.collectAsStateWithLifecycle()
@@ -89,7 +91,10 @@ fun NotificationsScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(notifications, key = { it.id }) { notification ->
-                    NotificationRow(notification)
+                    NotificationRow(
+                        notification = notification,
+                        onClick = notification.deviceId?.let { id -> { onOpenDevice(id) } },
+                    )
                 }
             }
         }
@@ -97,7 +102,7 @@ fun NotificationsScreen(
 }
 
 @Composable
-private fun NotificationRow(notification: StoredNotification) {
+private fun NotificationRow(notification: StoredNotification, onClick: (() -> Unit)?) {
     val context = LocalContext.current
     val type = notification.type
     val title = stringResource(type.titleRes)
@@ -108,14 +113,21 @@ private fun NotificationRow(notification: StoredNotification) {
     } else {
         stringResource(type.bodyRes)
     }
-    val relativeTime = DateUtils.getRelativeTimeSpanString(
-        notification.timestamp,
-        System.currentTimeMillis(),
-        DateUtils.MINUTE_IN_MILLIS,
-    ).toString()
+    val now = System.currentTimeMillis()
+    val relativeTime = if (now - notification.timestamp < DateUtils.MINUTE_IN_MILLIS) {
+        stringResource(R.string.registros_now)
+    } else {
+        DateUtils.getRelativeTimeSpanString(
+            notification.timestamp,
+            now,
+            DateUtils.MINUTE_IN_MILLIS,
+        ).toString()
+    }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top,
     ) {

@@ -17,6 +17,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.ChangePasswordRequest
 import tp3.grupo1.hci.itba.edu.ar.data.model.CodeResponse
 import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceCreateRequest
+import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceLog
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceType
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceUpdateRequest
 import tp3.grupo1.hci.itba.edu.ar.data.model.EmailRequest
@@ -129,6 +130,13 @@ interface DeviceService {
 
     @DELETE("devices/{id}")
     suspend fun delete(@Path("id") id: String): ResponseBody
+
+    // Historial de acciones de todos los dispositivos, paginado por limit/offset en el path.
+    @GET("devices/logs/limit/{limit}/offset/{offset}")
+    suspend fun getAllLogs(
+        @Path("limit") limit: Int,
+        @Path("offset") offset: Int,
+    ): List<DeviceLog>
 
     // Los params viajan como array JSON posicional (formato que prefiere la API) y el retorno varia por accion (boolean, string o number), por eso se deja crudo
     @PATCH("devices/{id}/{action}")

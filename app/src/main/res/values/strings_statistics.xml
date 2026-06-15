@@ -14,7 +14,12 @@
 
     <string name="statistics_kpi_estimated_cost">COSTO ESTIMADO</string>
     <string name="statistics_kpi_estimated_cost_desc">Costo estimado según tarifa actual</string>
+    <string name="statistics_kpi_estimated_cost_desc_tariff">Costo estimado a $%1$s/kWh</string>
     <string name="statistics_kpi_estimated_cost_value">$%1$s</string>
+    <string name="statistics_cost_settings_cd">Configurar tarifa</string>
+    <string name="statistics_tariff_dialog_title">Tarifa de energía</string>
+    <string name="statistics_tariff_dialog_label">Precio por kWh (ARS)</string>
+    <string name="statistics_tariff_dialog_error">Ingresá un precio mayor a 0</string>
 
     <string name="statistics_kpi_most_active_room">HABITACIÓN MÁS ACTIVA</string>
     <string name="statistics_kpi_most_active_room_desc">La que más energía consumió en el período</string>
@@ -27,8 +32,42 @@
 
     <string name="statistics_delta_up">↑ +%1$d%% vs ayer</string>
     <string name="statistics_delta_down">↓ -%1$d%% vs ayer</string>
+    <string name="statistics_delta_zero">= 0%</string>
 
-    <string name="statistics_chart_title">Consumo por hora — hoy</string>
-    <string name="statistics_chart_subtitle">kWh por hora</string>
+    <string name="statistics_chart_title_today">Consumo por hora — hoy</string>
+    <string name="statistics_chart_title_week">Consumo por día — esta semana</string>
+    <string name="statistics_chart_title_month">Consumo por semana — este mes</string>
+    <string name="statistics_chart_subtitle_today">kWh cada 2 horas</string>
+    <string name="statistics_chart_subtitle_week">kWh por día</string>
+    <string name="statistics_chart_subtitle_month">kWh por semana</string>
     <string name="statistics_chart_empty">Sin datos para este período.</string>
+    <string name="statistics_axis_kwh">%1$s kWh</string>
+    <string name="statistics_compare_subtitle_today">Hoy vs ayer (cada 3 horas)</string>
+    <string name="statistics_compare_subtitle_week">Esta semana vs semana anterior</string>
+    <string name="statistics_compare_subtitle_month">Este mes vs mes anterior</string>
+    <string name="statistics_room_compare_empty">Sin datos de consumo para este período.</string>
+
+    <string name="statistics_rooms_title">¿Qué habitación consume más?</string>
+    <string name="statistics_rooms_subtitle">Consumo instantáneo</string>
+    <string name="statistics_rooms_empty">Sin consumo activo en este momento.</string>
+    <string name="statistics_rooms_watts">%1$dW</string>
+
+    <string name="statistics_compare_title">Comparativo</string>
+    <string name="statistics_compare_subtitle">Período actual vs anterior</string>
+    <string name="statistics_compare_current">Período actual</string>
+    <string name="statistics_compare_previous">Período anterior</string>
+
+    <string name="statistics_room_compare_title">Por habitación</string>
+    <string name="statistics_room_compare_subtitle">Período actual vs anterior</string>
+
+    <string name="statistics_open_logs_cd">Ver registros</string>
+
+    <!-- Registros (action history) screen -->
+    <string name="registros_title">Registros</string>
+    <string name="registros_subtitle">Historial de acciones</string>
+    <string name="registros_empty">Sin registros todavía.</string>
+    <string name="registros_now">Ahora mismo</string>
+    <string name="registros_load_more">Cargar más</string>
+    <string name="registros_result_ok">Acción completada</string>
+    <string name="registros_result_fail">Acción fallida</string>
 </resources>

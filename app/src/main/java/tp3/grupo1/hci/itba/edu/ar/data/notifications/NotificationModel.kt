@@ -32,11 +32,13 @@ enum class NotificationType(
 }
 
 // Notificacion persistida en el historial local; arg es el nombre de dispositivo/hogar cuando el tipo lo requiere.
+// deviceId apunta al dispositivo cuando aplica y sigue existiendo (null para eventos de hogar o bajas).
 @Serializable
 data class StoredNotification(
     val id: String,
     val type: NotificationType,
     val arg: String? = null,
+    val deviceId: String? = null,
     val timestamp: Long,
     val read: Boolean = false,
 )

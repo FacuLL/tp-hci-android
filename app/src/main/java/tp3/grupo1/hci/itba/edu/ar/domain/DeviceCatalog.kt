@@ -91,6 +91,9 @@ fun deviceActionNameRes(action: String): Int? = when (action) {
     "setLevel" -> R.string.device_action_set_level
     "open" -> R.string.device_action_open
     "close" -> R.string.device_action_close
+    "up" -> R.string.device_action_up
+    "down" -> R.string.device_action_down
+    "setLocation" -> R.string.device_action_set_location
     "lock" -> R.string.device_action_lock
     "unlock" -> R.string.device_action_unlock
     "armStay" -> R.string.device_action_arm_stay

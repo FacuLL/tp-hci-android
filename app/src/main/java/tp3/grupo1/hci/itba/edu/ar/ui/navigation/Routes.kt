@@ -15,6 +15,7 @@ object Routes {
     const val HOMES = "homes"
     const val SETTINGS = "settings"
     const val NOTIFICATIONS = "notifications"
+    const val REGISTROS = "registros"
 
     const val TAB_DASHBOARD = "tab_dashboard"
     const val TAB_DEVICES = "tab_devices"

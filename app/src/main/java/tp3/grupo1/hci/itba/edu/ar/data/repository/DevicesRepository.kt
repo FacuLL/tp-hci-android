@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceCreateRequest
+import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceLog
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceUpdateRequest
 import tp3.grupo1.hci.itba.edu.ar.data.model.EntityRef
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiException
@@ -33,6 +34,10 @@ class DevicesRepository(
     fun clear() {
         _devices.value = emptyList()
     }
+
+    // Historial de acciones paginado. No se cachea: la pantalla Registros lo pide bajo demanda.
+    suspend fun logs(limit: Int, offset: Int): List<DeviceLog> =
+        apiCall { api.devices.getAllLogs(limit, offset) }
 
     suspend fun create(name: String, typeId: String, roomId: String?): Device {
         val request = DeviceCreateRequest(

@@ -120,15 +120,18 @@ class AppContainer(context: Context) {
                 raise(
                     NotificationType.DEVICE_CREATED,
                     event.device.name,
+                    deviceId = event.device.id,
                     selfKey = SelfActionTracker.deviceCreated(event.device.id),
                 )
             }
             is AppEvent.DeviceUpdated -> devicesRepository.applyDeviceUpdated(event.device)
             is AppEvent.DeviceDeleted -> {
                 devicesRepository.applyDeviceDeleted(event.deviceId)
+                // Sin deviceId: el dispositivo ya no existe, no hay panel que abrir.
                 raise(
                     NotificationType.DEVICE_DELETED,
                     event.deviceName,
+                    deviceId = null,
                     selfKey = SelfActionTracker.deviceDeleted(event.deviceId),
                 )
             }
@@ -137,22 +140,22 @@ class AppContainer(context: Context) {
                 // RF20: notifica los cambios de estado relevantes para seguridad (puerta, alarma, fin de ciclo).
                 val device = devicesRepository.devices.value.firstOrNull { it.id == event.deviceId }
                 classifyStateEvent(device?.type?.id, event.args)?.let { type ->
-                    raise(type, device?.name, selfKey = SelfActionTracker.deviceState(event.deviceId))
+                    raise(type, device?.name, deviceId = event.deviceId, selfKey = SelfActionTracker.deviceState(event.deviceId))
                 }
             }
             is AppEvent.HomeShared -> {
                 runCatching { homesRepository.refresh() }
-                raise(NotificationType.HOME_SHARED, arg = null, selfKey = null)
+                raise(NotificationType.HOME_SHARED, arg = null, deviceId = null, selfKey = null)
             }
             is AppEvent.HomeUnshared -> {
                 runCatching { homesRepository.refresh() }
-                raise(NotificationType.HOME_UNSHARED, arg = null, selfKey = null)
+                raise(NotificationType.HOME_UNSHARED, arg = null, deviceId = null, selfKey = null)
             }
         }
     }
 
     // Publica una notificacion y la guarda en el historial, salvo que la haya disparado esta app o su categoria este deshabilitada.
-    private suspend fun raise(type: NotificationType, arg: String?, selfKey: String?) {
+    private suspend fun raise(type: NotificationType, arg: String?, deviceId: String?, selfKey: String?) {
         if (selfKey != null && selfActionTracker.consume(selfKey)) return
         val enabled = preferences.enabledNotificationCategories.first()
         if (type.category !in enabled) return
@@ -161,6 +164,7 @@ class AppContainer(context: Context) {
                 id = java.util.UUID.randomUUID().toString(),
                 type = type,
                 arg = arg,
+                deviceId = deviceId,
                 timestamp = System.currentTimeMillis(),
             )
         )

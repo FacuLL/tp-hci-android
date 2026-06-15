@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import tp3.grupo1.hci.itba.edu.ar.data.AppPreferences
 import tp3.grupo1.hci.itba.edu.ar.data.model.Home
 import tp3.grupo1.hci.itba.edu.ar.data.model.HomeCreateRequest
@@ -68,6 +70,15 @@ class HomesRepository(
 
     suspend fun rename(homeId: String, name: String): Home {
         val updated = apiCall { api.homes.update(homeId, HomeUpdateRequest(name = name)) }
+        replaceHome(updated)
+        return updated
+    }
+
+    // Guarda la tarifa (ARS/kWh) en metadata["tariff"] preservando el resto de las claves.
+    suspend fun updateTariff(homeId: String, tariff: Double): Home {
+        val current = currentSnapshot(homeId)?.metadata ?: JsonObject(emptyMap())
+        val metadata = JsonObject(current + ("tariff" to JsonPrimitive(tariff)))
+        val updated = apiCall { api.homes.update(homeId, HomeUpdateRequest(metadata = metadata)) }
         replaceHome(updated)
         return updated
     }

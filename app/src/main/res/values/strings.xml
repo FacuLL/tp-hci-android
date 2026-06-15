@@ -83,6 +83,9 @@
     <string name="device_action_set_level">Posición</string>
     <string name="device_action_open">Abrir</string>
     <string name="device_action_close">Cerrar</string>
+    <string name="device_action_up">Subir</string>
+    <string name="device_action_down">Bajar</string>
+    <string name="device_action_set_location">Enviar a habitación</string>
     <string name="device_action_lock">Bloquear</string>
     <string name="device_action_unlock">Desbloquear</string>
     <string name="device_action_arm_stay">Activar en casa</string>
