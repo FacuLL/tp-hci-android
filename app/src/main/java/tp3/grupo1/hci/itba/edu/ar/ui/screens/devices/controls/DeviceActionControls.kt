@@ -19,6 +19,7 @@ import androidx.compose.material.icons.outlined.QueueMusic
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material.icons.outlined.Stop
+import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledIconButton
@@ -235,16 +236,15 @@ internal fun PlaybackControl(
         paused -> R.string.device_state_paused
         else -> R.string.device_state_stopped
     }
-    // El estado del parlante solo expone genero y volumen (no la cancion actual): mostramos eso, sin inventar un track.
-    val details = listOfNotNull(
-        atom.genre?.let { deviceValueLabel(context, it) },
-        atom.volume?.let { stringResource(R.string.device_detail_player_volume, it) },
-    ).joinToString(" · ")
+    // El estado del parlante solo expone genero y volumen (no la cancion actual): el genero ocupa el
+    // lugar destacado donde el boceto muestra el titulo, sin inventar un track ni una barra de progreso.
+    val genreLabel = atom.genre?.let { deviceValueLabel(context, it) }
     ControlCard {
+        // Cabecera: genero prominente arriba (como el titulo del boceto) con el estado como subtitulo.
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
                     .background(accent.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center,
@@ -258,36 +258,41 @@ internal fun PlaybackControl(
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(statusRes),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    text = genreLabel ?: stringResource(statusRes),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
                 )
-                if (details.isNotEmpty()) {
+                if (genreLabel != null) {
                     Text(
-                        text = details,
+                        text = stringResource(statusRes),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
         }
+        // Transporte centrado: play/pausa grande y circular destacado, flanqueado por prev/next.
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+            horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             atom.prev?.let { prev ->
-                IconButton(onClick = { onExecute(prev, emptyList()) }) {
+                IconButton(
+                    onClick = { onExecute(prev, emptyList()) },
+                    modifier = Modifier.size(48.dp),
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.SkipPrevious,
                         contentDescription = actionLabel(prev),
+                        modifier = Modifier.size(28.dp),
                     )
                 }
             }
             toggleAction?.let { action ->
                 FilledIconButton(
                     onClick = { onExecute(action, emptyList()) },
-                    modifier = Modifier.size(56.dp),
+                    modifier = Modifier.size(72.dp),
                     colors = IconButtonDefaults.filledIconButtonColors(
                         containerColor = accent,
                         contentColor = if (accent.luminance() > 0.5f) Color.Black else Color.White,
@@ -296,25 +301,54 @@ internal fun PlaybackControl(
                     Icon(
                         imageVector = if (playing) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
                         contentDescription = actionLabel(action),
-                        modifier = Modifier.size(28.dp),
-                    )
-                }
-            }
-            atom.stop?.let { stop ->
-                IconButton(onClick = { onExecute(stop, emptyList()) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Stop,
-                        contentDescription = actionLabel(stop),
+                        modifier = Modifier.size(36.dp),
                     )
                 }
             }
             atom.next?.let { next ->
-                IconButton(onClick = { onExecute(next, emptyList()) }) {
+                IconButton(
+                    onClick = { onExecute(next, emptyList()) },
+                    modifier = Modifier.size(48.dp),
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.SkipNext,
                         contentDescription = actionLabel(next),
+                        modifier = Modifier.size(28.dp),
                     )
                 }
+            }
+        }
+        // Detener queda como accion secundaria centrada bajo el transporte (no se pierde la accion).
+        atom.stop?.let { stop ->
+            if (playing || paused) {
+                IconButton(
+                    onClick = { onExecute(stop, emptyList()) },
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Stop,
+                        contentDescription = actionLabel(stop),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+        // Fila de volumen limpia: icono de parlante + valor actual (de solo lectura; el ajuste vive
+        // en su propio control setVolume, no se duplica aca).
+        atom.volume?.let { volume ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.VolumeUp,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.device_detail_player_volume, volume),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
         atom.playlistAction?.let {
