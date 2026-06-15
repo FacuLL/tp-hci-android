@@ -5,11 +5,12 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import tp3.grupo1.hci.itba.edu.ar.MainActivity
 import tp3.grupo1.hci.itba.edu.ar.R
+import tp3.grupo1.hci.itba.edu.ar.data.notifications.NotificationCategory
+import tp3.grupo1.hci.itba.edu.ar.data.notifications.NotificationType
 import java.util.concurrent.atomic.AtomicInteger
 
 /** Builds and posts the local notifications triggered by real-time events (RF20). */
@@ -44,52 +45,22 @@ class NotificationHelper(private val context: Context) {
         )
     }
 
-    fun showDeviceCreated(deviceName: String) = post(
-        CHANNEL_DEVICES,
-        context.getString(R.string.notif_device_created_title),
-        context.getString(R.string.notif_device_created_body, deviceName),
-    )
-
-    fun showDeviceDeleted(deviceName: String) = post(
-        CHANNEL_DEVICES,
-        context.getString(R.string.notif_device_deleted_title),
-        context.getString(R.string.notif_device_deleted_body, deviceName),
-    )
-
-    fun showHomeShared() = post(
-        CHANNEL_HOMES,
-        context.getString(R.string.notif_home_shared_title),
-        context.getString(R.string.notif_home_shared_body),
-    )
-
-    fun showHomeUnshared() = post(
-        CHANNEL_HOMES,
-        context.getString(R.string.notif_home_unshared_title),
-        context.getString(R.string.notif_home_unshared_body),
-    )
-
-    /**
-     * The home state events relevant to RF20 (security/end-of-cycle). The caller
-     * decides which one fired from the `deviceEvent` args; this only renders it.
-     */
-    enum class DeviceStateEvent(@StringRes val titleRes: Int, @StringRes val bodyRes: Int) {
-        DOOR_OPENED(R.string.notif_door_opened_title, R.string.notif_door_opened_body),
-        DOOR_UNLOCKED(R.string.notif_door_unlocked_title, R.string.notif_door_unlocked_body),
-        ALARM_TRIGGERED(R.string.notif_alarm_triggered_title, R.string.notif_alarm_triggered_body),
-        ALARM_ARMED(R.string.notif_alarm_armed_title, R.string.notif_alarm_armed_body),
-        ALARM_DISARMED(R.string.notif_alarm_disarmed_title, R.string.notif_alarm_disarmed_body),
-        CYCLE_FINISHED(R.string.notif_cycle_finished_title, R.string.notif_cycle_finished_body),
+    /** Posts the system notification for [type]; [arg] supplies the device/home name. */
+    fun show(type: NotificationType, arg: String?) {
+        val title = context.getString(type.titleRes)
+        val body = if (type.hasArg) {
+            val name = arg?.takeIf { it.isNotBlank() }
+                ?: context.getString(R.string.notif_device_fallback_name)
+            context.getString(type.bodyRes, name)
+        } else {
+            context.getString(type.bodyRes)
+        }
+        post(channelFor(type.category), title, body)
     }
 
-    /** Posts a state-change notification (RF20). Falls back if the name is missing. */
-    fun showDeviceStateEvent(event: DeviceStateEvent, deviceName: String?) {
-        val name = deviceName?.takeIf { it.isNotBlank() }
-            ?: context.getString(R.string.notif_device_fallback_name)
-        post(
-            CHANNEL_DEVICES,
-            context.getString(event.titleRes),
-            context.getString(event.bodyRes, name),
-        )
+    private fun channelFor(category: NotificationCategory): String = when (category) {
+        NotificationCategory.HOME -> CHANNEL_HOMES
+        else -> CHANNEL_DEVICES
     }
 
     private fun post(channel: String, title: String, body: String) {

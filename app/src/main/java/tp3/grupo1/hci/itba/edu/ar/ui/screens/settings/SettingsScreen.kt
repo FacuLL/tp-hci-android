@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.AlertDialog
@@ -31,6 +32,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -55,6 +57,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.data.AppLanguage
 import tp3.grupo1.hci.itba.edu.ar.data.ThemeMode
+import tp3.grupo1.hci.itba.edu.ar.data.notifications.NotificationCategory
 import tp3.grupo1.hci.itba.edu.ar.ui.components.CenteredLoading
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ConfirmDialog
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
@@ -78,6 +81,7 @@ fun SettingsScreen(
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val language by viewModel.language.collectAsStateWithLifecycle()
+    val enabledNotifications by viewModel.enabledNotificationCategories.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -240,6 +244,42 @@ fun SettingsScreen(
                                         style = MaterialTheme.typography.bodyLarge,
                                     )
                                 }
+                            }
+                        }
+                    }
+
+                    SettingsSection(
+                        icon = Icons.Outlined.Notifications,
+                        title = stringResource(R.string.settings_section_notifications),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.settings_notifications_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        NotificationCategory.entries.forEach { category ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = stringResource(category.labelRes),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                    )
+                                    Text(
+                                        text = stringResource(category.descriptionRes),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                Switch(
+                                    checked = category in enabledNotifications,
+                                    onCheckedChange = { enabled ->
+                                        viewModel.setNotificationCategoryEnabled(category, enabled)
+                                    },
+                                )
                             }
                         }
                     }

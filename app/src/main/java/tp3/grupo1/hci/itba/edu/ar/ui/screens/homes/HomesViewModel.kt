@@ -47,9 +47,6 @@ sealed interface HomesDialog {
 data class CreateHomeForm(
     val name: String = "",
     @StringRes val nameErrorRes: Int? = null,
-    val emailInput: String = "",
-    @StringRes val emailErrorRes: Int? = null,
-    val inviteEmails: List<String> = emptyList(),
 )
 
 data class RenameHomeForm(
@@ -188,72 +185,27 @@ class HomesViewModel(container: AppContainer) : ViewModel() {
         }
     }
 
-    fun onCreateEmailChange(value: String) {
-        _uiState.update {
-            it.copy(createForm = it.createForm.copy(emailInput = value, emailErrorRes = null))
-        }
-    }
-
-    fun addCreateEmail() {
-        val form = _uiState.value.createForm
-        val email = form.emailInput.trim()
-        val errorRes = inviteEmailError(email, form.inviteEmails, home = null)
-        _uiState.update {
-            it.copy(
-                createForm = if (errorRes == null) {
-                    form.copy(emailInput = "", emailErrorRes = null, inviteEmails = form.inviteEmails + email)
-                } else {
-                    form.copy(emailErrorRes = errorRes)
-                }
-            )
-        }
-    }
-
-    fun removeCreateEmail(email: String) {
-        _uiState.update {
-            it.copy(createForm = it.createForm.copy(inviteEmails = it.createForm.inviteEmails - email))
-        }
-    }
-
     fun submitCreate() {
         if (_uiState.value.actionInProgress) return
         createSubmitAttempted = true
         var form = _uiState.value.createForm
         val nameErrorRes = Validators.name(form.name)
-        // An email typed but not yet added to the list is validated and included
-        // too, so the invitation is not silently lost when submitting.
-        val pendingEmail = form.emailInput.trim()
-        var emailErrorRes: Int? = null
-        if (pendingEmail.isNotEmpty()) {
-            emailErrorRes = inviteEmailError(pendingEmail, form.inviteEmails, home = null)
-            if (emailErrorRes == null) {
-                form = form.copy(emailInput = "", inviteEmails = form.inviteEmails + pendingEmail)
-            }
-        }
-        form = form.copy(nameErrorRes = nameErrorRes, emailErrorRes = emailErrorRes)
+        form = form.copy(nameErrorRes = nameErrorRes)
         _uiState.update { it.copy(createForm = form) }
-        if (nameErrorRes != null || emailErrorRes != null) return
+        if (nameErrorRes != null) return
 
         val name = form.name.trim()
-        val emails = form.inviteEmails
         viewModelScope.launch {
             _uiState.update { it.copy(actionInProgress = true, actionErrorRes = null) }
             try {
-                val outcome = homesRepository.create(name, emails)
+                val outcome = homesRepository.create(name, emptyList())
                 createSubmitAttempted = false
                 _uiState.update {
                     it.copy(
                         actionInProgress = false,
                         dialog = null,
                         createForm = CreateHomeForm(),
-                        failedInvites = outcome.failedEmails
-                            .ifEmpty { null }
-                            ?.let { failed -> FailedInvites(failed, homeCreated = true) },
-                        snackbar = if (outcome.failedEmails.isEmpty()) {
-                            SnackbarMessage(R.string.homes_created_snackbar, outcome.home.name)
-                        } else {
-                            it.snackbar
-                        },
+                        snackbar = SnackbarMessage(R.string.homes_created_snackbar, outcome.home.name),
                     )
                 }
             } catch (e: ApiException) {

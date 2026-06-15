@@ -14,6 +14,7 @@ object Routes {
     const val ROUTINE_EDIT = "routine/edit/{routineId}"
     const val HOMES = "homes"
     const val SETTINGS = "settings"
+    const val NOTIFICATIONS = "notifications"
 
     // Tabs inside the main screen
     const val TAB_DASHBOARD = "tab_dashboard"

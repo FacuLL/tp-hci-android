@@ -14,10 +14,14 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.EntityRef
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiException
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiProvider
 import tp3.grupo1.hci.itba.edu.ar.data.network.apiCall
+import tp3.grupo1.hci.itba.edu.ar.data.notifications.SelfActionTracker
 import tp3.grupo1.hci.itba.edu.ar.domain.applyEventArgs
 import tp3.grupo1.hci.itba.edu.ar.domain.predictStateChange
 
-class DevicesRepository(private val api: ApiProvider) {
+class DevicesRepository(
+    private val api: ApiProvider,
+    private val selfActions: SelfActionTracker,
+) {
 
     private val _devices = MutableStateFlow<List<Device>>(emptyList())
     val devices: StateFlow<List<Device>> = _devices.asStateFlow()
@@ -37,6 +41,8 @@ class DevicesRepository(private val api: ApiProvider) {
             room = roomId?.let { EntityRef(it) },
         )
         val device = apiCall { api.devices.create(request) }
+        // Suppress the notification for the deviceCreated event this triggers.
+        selfActions.record(SelfActionTracker.deviceCreated(device.id))
         // The socket may broadcast deviceCreated before this response arrives,
         // so insert defensively to avoid duplicating the device in the list.
         upsertDevice(device)
@@ -50,7 +56,8 @@ class DevicesRepository(private val api: ApiProvider) {
     }
 
     suspend fun delete(deviceId: String) {
-        apiCall { api.devices.delete(deviceId) }
+        selfActions.record(SelfActionTracker.deviceDeleted(deviceId))
+        apiCall { api.devices.delete(deviceId).close() }
         _devices.update { list -> list.filterNot { it.id == deviceId } }
     }
 
@@ -61,6 +68,8 @@ class DevicesRepository(private val api: ApiProvider) {
      * real state shortly after.
      */
     suspend fun execute(deviceId: String, action: String, params: List<JsonElement> = emptyList()) {
+        // Suppress notifications for the deviceEvent this action will echo back.
+        selfActions.record(SelfActionTracker.deviceState(deviceId))
         apiCall { api.devices.executeAction(deviceId, action, JsonArray(params)) }
         _devices.update { list ->
             list.map { device ->
@@ -107,10 +116,12 @@ class DevicesRepository(private val api: ApiProvider) {
     }
 
     suspend fun removeFromRoom(deviceId: String): Device {
-        val device = apiCall { api.rooms.removeDevice(deviceId) }
-        // The response no longer carries the room, so replace but force room null.
-        replaceDevice(device.copy(room = null))
-        return device.copy(room = null)
+        // The endpoint returns void, so the cached device is updated with its
+        // room cleared instead of relying on the (empty) response body.
+        apiCall { api.rooms.removeDevice(deviceId).close() }
+        val updated = _devices.value.firstOrNull { it.id == deviceId }?.copy(room = null)
+        if (updated != null) replaceDevice(updated)
+        return updated ?: throw ApiException.network()
     }
 
     // ── WebSocket reconciliation ──

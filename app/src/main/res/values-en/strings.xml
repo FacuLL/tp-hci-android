@@ -177,4 +177,21 @@
     <string name="notif_home_shared_body">You were given access to a new home</string>
     <string name="notif_home_unshared_title">Access revoked</string>
     <string name="notif_home_unshared_body">You no longer have access to a shared home</string>
+
+    <!-- Notifications screen -->
+    <string name="title_notifications">Notifications</string>
+    <string name="notifications_clear_all">Clear all</string>
+    <string name="notifications_empty">You have no notifications</string>
+
+    <!-- Notification settings -->
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_notifications_hint">Choose which types of notifications you want to receive</string>
+    <string name="notif_cat_critical">Critical events</string>
+    <string name="notif_cat_critical_desc">Alarms and locks</string>
+    <string name="notif_cat_simple">Device events</string>
+    <string name="notif_cat_simple_desc">Common alerts, such as cycle finished</string>
+    <string name="notif_cat_device_lifecycle">Device creation</string>
+    <string name="notif_cat_device_lifecycle_desc">When a device is added or removed</string>
+    <string name="notif_cat_home">Shared homes</string>
+    <string name="notif_cat_home_desc">When a home is shared or revoked</string>
 </resources>

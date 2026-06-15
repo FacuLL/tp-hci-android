@@ -3,28 +3,21 @@ package tp3.grupo1.hci.itba.edu.ar.ui.screens.homes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PersonRemove
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.InputChip
-import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,17 +36,13 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LuminaTextField
 
-/** Creation form: home name plus an optional list of emails to invite. */
-@OptIn(ExperimentalLayoutApi::class)
+/** Creation form: home name. */
 @Composable
 fun CreateHomeDialog(
     form: CreateHomeForm,
     saving: Boolean,
     @StringRes apiErrorRes: Int?,
     onNameChange: (String) -> Unit,
-    onEmailChange: (String) -> Unit,
-    onAddEmail: () -> Unit,
-    onRemoveEmail: (String) -> Unit,
     onSubmit: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -80,56 +69,6 @@ fun CreateHomeDialog(
                     enabled = !saving,
                     supportingText = stringResource(R.string.homes_name_hint),
                 )
-                Text(
-                    text = stringResource(R.string.homes_invite_section),
-                    style = MaterialTheme.typography.titleSmall,
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    LuminaTextField(
-                        value = form.emailInput,
-                        onValueChange = onEmailChange,
-                        label = stringResource(R.string.homes_invite_email_label),
-                        modifier = Modifier.weight(1f),
-                        error = form.emailErrorRes?.let { stringResource(it) },
-                        enabled = !saving,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    )
-                    FilledTonalIconButton(
-                        onClick = onAddEmail,
-                        modifier = Modifier.padding(top = 8.dp),
-                        enabled = !saving && form.emailInput.isNotBlank(),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = stringResource(R.string.homes_cd_add_email),
-                        )
-                    }
-                }
-                if (form.inviteEmails.isNotEmpty()) {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        form.inviteEmails.forEach { email ->
-                            InputChip(
-                                selected = false,
-                                onClick = { onRemoveEmail(email) },
-                                enabled = !saving,
-                                label = { Text(email, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                                trailingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Close,
-                                        contentDescription = stringResource(R.string.homes_cd_remove_email),
-                                        modifier = Modifier.size(InputChipDefaults.IconSize),
-                                    )
-                                },
-                            )
-                        }
-                    }
-                }
             }
         },
         confirmButton = {
@@ -201,7 +140,20 @@ fun MembersDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.homes_members_title)) },
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.homes_members_title),
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = stringResource(R.string.action_close),
+                    )
+                }
+            }
+        },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -235,17 +187,14 @@ fun MembersDialog(
                 LoadingButton(
                     text = stringResource(R.string.homes_invite_button),
                     onClick = onSubmitInvite,
-                    modifier = Modifier.align(Alignment.End),
+                    modifier = Modifier.fillMaxWidth(),
                     enabled = inviteForm.email.isNotBlank(),
                     loading = busy,
                 )
             }
         },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.action_close))
-            }
-        },
+        // Close is the X in the title; AlertDialog requires a confirmButton slot.
+        confirmButton = {},
     )
 }
 

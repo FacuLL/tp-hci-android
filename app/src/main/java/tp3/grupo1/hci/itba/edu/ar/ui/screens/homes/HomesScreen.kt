@@ -156,9 +156,6 @@ private fun HomesScreenDialogs(uiState: HomesUiState, viewModel: HomesViewModel)
             saving = uiState.actionInProgress,
             apiErrorRes = uiState.actionErrorRes,
             onNameChange = viewModel::onCreateNameChange,
-            onEmailChange = viewModel::onCreateEmailChange,
-            onAddEmail = viewModel::addCreateEmail,
-            onRemoveEmail = viewModel::removeCreateEmail,
             onSubmit = viewModel::submitCreate,
             onDismiss = viewModel::dismissDialog,
         )
