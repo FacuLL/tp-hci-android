@@ -115,6 +115,7 @@
     <string name="device_value_fan">Ventilador</string>
     <string name="device_value_dry">Seco</string>
     <string name="device_value_auto">Automático</string>
+    <string name="device_value_auto_short">Auto</string>
     <string name="device_value_conventional">Convencional</string>
     <string name="device_value_bottom">Inferior</string>
     <string name="device_value_top">Superior</string>

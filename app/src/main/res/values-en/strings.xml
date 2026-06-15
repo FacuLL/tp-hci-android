@@ -115,6 +115,7 @@
     <string name="device_value_fan">Fan</string>
     <string name="device_value_dry">Dry</string>
     <string name="device_value_auto">Auto</string>
+    <string name="device_value_auto_short">Auto</string>
     <string name="device_value_conventional">Conventional</string>
     <string name="device_value_bottom">Bottom</string>
     <string name="device_value_top">Top</string>

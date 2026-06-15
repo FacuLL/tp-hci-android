@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
@@ -307,41 +311,106 @@ private fun SelectControl(
     val context = LocalContext.current
     val label = atom.labelRes?.let { stringResource(it) } ?: atom.rawName
     ControlCard {
-        if (atom.kind == SelectKind.MODE) {
-            SectionLabel(label)
-            if (atom.options.size <= MAX_SEGMENTED_OPTIONS) {
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                    atom.options.forEachIndexed { index, option ->
-                        SegmentedButton(
-                            selected = option == atom.value,
-                            onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
-                            shape = SegmentedButtonDefaults.itemShape(index = index, count = atom.options.size),
-                        ) {
-                            Text(deviceValueLabel(context, option), maxLines = 1)
+        when (atom.kind) {
+            SelectKind.MODE -> {
+                SectionLabel(label)
+                if (atom.options.size <= MAX_SEGMENTED_OPTIONS) {
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        atom.options.forEachIndexed { index, option ->
+                            SegmentedButton(
+                                selected = option == atom.value,
+                                onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = atom.options.size),
+                            ) {
+                                Text(deviceValueLabel(context, option), maxLines = 1)
+                            }
+                        }
+                    }
+                } else {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        atom.options.forEach { option ->
+                            FilterChip(
+                                selected = option == atom.value,
+                                onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
+                                label = { Text(deviceValueLabel(context, option)) },
+                            )
                         }
                     }
                 }
-            } else {
+            }
+            SelectKind.FAN_SPEED -> {
+                SectionLabel(label)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     atom.options.forEach { option ->
                         FilterChip(
                             selected = option == atom.value,
                             onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
-                            label = { Text(deviceValueLabel(context, option)) },
+                            label = { Text(fanSpeedLabel(option)) },
                         )
                     }
                 }
             }
-        } else {
-            DropdownSelect(
-                label = label,
-                options = atom.options,
-                value = atom.value,
-                optionLabel = { deviceValueLabel(context, it) },
-                onSelect = { onExecute(atom.action, listOf(JsonPrimitive(it))) },
-            )
+            SelectKind.SWING_VERTICAL, SelectKind.SWING_HORIZONTAL -> {
+                SectionLabel(label)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    atom.options.forEach { option ->
+                        FilterChip(
+                            selected = option == atom.value,
+                            onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
+                            leadingIcon = { SwingOptionIcon(option, atom.kind) },
+                            label = { Text(swingLabel(option)) },
+                        )
+                    }
+                }
+            }
+            SelectKind.GENERIC -> {
+                DropdownSelect(
+                    label = label,
+                    options = atom.options,
+                    value = atom.value,
+                    optionLabel = { deviceValueLabel(context, it) },
+                    onSelect = { onExecute(atom.action, listOf(JsonPrimitive(it))) },
+                )
+            }
         }
     }
+}
+
+// "auto" -> "Auto"; numero crudo del supportedValue -> "NN %" (no cambia el dato enviado al API).
+@Composable
+private fun fanSpeedLabel(option: String): String =
+    if (option == "auto") stringResource(R.string.device_value_auto_short) else "$option %"
+
+// "auto" -> "Auto"; numero crudo -> "NN°" con sufijo de grados.
+@Composable
+private fun swingLabel(option: String): String =
+    if (option == "auto") stringResource(R.string.device_value_auto_short) else "$option°"
+
+// Flechita de direccion rotada al angulo (como la web): vertical parte apuntando a la derecha y
+// horizontal hacia abajo, ambas rotadas por el grado; "auto" usa el icono de refresco.
+@Composable
+private fun SwingOptionIcon(option: String, kind: SelectKind) {
+    if (option == "auto") {
+        Icon(
+            imageVector = Icons.Outlined.Refresh,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+        )
+        return
+    }
+    val degrees = option.toFloatOrNull() ?: 0f
+    val base = if (kind == SelectKind.SWING_HORIZONTAL) {
+        Icons.Filled.ArrowDownward
+    } else {
+        Icons.AutoMirrored.Filled.ArrowForward
+    }
+    Icon(
+        imageVector = base,
+        contentDescription = null,
+        modifier = Modifier
+            .size(16.dp)
+            .rotate(degrees),
+    )
 }
 
 // Swatches con nombre en vez de un picker hex libre, para que cada color se anuncie por accesibilidad.
