@@ -3,10 +3,10 @@ package tp3.grupo1.hci.itba.edu.ar.ui.navigation
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BarChart
-import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MeetingRoom
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,7 +39,7 @@ enum class MainTab(
     DASHBOARD(Routes.TAB_DASHBOARD, R.string.nav_dashboard, Icons.Outlined.Home),
     ROOMS(Routes.TAB_ROOMS, R.string.nav_rooms, Icons.Outlined.MeetingRoom),
     DEVICES(Routes.TAB_DEVICES, R.string.nav_devices, Icons.Outlined.Devices),
-    ROUTINES(Routes.TAB_ROUTINES, R.string.nav_routines, Icons.Outlined.Bolt),
+    ROUTINES(Routes.TAB_ROUTINES, R.string.nav_routines, Icons.Outlined.Schedule),
     STATISTICS(Routes.TAB_STATISTICS, R.string.nav_statistics, Icons.Outlined.BarChart),
 }
 

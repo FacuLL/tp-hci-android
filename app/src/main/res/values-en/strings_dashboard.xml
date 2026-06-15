@@ -25,7 +25,4 @@
     <string name="dashboard_room_devices_label">DEVICES</string>
     <string name="dashboard_room_empty">No devices.</string>
     <string name="dashboard_room_view_detail">View detail →</string>
-    <string name="dashboard_section_arrow">→</string>
-    <string name="dashboard_cd_quick_add">Add</string>
-    <string name="dashboard_cd_section_navigate">Go to %1$s</string>
 </resources>

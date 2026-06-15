@@ -41,4 +41,11 @@
         <item quantity="one">%1$d dispositivo</item>
         <item quantity="other">%1$d dispositivos</item>
     </plurals>
+
+    <!-- Reorder mode -->
+    <string name="rooms_action_reorder">Reordenar dispositivos</string>
+    <string name="rooms_reorder_save">Guardar orden</string>
+    <string name="rooms_reorder_cancel">Cancelar reorden</string>
+    <string name="rooms_cd_drag_device">Arrastrar para reordenar</string>
+    <string name="rooms_reorder_hint">Mantené presionado el ícono ⋮⋮ y arrastrá para mover. Tocá guardar para conservar el orden.</string>
 </resources>
