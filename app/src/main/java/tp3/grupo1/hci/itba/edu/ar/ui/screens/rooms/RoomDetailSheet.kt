@@ -68,6 +68,12 @@ fun RoomDetailContent(
     onToggleDevice: (Device) -> Unit,
     onAddDevice: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Show the room name as a header above the device count. Full-screen usages
+     * (RoomDetailScreen) already show the name in their TopAppBar and should
+     * pass `false` to avoid the duplicate; the tablet side panel keeps it on.
+     */
+    showTitle: Boolean = true,
     editMode: Boolean = false,
     onMoveDevice: (from: Int, to: Int) -> Unit = { _, _ -> },
 ) {
@@ -78,12 +84,14 @@ fun RoomDetailContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Column {
-            Text(
-                text = room.name,
-                style = MaterialTheme.typography.titleLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            if (showTitle) {
+                Text(
+                    text = room.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             Text(
                 text = if (editMode) {
                     stringResource(R.string.rooms_reorder_hint)

@@ -167,6 +167,7 @@ fun RoomDetailScreen(
                     devices = if (state.editMode) state.draftOrder else state.roomDevices,
                     types = state.types,
                     pendingDeviceIds = state.pendingDeviceIds,
+                    showTitle = false,
                     editMode = state.editMode,
                     onOpenDevice = onOpenDevice,
                     onToggleDevice = viewModel::toggleDevice,
