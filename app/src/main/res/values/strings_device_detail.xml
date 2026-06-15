@@ -26,6 +26,10 @@
     <string name="device_detail_set_location">Enviar a habitación</string>
     <string name="device_detail_set_location_placeholder">Elegir habitación</string>
 
+    <!-- Door lock feedback -->
+    <string name="device_detail_door_locked">Se bloqueó la puerta</string>
+    <string name="device_detail_door_unlocked">Se desbloqueó la puerta</string>
+
     <!-- Dispense -->
     <string name="device_detail_quantity_label">Cantidad</string>
     <string name="device_detail_unit_label">Unidad</string>

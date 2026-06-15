@@ -85,6 +85,7 @@
     <string name="device_action_close">Close</string>
     <string name="device_action_lock">Lock</string>
     <string name="device_action_unlock">Unlock</string>
+    <string name="device_section_lock">Lock</string>
     <string name="device_action_arm_stay">Arm (stay)</string>
     <string name="device_action_arm_away">Arm (away)</string>
     <string name="device_action_disarm">Disarm</string>

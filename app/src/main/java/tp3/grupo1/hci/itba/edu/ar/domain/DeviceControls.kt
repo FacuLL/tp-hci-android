@@ -265,7 +265,7 @@ private fun detectLock(
         active = device.state.lock == "locked",
         activeLabelRes = R.string.device_state_locked,
         inactiveLabelRes = R.string.device_state_unlocked,
-        sectionLabelRes = R.string.device_action_lock,
+        sectionLabelRes = R.string.device_section_lock,
     )
 }
 

@@ -85,6 +85,7 @@
     <string name="device_action_close">Cerrar</string>
     <string name="device_action_lock">Bloquear</string>
     <string name="device_action_unlock">Desbloquear</string>
+    <string name="device_section_lock">Cerradura</string>
     <string name="device_action_arm_stay">Activar en casa</string>
     <string name="device_action_arm_away">Activar ausente</string>
     <string name="device_action_disarm">Desactivar</string>

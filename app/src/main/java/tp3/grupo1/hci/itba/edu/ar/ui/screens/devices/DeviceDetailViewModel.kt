@@ -72,6 +72,12 @@ private val ALARM_ACTION_STATUS = mapOf(
     "disarm" to "disarmed",
 )
 
+// Aviso al usuario tras una accion puntual exitosa (la cerradura de la puerta no tiene feedback visible inmediato).
+private val ACTION_FEEDBACK = mapOf(
+    "lock" to R.string.device_detail_door_locked,
+    "unlock" to R.string.device_detail_door_unlocked,
+)
+
 class DeviceDetailViewModel(
     private val container: AppContainer,
     private val deviceId: String,
@@ -139,6 +145,7 @@ class DeviceDetailViewModel(
         viewModelScope.launch {
             try {
                 container.devicesRepository.execute(deviceId, action, params)
+                ACTION_FEEDBACK[action]?.let { _messages.emit(it) }
             } catch (e: ApiException) {
                 _messages.emit(e.userMessageRes)
             }
