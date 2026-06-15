@@ -20,6 +20,10 @@ import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.DirectionsRun
+import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.LockOpen
+import androidx.compose.material.icons.outlined.VpnKey
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import tp3.grupo1.hci.itba.edu.ar.domain.VacuumAtom
@@ -56,7 +60,6 @@ import kotlinx.coroutines.delay
 import kotlinx.serialization.json.JsonElement
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.domain.AlarmAtom
-import tp3.grupo1.hci.itba.edu.ar.domain.AlarmStatusAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.DispenseAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.PlaybackAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceValueLabel
@@ -64,83 +67,157 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.DeviceDetailDialog
 import kotlin.math.roundToInt
 
+/**
+ * AlarmControl — card unica con grid 3-up de modos (Casa | Fuera | Desarmada).
+ *
+ * El modo activo se renderiza con `Card` filled en color de container (primary
+ * para armado, errorContainer para desarmado), icono mas grande y label
+ * destacada; los inactivos van como `OutlinedCard` tappables. Tap en uno
+ * inactivo dispara `SecurityCodeDialog` para autorizar la transicion. El
+ * activo no es clickeable (no abre dialog redundante).
+ *
+ * Cambio de codigo de seguridad va como `IconButton` en el header de la card,
+ * sin ocupar un slot aparte (antes era una `ChangeCodeControl` con su propia
+ * `ControlCard` y `OutlinedButton` full-width).
+ */
 @Composable
-internal fun AlarmStatusControl(atom: AlarmStatusAtom) {
-    val armed = atom.currentStatus == "armedStay" || atom.currentStatus == "armedAway"
-    val labelRes = when (atom.currentStatus) {
-        "armedStay" -> R.string.device_state_armed_stay
-        "armedAway" -> R.string.device_state_armed_away
-        else -> R.string.device_state_disarmed
-    }
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = if (armed) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.errorContainer
-            },
-            contentColor = if (armed) {
-                MaterialTheme.colorScheme.onPrimaryContainer
-            } else {
-                MaterialTheme.colorScheme.onErrorContainer
-            },
-        ),
-    ) {
+internal fun AlarmControl(
+    atom: AlarmAtom,
+    onOpenDialog: (DeviceDetailDialog) -> Unit,
+) {
+    ControlCard {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(R.string.device_detail_status_label),
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                text = stringResource(labelRes),
+                text = stringResource(R.string.alarm_mode_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
+            )
+            if (atom.changeCodeAction != null) {
+                IconButton(onClick = { onOpenDialog(DeviceDetailDialog.ChangeCode) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.VpnKey,
+                        contentDescription = stringResource(R.string.device_action_change_security_code),
+                    )
+                }
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            atom.armActions.forEach { arm ->
+                val isCurrent = when (arm.action) {
+                    "armStay" -> atom.currentStatus == "armedStay"
+                    "armAway" -> atom.currentStatus == "armedAway"
+                    else -> false
+                }
+                AlarmModeCell(
+                    icon = when (arm.action) {
+                        "armStay" -> Icons.Outlined.Home
+                        "armAway" -> Icons.Outlined.DirectionsRun
+                        else -> Icons.Outlined.Shield
+                    },
+                    // Label corto para que entre en una linea aunque la
+                    // celda sea angosta (3 columnas). El verbo completo
+                    // ("Activar en casa") sigue apareciendo en el titulo
+                    // del SecurityCodeDialog via arm.labelRes.
+                    shortLabelRes = when (arm.action) {
+                        "armStay" -> R.string.alarm_mode_short_stay
+                        "armAway" -> R.string.alarm_mode_short_away
+                        else -> arm.labelRes
+                    },
+                    isCurrent = isCurrent,
+                    isDisarm = false,
+                    onClick = {
+                        onOpenDialog(DeviceDetailDialog.SecurityCode(arm.action, arm.labelRes))
+                    },
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            val disarmCurrent = atom.currentStatus != "armedStay" && atom.currentStatus != "armedAway"
+            AlarmModeCell(
+                icon = Icons.Outlined.LockOpen,
+                shortLabelRes = R.string.alarm_mode_short_disarm,
+                isCurrent = disarmCurrent,
+                isDisarm = true,
+                onClick = {
+                    onOpenDialog(
+                        DeviceDetailDialog.SecurityCode(atom.disarmAction, R.string.device_action_disarm)
+                    )
+                },
+                modifier = Modifier.weight(1f),
             )
         }
     }
 }
 
+/**
+ * Celda individual del grid 3-up de modos. `isCurrent=true` -> filled con
+ * colores de container y el icono mas grande; `false` -> outlined,
+ * clickeable, icono mas chico. `isDisarm=true` cambia el color de container
+ * a `errorContainer` para diferenciar el modo destructivo del armado activo.
+ */
 @Composable
-internal fun AlarmControl(
-    atom: AlarmAtom,
-    deviceStatus: String?,
-    onOpenDialog: (DeviceDetailDialog) -> Unit,
+private fun AlarmModeCell(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    shortLabelRes: Int,
+    isCurrent: Boolean,
+    isDisarm: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val armed = deviceStatus == "armedStay" || deviceStatus == "armedAway"
-    // Ofrecemos todas las transiciones y deshabilitamos solo la del estado actual, para pasar de casa<->away en un paso.
-    ControlCard {
-        atom.armActions.forEach { arm ->
-            val isCurrent = when (arm.action) {
-                "armStay" -> deviceStatus == "armedStay"
-                "armAway" -> deviceStatus == "armedAway"
-                else -> false
-            }
-            OutlinedButton(
-                onClick = { onOpenDialog(DeviceDetailDialog.SecurityCode(arm.action, arm.labelRes)) },
-                enabled = !isCurrent,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(arm.labelRes))
-            }
-        }
-        OutlinedButton(
-            onClick = {
-                onOpenDialog(
-                    DeviceDetailDialog.SecurityCode(atom.disarmAction, R.string.device_action_disarm)
-                )
-            },
-            enabled = armed,
-            modifier = Modifier.fillMaxWidth(),
+    // Inactivos usan `surfaceContainerHigh` (no `surface`) para contrastar
+    // claramente con el fondo de la ControlCard padre — sino las celdas
+    // inactivas quedaban "invisibles" sobre el azul claro de la card.
+    val containerColor = when {
+        isCurrent && isDisarm -> MaterialTheme.colorScheme.errorContainer
+        isCurrent             -> MaterialTheme.colorScheme.primaryContainer
+        else                  -> MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+    val contentColor = when {
+        isCurrent && isDisarm -> MaterialTheme.colorScheme.onErrorContainer
+        isCurrent             -> MaterialTheme.colorScheme.onPrimaryContainer
+        else                  -> MaterialTheme.colorScheme.onSurface
+    }
+    Card(
+        // El activo no es clickeable: el dialog ya esta abierto-y-cerrado en
+        // ese estado. Eso ademas elimina el efecto "button deshabilitado
+        // ahi parado" que tenia la version anterior.
+        onClick = if (isCurrent) ({}) else onClick,
+        enabled = !isCurrent,
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor,
+            contentColor = contentColor,
+            disabledContainerColor = containerColor,
+            disabledContentColor = contentColor,
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 18.dp, horizontal = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text(stringResource(R.string.device_action_disarm))
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                // Iconos mas grandes para que la celda no se sienta vacia:
+                // 36dp activo / 30dp inactivo (antes 32/24).
+                modifier = Modifier.size(if (isCurrent) 36.dp else 30.dp),
+            )
+            Text(
+                text = stringResource(shortLabelRes),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+            )
         }
     }
 }
@@ -206,18 +283,6 @@ internal fun VacuumControl(
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.vacuum_dock))
             }
-        }
-    }
-}
-
-@Composable
-internal fun ChangeCodeControl(onOpenDialog: (DeviceDetailDialog) -> Unit) {
-    ControlCard {
-        OutlinedButton(
-            onClick = { onOpenDialog(DeviceDetailDialog.ChangeCode) },
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(stringResource(R.string.device_action_change_security_code))
         }
     }
 }

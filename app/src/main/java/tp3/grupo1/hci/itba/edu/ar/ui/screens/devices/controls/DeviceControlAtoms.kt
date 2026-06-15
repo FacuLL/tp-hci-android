@@ -62,9 +62,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.domain.AlarmAtom
-import tp3.grupo1.hci.itba.edu.ar.domain.AlarmStatusAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.ButtonAtom
-import tp3.grupo1.hci.itba.edu.ar.domain.ChangeCodeAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.ColorAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.ControlAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.DispenseAtom
@@ -105,9 +103,7 @@ internal fun ControlAtomCard(
         is SelectAtom -> SelectControl(atom, onExecute)
         is ColorAtom -> ColorControl(atom, recentColors, onExecute, onPickCustomColor)
         is ButtonAtom -> ButtonControl(atom, onExecute)
-        is AlarmStatusAtom -> AlarmStatusControl(atom)
-        is AlarmAtom -> AlarmControl(atom, deviceStatus, onOpenDialog)
-        ChangeCodeAtom -> ChangeCodeControl(onOpenDialog)
+        is AlarmAtom -> AlarmControl(atom, onOpenDialog)
         is DispenseAtom -> DispenseControl(atom, accent, deviceStatus, dispensing, onDispense)
         is PlaybackAtom -> PlaybackControl(atom, accent, onExecute, onOpenDialog)
         is PlaylistAtom -> PlaylistControl(onOpenDialog)

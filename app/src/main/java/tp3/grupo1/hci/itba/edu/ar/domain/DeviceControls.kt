@@ -60,22 +60,22 @@ data class LampPreviewAtom(
     val active: Boolean,
 ) : ControlAtom
 
-data class AlarmStatusAtom(
-    val currentStatus: String?,
-) : ControlAtom
-
 data class AlarmArmAction(
     val action: String,
     @field:StringRes val labelRes: Int,
 )
 
 // Selector de armado/desarmado de alarma; toda transicion requiere el codigo de seguridad.
+// Incluye `currentStatus` (estado actual del device) y `changeCodeAction` (nombre del action
+// para abrir el dialog de cambio de codigo, null si el device no lo soporta). Antes habia
+// 3 atoms separados (AlarmStatusAtom + AlarmAtom + ChangeCodeAtom) que se renderizaban como
+// 3 cards distintas con info redundante. Ahora todo vive en una card unica con grid 3-up.
 data class AlarmAtom(
     val armActions: List<AlarmArmAction>,
     val disarmAction: String,
+    val currentStatus: String?,
+    val changeCodeAction: String?,
 ) : ControlAtom
-
-data object ChangeCodeAtom : ControlAtom
 
 data class DispenseAtom(
     val action: String,
@@ -181,18 +181,17 @@ private fun detectAlarm(actions: List<DeviceTypeAction>, device: Device): List<C
     val armAway = findAction(actions, "armAway")
     val disarm = findAction(actions, "disarm")
     if (armStay == null && armAway == null && disarm == null) return null
-    val atoms = mutableListOf<ControlAtom>(
-        AlarmStatusAtom(device.state.status),
+    return listOf(
         AlarmAtom(
             armActions = listOfNotNull(
                 armStay?.let { AlarmArmAction("armStay", R.string.device_action_arm_stay) },
                 armAway?.let { AlarmArmAction("armAway", R.string.device_action_arm_away) },
             ),
             disarmAction = disarm?.name ?: "disarm",
+            currentStatus = device.state.status,
+            changeCodeAction = findAction(actions, "changeSecurityCode")?.name,
         ),
     )
-    if (findAction(actions, "changeSecurityCode") != null) atoms.add(ChangeCodeAtom)
-    return atoms
 }
 
 private fun detectLampPreview(device: Device): LampPreviewAtom? {

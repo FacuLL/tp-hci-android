@@ -93,6 +93,12 @@
     <string name="device_action_arm_away">Activar ausente</string>
     <string name="device_action_disarm">Desactivar</string>
     <string name="device_action_change_security_code">Cambiar código</string>
+    <string name="alarm_mode_title">Modo de alarma</string>
+    <!-- Labels cortos para las celdas del grid 3-up. Los strings device_action_* siguen
+         usandose en titulos de dialog y otros contextos donde queremos el verbo completo. -->
+    <string name="alarm_mode_short_stay">En casa</string>
+    <string name="alarm_mode_short_away">Ausente</string>
+    <string name="alarm_mode_short_disarm">Desactivada</string>
     <string name="device_action_set_mode">Modo</string>
     <string name="device_action_set_fan_speed">Velocidad del ventilador</string>
     <string name="device_action_set_vertical_swing">Oscilación vertical</string>

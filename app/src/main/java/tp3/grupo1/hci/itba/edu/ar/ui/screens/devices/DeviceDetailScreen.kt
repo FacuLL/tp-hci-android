@@ -58,6 +58,7 @@ import kotlinx.serialization.json.JsonElement
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.data.model.Device
 import tp3.grupo1.hci.itba.edu.ar.data.model.Room
+import tp3.grupo1.hci.itba.edu.ar.domain.DeviceTypeIds
 import tp3.grupo1.hci.itba.edu.ar.domain.Validators
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceStateText
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceTypeColor
@@ -349,13 +350,19 @@ private fun DeviceHeader(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = deviceStateText(context, device),
-                style = MaterialTheme.typography.titleSmall,
-                color = accent,
-                fontWeight = FontWeight.SemiBold,
-            )
+            // En alarmas el estado actual lo muestra la card de modos
+            // (AlarmControl con grid 3-up: la celda activa ya indica
+            // "Casa" / "Fuera de casa" / "Desarmada"). Mostrarlo aca
+            // tambien es ruido visual triplicado.
+            if (device.type.id != DeviceTypeIds.ALARM) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = deviceStateText(context, device),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = accent,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
         }
         if (showManagementActions) {
             Row { DeviceManagementActions(onOpenDialog = onOpenDialog) }
