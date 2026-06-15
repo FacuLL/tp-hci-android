@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -137,6 +138,8 @@ fun DevicesScreen(
     }
 
     Scaffold(
+        // El outer NavigationSuiteScaffold ya consumio los insets del sistema.
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.nav_devices)) },
@@ -384,10 +387,7 @@ private fun DevicesListPane(
             else -> LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                // Bottom padding extra para que el ultimo device no quede
-                // tapado por la NavigationSuiteScaffold (los insets del
-                // bottom nav no llegan al Scaffold interno).
-                contentPadding = PaddingValues(bottom = 96.dp),
+                contentPadding = PaddingValues(bottom = 16.dp),
             ) {
                 items(listState.devices, key = { it.id }) { device ->
                     DeviceListItem(

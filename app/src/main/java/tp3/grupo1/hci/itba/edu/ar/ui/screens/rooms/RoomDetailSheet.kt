@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -307,11 +305,11 @@ private fun RoomDeviceRow(
 }
 
 /**
- * Square card used in the room detail grid. Same data as RoomDeviceRow
- * (icon, name, state, optional power switch) but laid out vertically so a
- * row of these forms a grid that uses the screen width better than a
- * single-column list. Active devices get a tinted border to highlight
- * them at a glance.
+ * Card de device para la grilla de la habitacion. Sin aspect ratio fijo:
+ * la altura la define el contenido para no desperdiciar el centro de la
+ * card (la version anterior con `aspectRatio(1f)` dejaba un hueco grande
+ * entre el icono+switch arriba y el nombre+estado abajo). Asi entran
+ * mas devices por pantalla y la card se ve mas compacta.
  */
 @Composable
 private fun RoomDeviceSquareCard(
@@ -328,21 +326,18 @@ private fun RoomDeviceSquareCard(
     val active = powerAtom?.active == true
     Surface(
         onClick = onOpen,
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f),
+        modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             // Fila superior: icono accent a la izquierda + switch (si el
-            // device tiene power atom) a la derecha. Sino, el lugar del
-            // switch queda libre para mantener el alineamiento de la card.
+            // device tiene power atom) a la derecha.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -365,27 +360,19 @@ private fun RoomDeviceSquareCard(
                     )
                 }
             }
-            // Nombre + estado al pie de la card.
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.Bottom,
-            ) {
-                Text(
-                    text = device.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = deviceStateText(context, device),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+            Text(
+                text = device.name,
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = deviceStateText(context, device),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
