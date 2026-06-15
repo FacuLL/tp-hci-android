@@ -302,12 +302,17 @@ private fun detectSliders(
     if (!param.isNumeric || min == null || max == null) return@mapNotNull null
     used.add(action.name)
     val stateKey = if (action.name == "setFreezerTemperature") "freezerTemperature" else param.name.orEmpty()
+    // El API puede declarar el rango en orden descendente (ej. freezer -8..-20); lo normalizamos.
+    val lo = minOf(min.toInt(), max.toInt())
+    val hi = maxOf(min.toInt(), max.toInt())
     SliderAtom(
         action = action.name,
         paramName = param.name.orEmpty(),
-        min = min.toInt(),
-        max = max.toInt(),
-        value = numericStateValue(device.state, stateKey) ?: min.toInt(),
+        min = lo,
+        max = hi,
+        // Apagado, el estado puede traer un valor fuera de rango (ej. horno off -> 0): lo encajamos
+        // dentro de [lo,hi] para que la temperatura quede regulable y se muestre bien.
+        value = (numericStateValue(device.state, stateKey) ?: lo).coerceIn(lo, hi),
         labelRes = deviceActionNameRes(action.name),
         rawName = action.name,
         unit = sliderUnit(action.name),

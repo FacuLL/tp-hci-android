@@ -265,11 +265,15 @@ private fun SliderControl(
     onExecute: (String, List<JsonElement>) -> Unit,
 ) {
     val label = atom.labelRes?.let { stringResource(it) } ?: atom.rawName
+    // El rango puede venir invertido del API (ej. freezer -8..-20): lo normalizamos para no romper
+    // el Slider (valueRange exige lo <= hi) y encajamos el valor dentro de [lo,hi].
+    val lo = minOf(atom.min, atom.max).toFloat()
+    val hi = maxOf(atom.min, atom.max).toFloat()
     // Valor local mientras se arrastra; la API solo se llama al soltar y los updates externos se ignoran durante el drag.
-    var sliderValue by remember { mutableFloatStateOf(atom.value.toFloat()) }
+    var sliderValue by remember { mutableFloatStateOf(atom.value.toFloat().coerceIn(lo, hi)) }
     var dragging by remember { mutableStateOf(false) }
     LaunchedEffect(atom.value) {
-        if (!dragging) sliderValue = atom.value.toFloat()
+        if (!dragging) sliderValue = atom.value.toFloat().coerceIn(lo, hi)
     }
     ControlCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -291,8 +295,8 @@ private fun SliderControl(
                 dragging = true
                 sliderValue = it
             },
-            valueRange = atom.min.toFloat()..atom.max.toFloat(),
-            steps = (atom.max - atom.min - 1).coerceAtLeast(0),
+            valueRange = lo..hi,
+            steps = (hi - lo - 1).roundToInt().coerceAtLeast(0),
             onValueChangeFinished = {
                 dragging = false
                 onExecute(atom.action, listOf(JsonPrimitive(sliderValue.roundToInt())))
