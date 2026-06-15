@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +27,8 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.window.core.layout.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -102,35 +106,45 @@ private fun StatisticsContent(
     onSelectPeriod: (StatsPeriod) -> Unit,
     contentPadding: PaddingValues,
 ) {
-    LazyColumn(
+    val widthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    // Cap + center: KPI cards and the chart stay readable instead of stretching
+    // edge-to-edge on landscape / tablet (chart aspect would distort otherwise).
+    Box(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            top = contentPadding.calculateTopPadding() + 8.dp,
-            bottom = contentPadding.calculateBottomPadding() + 24.dp,
-            start = 16.dp,
-            end = 16.dp,
-        ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = stringResource(R.string.statistics_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = stringResource(R.string.statistics_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+        LazyColumn(
+            modifier = Modifier
+                .widthIn(max = 720.dp)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(
+                top = contentPadding.calculateTopPadding() + 8.dp,
+                bottom = contentPadding.calculateBottomPadding() + 24.dp,
+                start = 16.dp,
+                end = 16.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = stringResource(R.string.statistics_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = stringResource(R.string.statistics_subtitle),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
+            item {
+                PeriodSelector(selected = state.period, onSelect = onSelectPeriod)
+            }
+            item { KpiGrid(state, widthClass) }
+            item { HourlyChartCard(state.hourly) }
         }
-        item {
-            PeriodSelector(selected = state.period, onSelect = onSelectPeriod)
-        }
-        item { KpiGrid(state) }
-        item { HourlyChartCard(state.hourly) }
     }
 }
 
@@ -157,29 +171,31 @@ private fun PeriodSelector(
 }
 
 @Composable
-private fun KpiGrid(state: StatisticsUiState) {
+private fun KpiGrid(state: StatisticsUiState, widthClass: WindowWidthSizeClass) {
     val kwhStr = formatKwh(state.totalKwh)
     val costStr = formatCost(state.estimatedCost)
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    val cards = listOf<@Composable (Modifier) -> Unit>(
+        { m ->
             KpiCard(
                 eyebrowRes = R.string.statistics_kpi_total_consumption,
                 value = stringResource(R.string.statistics_kpi_total_consumption_value, kwhStr),
                 descriptionRes = R.string.statistics_kpi_total_consumption_desc,
                 delta = deltaLabel(state.deltaPct),
                 deltaPositive = state.deltaPct > 0,
-                modifier = Modifier.weight(1f),
+                modifier = m,
             )
+        },
+        { m ->
             KpiCard(
                 eyebrowRes = R.string.statistics_kpi_estimated_cost,
                 value = stringResource(R.string.statistics_kpi_estimated_cost_value, costStr),
                 descriptionRes = R.string.statistics_kpi_estimated_cost_desc,
                 delta = deltaLabel(state.deltaPct),
                 deltaPositive = state.deltaPct > 0,
-                modifier = Modifier.weight(1f),
+                modifier = m,
             )
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        },
+        { m ->
             KpiCard(
                 eyebrowRes = R.string.statistics_kpi_most_active_room,
                 value = state.mostActiveRoom?.let {
@@ -188,8 +204,10 @@ private fun KpiGrid(state: StatisticsUiState) {
                 descriptionRes = R.string.statistics_kpi_most_active_room_desc,
                 delta = null,
                 deltaPositive = false,
-                modifier = Modifier.weight(1f),
+                modifier = m,
             )
+        },
+        { m ->
             KpiCard(
                 eyebrowRes = R.string.statistics_kpi_active_devices,
                 value = stringResource(
@@ -200,8 +218,22 @@ private fun KpiGrid(state: StatisticsUiState) {
                 descriptionRes = R.string.statistics_kpi_active_devices_desc,
                 delta = null,
                 deltaPositive = false,
-                modifier = Modifier.weight(1f),
+                modifier = m,
             )
+        },
+    )
+    // EXPANDED uses a single row of 4; everything else falls back to 2x2.
+    if (widthClass == WindowWidthSizeClass.EXPANDED) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            cards.forEach { it(Modifier.weight(1f)) }
+        }
+    } else {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            cards.chunked(2).forEach { pair ->
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    pair.forEach { it(Modifier.weight(1f)) }
+                }
+            }
         }
     }
 }
@@ -280,28 +312,33 @@ private fun HourlyChartCard(points: List<HourPoint>) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            if (points.isEmpty() || points.all { it.kWh == 0.0 }) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = stringResource(R.string.statistics_chart_empty),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            // Aspect-based height keeps the chart from looking squashed in
+            // landscape (180dp fixed was too short at ~1.5+:1 width ratios).
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                val chartHeight = (maxWidth * 0.35f).coerceIn(180.dp, 280.dp)
+                if (points.isEmpty() || points.all { it.kWh == 0.0 }) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(chartHeight),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.statistics_chart_empty),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                } else {
+                    LineChart(points = points, height = chartHeight)
                 }
-            } else {
-                LineChart(points = points)
             }
         }
     }
 }
 
 @Composable
-private fun LineChart(points: List<HourPoint>) {
+private fun LineChart(points: List<HourPoint>, height: androidx.compose.ui.unit.Dp) {
     val accent = MaterialTheme.colorScheme.primary
     val grid = MaterialTheme.colorScheme.outlineVariant
     val fillBrush = Brush.verticalGradient(
@@ -310,7 +347,7 @@ private fun LineChart(points: List<HourPoint>) {
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp),
+            .height(height),
     ) {
         val maxKwh = (points.maxOf { it.kWh }).coerceAtLeast(0.0001)
         val yMax = niceCeiling(maxKwh)

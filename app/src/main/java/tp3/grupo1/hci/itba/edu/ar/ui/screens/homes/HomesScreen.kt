@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -243,7 +244,9 @@ private fun HomesContent(
         }
     } else {
         LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+            // Adaptive lets tablet landscape (EXPANDED) fit 3+ columns instead
+            // of capping at 2 like Fixed(2) used to.
+            columns = GridCells.Adaptive(minSize = 320.dp),
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -376,16 +379,23 @@ private fun LoadErrorState(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+    // ErrorBanner uses fillMaxWidth() internally, so we cap the width here to
+    // avoid the banner stretching edge-to-edge on landscape / tablet.
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
     ) {
-        ErrorBanner(message)
-        Button(onClick = onRetry) {
-            Text(stringResource(R.string.action_retry))
+        Column(
+            modifier = Modifier
+                .widthIn(max = 480.dp)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            ErrorBanner(message)
+            Button(onClick = onRetry) {
+                Text(stringResource(R.string.action_retry))
+            }
         }
     }
 }

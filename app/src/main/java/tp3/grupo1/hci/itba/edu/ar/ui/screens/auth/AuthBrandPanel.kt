@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -131,10 +132,18 @@ fun AuthBrandPanel(expanded: Boolean, modifier: Modifier = Modifier) {
 }
 
 /**
- * Adaptive body shared by the authentication screens (RNF5). Compact windows
- * stack the brand header above the form; medium and expanded windows switch
- * to the web-like split layout with the brand panel on the left and the form
- * on the right.
+ * Adaptive body shared by the authentication screens (RNF5).
+ *
+ * - COMPACT (phone portrait): brand header stacked above the form.
+ * - MEDIUM (phone landscape, small tablet): same stacked layout — splitting
+ *   600-840dp into a brand panel + form ends up cramped, the brand panel can't
+ *   fit its features on the available height anyway.
+ * - EXPANDED (tablet landscape): web-style split with brand panel left + form
+ *   right.
+ *
+ * In all stacked variants the form column uses `.imePadding()` so the keyboard
+ * doesn't push the inputs out of view, which is the worst case on phone
+ * landscape (where ~360dp of vertical is already tight).
  */
 @Composable
 fun AuthLayout(
@@ -142,11 +151,12 @@ fun AuthLayout(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
+    if (windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.EXPANDED) {
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .imePadding()
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -169,6 +179,7 @@ fun AuthLayout(
                     .weight(0.6f)
                     .fillMaxHeight()
                     .verticalScroll(rememberScrollState())
+                    .imePadding()
                     .padding(horizontal = 32.dp, vertical = 24.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,

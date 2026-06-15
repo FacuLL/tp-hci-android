@@ -277,7 +277,9 @@ private fun DeviceDetailLayout(
     BoxWithConstraints {
         val compact = maxWidth < 600.dp
         LazyVerticalGrid(
-            columns = GridCells.Fixed(if (compact) 1 else 2),
+            // Below 600dp force 1 column; above, let Adaptive pick the column
+            // count whose card width ≥ minSize so EXPANDED panes use 3+ cols.
+            columns = if (compact) GridCells.Fixed(1) else GridCells.Adaptive(minSize = 280.dp),
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),

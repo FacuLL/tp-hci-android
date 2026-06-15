@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -101,7 +102,10 @@ fun DevicesScreen(
     val deviceTypes by viewModel.deviceTypes.collectAsStateWithLifecycle()
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val twoPane = windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
+    // Always single-pane vertical scroll: the old two-pane layout (devices
+    // list + embedded detail pane) was removed for consistency with the
+    // dashboard and rooms tabs.
+    val twoPane = false
 
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -189,30 +193,39 @@ fun DevicesScreen(
                     )
                 }
             } else {
-                PullToRefreshBox(
-                    isRefreshing = uiState.refreshing,
-                    onRefresh = viewModel::refresh,
+                // Cap + center: on landscape / tablet the list stays in a
+                // readable column instead of stretching the full width.
+                Box(
                     modifier = Modifier
                         .padding(innerPadding)
                         .fillMaxSize(),
+                    contentAlignment = Alignment.TopCenter,
                 ) {
-                    DevicesListPane(
-                        uiState = uiState,
-                        listState = listState,
-                        rooms = rooms,
-                        deviceTypes = deviceTypes,
-                        selectedDeviceId = null,
-                        onQueryChange = viewModel::onQueryChange,
-                        onTypeSelected = viewModel::onTypeSelected,
-                        onLockFilterToggle = viewModel::onLockFilterToggle,
-                        onDeviceClick = openDevice,
-                        onToggle = viewModel::toggleDevice,
-                        onAssignRoom = { deviceToAssignId = it.id },
-                        onRemoveFromRoom = viewModel::removeFromRoom,
-                        onDelete = { deviceToDeleteId = it.id },
-                        onAddDevice = { showCreateDialog = true },
-                        modifier = Modifier.fillMaxSize(),
-                    )
+                    PullToRefreshBox(
+                        isRefreshing = uiState.refreshing,
+                        onRefresh = viewModel::refresh,
+                        modifier = Modifier
+                            .widthIn(max = 760.dp)
+                            .fillMaxSize(),
+                    ) {
+                        DevicesListPane(
+                            uiState = uiState,
+                            listState = listState,
+                            rooms = rooms,
+                            deviceTypes = deviceTypes,
+                            selectedDeviceId = null,
+                            onQueryChange = viewModel::onQueryChange,
+                            onTypeSelected = viewModel::onTypeSelected,
+                            onLockFilterToggle = viewModel::onLockFilterToggle,
+                            onDeviceClick = openDevice,
+                            onToggle = viewModel::toggleDevice,
+                            onAssignRoom = { deviceToAssignId = it.id },
+                            onRemoveFromRoom = viewModel::removeFromRoom,
+                            onDelete = { deviceToDeleteId = it.id },
+                            onAddDevice = { showCreateDialog = true },
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                 }
             }
         }

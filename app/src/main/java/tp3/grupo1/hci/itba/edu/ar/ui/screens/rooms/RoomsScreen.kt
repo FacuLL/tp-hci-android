@@ -2,6 +2,7 @@ package tp3.grupo1.hci.itba.edu.ar.ui.screens.rooms
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -243,8 +244,13 @@ private fun RoomsContent(
     onToggleDevice: (Device) -> Unit,
     onAddDevice: (Room) -> Unit,
 ) {
-    when (widthClass) {
-        WindowWidthSizeClass.COMPACT -> LazyColumn(
+    // Always single-pane vertical scroll, regardless of width. Phones use a
+    // simple list; landscape / tablet uses the adaptive grid but with a width
+    // cap so the content doesn't stretch edge-to-edge. The previous two-pane
+    // layout (grid + fixed 360dp detail panel) was removed for consistency
+    // with the dashboard.
+    if (widthClass == WindowWidthSizeClass.COMPACT) {
+        LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -260,49 +266,22 @@ private fun RoomsContent(
                 )
             }
         }
-        WindowWidthSizeClass.MEDIUM -> RoomsGrid(
-            rooms = state.rooms,
-            devices = state.devices,
-            selectedRoomId = null,
-            onSelectRoom = onSelectRoom,
-            onRenameRoom = onRenameRoom,
-            onDeleteRoom = onDeleteRoom,
+    } else {
+        Box(
             modifier = Modifier.fillMaxSize(),
-        )
-        else -> {
-            // Two-pane layout: rooms grid plus a fixed detail panel on the right
-            val displayedRoom = state.rooms.firstOrNull { it.id == state.selectedRoomId }
-                ?: state.rooms.first()
-            Row(modifier = Modifier.fillMaxSize()) {
-                RoomsGrid(
-                    rooms = state.rooms,
-                    devices = state.devices,
-                    selectedRoomId = displayedRoom.id,
-                    onSelectRoom = onSelectRoom,
-                    onRenameRoom = onRenameRoom,
-                    onDeleteRoom = onDeleteRoom,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                )
-                Surface(
-                    modifier = Modifier
-                        .width(360.dp)
-                        .fillMaxHeight(),
-                    color = MaterialTheme.colorScheme.surfaceContainerLow,
-                ) {
-                    RoomDetailContent(
-                        room = displayedRoom,
-                        devices = devicesInRoom(state.devices, displayedRoom.id),
-                        types = state.types,
-                        pendingDeviceIds = state.pendingDeviceIds,
-                        onOpenDevice = onOpenDevice,
-                        onToggleDevice = onToggleDevice,
-                        onAddDevice = { onAddDevice(displayedRoom) },
-                        modifier = Modifier.fillMaxHeight(),
-                    )
-                }
-            }
+            contentAlignment = Alignment.TopCenter,
+        ) {
+            RoomsGrid(
+                rooms = state.rooms,
+                devices = state.devices,
+                selectedRoomId = null,
+                onSelectRoom = onSelectRoom,
+                onRenameRoom = onRenameRoom,
+                onDeleteRoom = onDeleteRoom,
+                modifier = Modifier
+                    .widthIn(max = 960.dp)
+                    .fillMaxSize(),
+            )
         }
     }
 }
@@ -318,7 +297,9 @@ private fun RoomsGrid(
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 240.dp),
+        // 200dp lets EXPANDED layouts squeeze in 3 columns alongside the 360dp
+        // detail pane; MEDIUM still resolves to 2 columns at ~640-720dp.
+        columns = GridCells.Adaptive(minSize = 200.dp),
         modifier = modifier,
         contentPadding = PaddingValues(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),

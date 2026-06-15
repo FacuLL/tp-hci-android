@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -77,12 +78,21 @@ fun RoomDetailContent(
     editMode: Boolean = false,
     onMoveDevice: (from: Int, to: Int) -> Unit = { _, _ -> },
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    // Cap the content width and center on wide screens so the device rows and
+    // the Add button don't stretch edge-to-edge in landscape / tablet. The
+    // 640dp cap is wider than the tablet side panel (360dp) so embedding in
+    // the rooms two-pane is unaffected.
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.TopCenter,
     ) {
+        Column(
+            modifier = Modifier
+                .widthIn(max = 640.dp)
+                .fillMaxWidth()
+                .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
         Column {
             if (showTitle) {
                 Text(
@@ -132,11 +142,20 @@ fun RoomDetailContent(
             }
         }
         if (!editMode) {
-            Button(onClick = onAddDevice, modifier = Modifier.fillMaxWidth()) {
+            // Width-capped + center so the CTA doesn't span the whole row on
+            // landscape, while still feeling like a primary action.
+            Button(
+                onClick = onAddDevice,
+                modifier = Modifier
+                    .widthIn(max = 360.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally),
+            ) {
                 Icon(Icons.Outlined.Add, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.rooms_add_device))
             }
+        }
         }
     }
 }
