@@ -54,6 +54,7 @@ fun MainScreen(
     onOpenRoom: (String) -> Unit,
     onOpenHomes: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenNotifications: () -> Unit,
     onCreateRoutine: () -> Unit,
     onEditRoutine: (String) -> Unit,
 ) {
@@ -104,6 +105,7 @@ fun MainScreen(
                     onOpenRoom = onOpenRoom,
                     onOpenHomes = onOpenHomes,
                     onOpenSettings = onOpenSettings,
+                    onOpenNotifications = onOpenNotifications,
                     onOpenRooms = {
                         tabNavController.navigate(Routes.TAB_ROOMS) {
                             popUpTo(tabNavController.graph.findStartDestination().id) {

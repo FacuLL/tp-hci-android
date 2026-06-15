@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import tp3.grupo1.hci.itba.edu.ar.data.notifications.NotificationCategory
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -34,6 +36,7 @@ class AppPreferences(private val context: Context) {
         private val CURRENT_HOME_ID = stringPreferencesKey("current_home_id")
         private val THEME_MODE = stringPreferencesKey("theme_mode")
         private val LANGUAGE = stringPreferencesKey("language")
+        private val NOTIF_CATEGORIES = stringSetPreferencesKey("notif_categories_enabled")
 
         private const val BOOTSTRAP_PREFS = "lumina_bootstrap"
         private const val BOOTSTRAP_LANGUAGE = "language"
@@ -78,6 +81,32 @@ class AppPreferences(private val context: Context) {
                 ?: AppLanguage.SYSTEM
         }
         .distinctUntilChanged()
+
+    /**
+     * Notification categories the user wants to receive. Absent key means the
+     * default: all categories enabled.
+     */
+    val enabledNotificationCategories: Flow<Set<NotificationCategory>> = context.dataStore.data
+        .map { prefs ->
+            val stored = prefs[NOTIF_CATEGORIES]
+                ?: return@map NotificationCategory.entries.toSet()
+            stored.mapNotNull { name ->
+                NotificationCategory.entries.firstOrNull { it.name == name }
+            }.toSet()
+        }
+        .distinctUntilChanged()
+
+    suspend fun setNotificationCategoryEnabled(category: NotificationCategory, enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            val current = prefs[NOTIF_CATEGORIES]
+                ?: NotificationCategory.entries.map { it.name }.toSet()
+            prefs[NOTIF_CATEGORIES] = if (enabled) {
+                current + category.name
+            } else {
+                current - category.name
+            }
+        }
+    }
 
     /** Synchronous read of the persisted language for use in attachBaseContext. */
     fun languageBlocking(): AppLanguage {

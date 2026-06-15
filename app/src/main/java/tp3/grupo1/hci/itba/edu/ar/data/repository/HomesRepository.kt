@@ -77,7 +77,7 @@ class HomesRepository(
     }
 
     suspend fun delete(homeId: String) {
-        apiCall { api.homes.delete(homeId) }
+        apiCall { api.homes.delete(homeId).close() }
         _homes.update { list -> list.filterNot { it.id == homeId } }
         if (preferences.currentHomeId.first() == homeId) {
             preferences.setCurrentHomeId(_homes.value.firstOrNull()?.id)

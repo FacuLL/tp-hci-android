@@ -49,6 +49,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.screens.auth.RegisterScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.auth.VerifyAccountScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.DeviceDetailScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.homes.HomesScreen
+import tp3.grupo1.hci.itba.edu.ar.ui.screens.notifications.NotificationsScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.routines.RoutineEditScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.rooms.RoomDetailScreen
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.settings.SettingsScreen
@@ -202,6 +203,7 @@ fun LuminaApp(container: AppContainer) {
                     onOpenRoom = { roomId -> navController.navigate(Routes.roomDetail(roomId)) },
                     onOpenHomes = { navController.navigate(Routes.HOMES) },
                     onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                    onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                     onCreateRoutine = { navController.navigate(Routes.ROUTINE_NEW) },
                     onEditRoutine = { routineId -> navController.navigate(Routes.routineEdit(routineId)) },
                 )
@@ -245,6 +247,9 @@ fun LuminaApp(container: AppContainer) {
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(onNavigateUp = { navController.navigateUp() })
+            }
+            composable(Routes.NOTIFICATIONS) {
+                NotificationsScreen(onNavigateUp = { navController.navigateUp() })
             }
         }
     }

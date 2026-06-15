@@ -44,6 +44,11 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
     private val devicesRepository = container.devicesRepository
     private val deviceTypesRepository = container.deviceTypesRepository
     private val authRepository = container.authRepository
+    private val notificationStore = container.notificationStore
+
+    /** Unread notification count for the dashboard bell badge. */
+    val unreadNotifications: StateFlow<Int> = notificationStore.unreadCount
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
     private val refreshing = MutableStateFlow(true)
     private val manualRefreshing = MutableStateFlow(false)

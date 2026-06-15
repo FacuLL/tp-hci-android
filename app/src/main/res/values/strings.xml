@@ -177,4 +177,21 @@
     <string name="notif_home_shared_body">Te dieron acceso a un nuevo hogar</string>
     <string name="notif_home_unshared_title">Acceso revocado</string>
     <string name="notif_home_unshared_body">Ya no tenés acceso a un hogar compartido</string>
+
+    <!-- Notifications screen -->
+    <string name="title_notifications">Notificaciones</string>
+    <string name="notifications_clear_all">Borrar todo</string>
+    <string name="notifications_empty">No tenés notificaciones</string>
+
+    <!-- Notification settings -->
+    <string name="settings_section_notifications">Notificaciones</string>
+    <string name="settings_notifications_hint">Elegí qué tipos de notificaciones querés recibir</string>
+    <string name="notif_cat_critical">Eventos críticos</string>
+    <string name="notif_cat_critical_desc">Alarmas y cerraduras</string>
+    <string name="notif_cat_simple">Eventos de dispositivos</string>
+    <string name="notif_cat_simple_desc">Avisos comunes, como fin de ciclo</string>
+    <string name="notif_cat_device_lifecycle">Creación de dispositivos</string>
+    <string name="notif_cat_device_lifecycle_desc">Cuando se agrega o elimina un dispositivo</string>
+    <string name="notif_cat_home">Hogares compartidos</string>
+    <string name="notif_cat_home_desc">Cuando se comparte o revoca un hogar</string>
 </resources>

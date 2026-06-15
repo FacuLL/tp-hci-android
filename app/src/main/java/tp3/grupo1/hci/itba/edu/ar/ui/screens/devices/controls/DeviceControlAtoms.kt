@@ -253,6 +253,10 @@ private fun PowerControl(
                 colors = SwitchDefaults.colors(
                     checkedTrackColor = accent,
                     uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    // Card surface ~ default track tone, so off-state blends in.
+                    // Force contrast that holds regardless of background.
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    uncheckedBorderColor = MaterialTheme.colorScheme.outline,
                 ),
             )
         }

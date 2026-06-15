@@ -109,6 +109,7 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
             _uiState.update { it.copy(refreshing = true, loadErrorRes = null) }
             try {
                 homesRepository.refresh()
+                homesRepository.currentHome.value?.id?.let { roomsRepository.refreshForHome(it) }
                 devicesRepository.refresh()
                 deviceTypesRepository.ensureLoaded()
                 _uiState.update { it.copy(refreshing = false) }

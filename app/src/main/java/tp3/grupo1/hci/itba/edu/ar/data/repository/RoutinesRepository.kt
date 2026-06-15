@@ -38,7 +38,7 @@ class RoutinesRepository(private val api: ApiProvider) {
     }
 
     suspend fun delete(id: String) {
-        apiCall { api.routines.delete(id) }
+        apiCall { api.routines.delete(id).close() }
         _routines.update { current -> current.filterNot { it.id == id } }
     }
 

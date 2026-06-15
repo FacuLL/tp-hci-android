@@ -3,6 +3,7 @@ package tp3.grupo1.hci.itba.edu.ar.data.network
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -38,8 +39,10 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.User
 import tp3.grupo1.hci.itba.edu.ar.data.model.VerifyAccountRequest
 
 interface UserService {
+    // Per the API contract register returns the created (unverified) User, not
+    // an auth session — login is a separate call.
     @POST("users/register")
-    suspend fun register(@Body body: RegisterRequest): AuthResponse
+    suspend fun register(@Body body: RegisterRequest): User
 
     @POST("users/login")
     suspend fun login(@Body body: LoginRequest): AuthResponse
@@ -82,8 +85,10 @@ interface HomeService {
     @PUT("homes/{id}")
     suspend fun update(@Path("id") id: String, @Body body: HomeUpdateRequest): Home
 
+    // Raw body: the delete endpoints answer with an empty/non-JSON body, which
+    // would make the JSON converter throw and abort the local state update.
     @DELETE("homes/{id}")
-    suspend fun delete(@Path("id") id: String): JsonElement
+    suspend fun delete(@Path("id") id: String): ResponseBody
 
     @GET("homes/{homeId}/rooms")
     suspend fun getRooms(@Path("homeId") homeId: String): List<Room>
@@ -102,14 +107,17 @@ interface RoomService {
     @PUT("rooms/{id}")
     suspend fun update(@Path("id") id: String, @Body body: RoomUpdateRequest): Room
 
+    // Raw body: empty 200 response would otherwise break the JSON converter.
     @DELETE("rooms/{id}")
-    suspend fun delete(@Path("id") id: String): JsonElement
+    suspend fun delete(@Path("id") id: String): ResponseBody
 
     @POST("rooms/{roomId}/devices/{deviceId}")
     suspend fun addDevice(@Path("roomId") roomId: String, @Path("deviceId") deviceId: String): Device
 
+    // Per the API contract this returns void (empty body), so the result is the
+    // raw body and the caller rebuilds the device from its cache.
     @DELETE("rooms/devices/{deviceId}")
-    suspend fun removeDevice(@Path("deviceId") deviceId: String): Device
+    suspend fun removeDevice(@Path("deviceId") deviceId: String): ResponseBody
 }
 
 interface DeviceService {
@@ -123,7 +131,7 @@ interface DeviceService {
     suspend fun update(@Path("id") id: String, @Body body: DeviceUpdateRequest): Device
 
     @DELETE("devices/{id}")
-    suspend fun delete(@Path("id") id: String): JsonElement
+    suspend fun delete(@Path("id") id: String): ResponseBody
 
     /**
      * Executes an action on a device. Params travel as a positional JSON
@@ -154,7 +162,7 @@ interface RoutineService {
     suspend fun update(@Path("id") id: String, @Body body: RoutineUpsertRequest): Routine
 
     @DELETE("routines/{id}")
-    suspend fun delete(@Path("id") id: String): JsonElement
+    suspend fun delete(@Path("id") id: String): ResponseBody
 
     @PATCH("routines/{id}/execute")
     suspend fun execute(@Path("id") id: String, @Body body: RequestBody): List<RoutineActionResult>

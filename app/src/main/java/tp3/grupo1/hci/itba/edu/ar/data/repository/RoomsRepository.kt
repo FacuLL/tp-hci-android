@@ -44,7 +44,7 @@ class RoomsRepository(private val api: ApiProvider) {
     }
 
     suspend fun delete(roomId: String) {
-        apiCall { api.rooms.delete(roomId) }
+        apiCall { api.rooms.delete(roomId).close() }
         _rooms.update { list -> list.filterNot { it.id == roomId } }
     }
 
