@@ -489,7 +489,8 @@ private fun ColorControl(
     ControlCard {
         SectionLabel(stringResource(R.string.device_action_set_color))
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             COLOR_SWATCHES.forEach { (hex, nameRes) ->
@@ -510,7 +511,8 @@ private fun ColorControl(
         if (recentColors.isNotEmpty()) {
             SectionLabel(stringResource(R.string.device_color_recent))
             FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 recentColors.forEach { hex ->
