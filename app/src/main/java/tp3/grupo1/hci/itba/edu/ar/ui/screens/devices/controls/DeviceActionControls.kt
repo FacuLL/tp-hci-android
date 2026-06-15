@@ -91,7 +91,6 @@ internal fun AlarmStatusControl(atom: AlarmStatusAtom) {
     }
 }
 
-/** Arm/disarm buttons; every transition asks for the security code in a dialog. */
 @Composable
 internal fun AlarmControl(
     atom: AlarmAtom,
@@ -99,8 +98,7 @@ internal fun AlarmControl(
     onOpenDialog: (DeviceDetailDialog) -> Unit,
 ) {
     val armed = deviceStatus == "armedStay" || deviceStatus == "armedAway"
-    // Always offer every transition (like the web app); disable only the one that
-    // matches the current state so house<->away can be switched in a single step.
+    // Ofrecemos todas las transiciones y deshabilitamos solo la del estado actual, para pasar de casa<->away en un paso.
     ControlCard {
         atom.armActions.forEach { arm ->
             val isCurrent = when (arm.action) {
@@ -150,7 +148,7 @@ internal fun DispenseControl(
     dispensing: Boolean,
     onDispense: (String, Int, String) -> Unit,
 ) {
-    // Same rule as the web app: a closed faucet cannot dispense.
+    // Una canilla cerrada no puede dispensar.
     val closed = deviceStatus == "closed"
     var quantity by remember(atom) { mutableFloatStateOf(atom.quantityMin.toFloat()) }
     var unit by remember(atom) { mutableStateOf(atom.units.firstOrNull().orEmpty()) }

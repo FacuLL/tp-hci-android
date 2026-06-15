@@ -46,7 +46,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import tp3.grupo1.hci.itba.edu.ar.ui.components.FloatingTopBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -85,12 +85,6 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ProfileAvatar
 
-/**
- * Devices tab: searchable and filterable list of every device of the selected
- * home, with quick power toggles, creation and room assignment. On medium and
- * expanded widths it becomes a two-pane layout with the device detail embedded
- * on the right (RNF4/RNF5).
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DevicesScreen(
@@ -106,9 +100,7 @@ fun DevicesScreen(
     val deviceTypes by viewModel.deviceTypes.collectAsStateWithLifecycle()
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    // Always single-pane vertical scroll: the old two-pane layout (devices
-    // list + embedded detail pane) was removed for consistency with the
-    // dashboard and rooms tabs.
+    // Siempre single-pane: el layout de dos paneles se saco por consistencia con dashboard y rooms.
     val twoPane = false
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -116,8 +108,7 @@ fun DevicesScreen(
 
     var showCreateDialog by rememberSaveable { mutableStateOf(false) }
     var selectedDeviceId by rememberSaveable { mutableStateOf<String?>(null) }
-    // Only the ids survive rotation; the Device is resolved on render so the
-    // dialog closes itself if the device disappears in the meantime.
+    // Solo los ids sobreviven la rotacion; el Device se resuelve al renderizar.
     var deviceToAssignId by rememberSaveable { mutableStateOf<String?>(null) }
     var deviceToDeleteId by rememberSaveable { mutableStateOf<String?>(null) }
     val deviceToAssign = listState.devices.firstOrNull { it.id == deviceToAssignId }
@@ -141,7 +132,7 @@ fun DevicesScreen(
         // El outer NavigationSuiteScaffold ya consumio los insets del sistema.
         contentWindowInsets = WindowInsets(0),
         topBar = {
-            TopAppBar(
+            FloatingTopBar(
                 title = { Text(stringResource(R.string.nav_devices)) },
                 actions = {
                     IconButton(onClick = { showCreateDialog = true }) {
@@ -199,8 +190,6 @@ fun DevicesScreen(
                     )
                 }
             } else {
-                // Cap + center: on landscape / tablet the list stays in a
-                // readable column instead of stretching the full width.
                 Box(
                     modifier = Modifier
                         .padding(innerPadding)
@@ -301,10 +290,7 @@ private fun DevicesListPane(
     onAddDevice: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // En landscape phone (alto < 480dp) la fila de chips + la barra de
-    // busqueda comen casi todo el viewport disponible y queda 1 device
-    // visible. Compactamos a una sola fila: search a la izquierda + boton
-    // de filtro a la derecha que abre un dropdown con las mismas opciones.
+    // En landscape phone (alto < 480dp) chips + busqueda comen el viewport, asi que compactamos a una sola fila.
     val configuration = LocalConfiguration.current
     val isCompactLandscape =
         configuration.screenWidthDp > configuration.screenHeightDp &&
@@ -483,9 +469,7 @@ private fun DeviceListItem(
                 )
             }
             if (powerAtom != null) {
-                // Same safety rule as the device detail (DeviceControlAtoms): an
-                // open/close toggle is blocked while locked, and a lock toggle is
-                // blocked while the door is open.
+                // No se puede abrir/cerrar mientras esta bloqueado, ni bloquear mientras esta abierto.
                 val togglesOpening = powerAtom.onAction == "open" || powerAtom.offAction == "open"
                 val blocked = (togglesOpening && device.state.lock == "locked") ||
                     (powerAtom.onAction == "lock" && device.state.status == "opened")
@@ -562,13 +546,6 @@ private fun DeviceDetailPane(
     }
 }
 
-/**
- * Compact landscape layout for the search + filter controls. The full chip
- * row + search field stack burns ~140dp vertically on phone landscape, which
- * leaves the device list with room for ~1 card. We collapse to a single row:
- * a slimmer search field on the left + a filter icon that opens a dropdown
- * with the same options (All / Locks / each creatable type).
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CompactSearchFilterRow(
@@ -628,8 +605,7 @@ private fun CompactSearchFilterRow(
                     text = { Text(stringResource(R.string.devices_filter_all)) },
                     onClick = {
                         menuOpen = false
-                        // Asegurar reset completo: tipo null + apagar lockOnly
-                        // si estaba prendido (toggle si es true).
+                        // Reset completo: tipo null y apagar lockOnly si estaba prendido.
                         if (lockOnly) onLockFilterToggle()
                         onTypeSelected(null)
                     },
@@ -642,7 +618,6 @@ private fun CompactSearchFilterRow(
                     leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
                     onClick = {
                         menuOpen = false
-                        // El toggle se encarga de prender/apagar.
                         if (!lockOnly) onLockFilterToggle()
                     },
                     trailingIcon = if (lockOnly) {

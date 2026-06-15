@@ -49,7 +49,6 @@ private fun securityCodeError(code: String): Int? = when {
     else -> null
 }
 
-/** Asks for the 4-digit security code before arming or disarming the alarm. */
 @Composable
 internal fun SecurityCodeDialog(
     @StringRes titleRes: Int,

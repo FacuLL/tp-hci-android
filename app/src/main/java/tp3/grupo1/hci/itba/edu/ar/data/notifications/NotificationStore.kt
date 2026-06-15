@@ -18,11 +18,7 @@ import kotlinx.serialization.json.Json
 private val Context.notificationsDataStore: DataStore<Preferences> by
     preferencesDataStore(name = "lumina_notifications")
 
-/**
- * Local, persisted history of received notifications shown on the Notifications
- * screen. Stored as a single JSON list, newest first, capped at [MAX_ITEMS] so
- * the file cannot grow unbounded.
- */
+// Historial local persistido como una lista JSON, mas nuevo primero y limitado a MAX_ITEMS para que el archivo no crezca sin limite.
 class NotificationStore(context: Context, scope: CoroutineScope) {
 
     companion object {

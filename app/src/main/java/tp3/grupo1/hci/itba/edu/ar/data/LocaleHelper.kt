@@ -4,11 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import java.util.Locale
 
-/**
- * Applies the in-app language choice (RNF3) by wrapping a Context with the chosen
- * locale. Every stringResource call then resolves against the matching values-*
- * folder regardless of the device language. SYSTEM leaves the device locale in place.
- */
+// Aplica el idioma elegido en la app (RNF3) envolviendo un Context con el locale. SYSTEM deja el locale del dispositivo.
 object LocaleHelper {
 
     fun wrap(context: Context, language: AppLanguage): Context {

@@ -58,9 +58,7 @@ import java.net.URLDecoder
 
 class MainActivity : ComponentActivity() {
 
-    // Language the Context was built with in attachBaseContext. When the persisted
-    // value diverges from this (the user picked another language) we recreate the
-    // Activity so attachBaseContext re-runs and the new locale takes effect.
+    // Idioma con el que se construyo el Context en attachBaseContext. Si el valor persistido difiere, recreamos la Activity para que se aplique el nuevo locale.
     private var appliedLanguage: AppLanguage = AppLanguage.SYSTEM
 
     override fun attachBaseContext(newBase: Context) {
@@ -103,8 +101,7 @@ fun LuminaApp(container: AppContainer) {
     val token by container.sessionManager.token.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    // RF20: device events arrive as system notifications, so ask for the
-    // permission once a session exists (required from API 33).
+    // RF20: los eventos llegan como notificaciones del sistema, asi que pedimos el permiso cuando hay sesion (requerido desde API 33).
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { }
@@ -124,7 +121,7 @@ fun LuminaApp(container: AppContainer) {
         }
     }
 
-    // When the session disappears (logout or expiry) the user goes back to login.
+    // Cuando desaparece la sesion (logout o expiracion) el usuario vuelve al login.
     LaunchedEffect(token, initialized) {
         if (!initialized) return@LaunchedEffect
         val currentRoute = navController.currentBackStackEntry?.destination?.route
@@ -145,8 +142,7 @@ fun LuminaApp(container: AppContainer) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        // Only the top inset is applied here; bottom insets are handled by
-        // each screen's own bars so the navigation bar reaches the edge.
+        // Solo se aplica el inset superior; los inferiores los maneja cada pantalla para que la barra de navegacion llegue al borde.
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
         snackbarHost = {
             SnackbarHost(snackbarHostState, modifier = Modifier.navigationBarsPadding())

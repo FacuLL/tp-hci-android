@@ -16,10 +16,6 @@ import androidx.compose.ui.unit.dp
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LuminaTextField
 
-/**
- * Server connection editor reachable from the login screen, so the API
- * address (IP and port) can be changed even without a valid session.
- */
 @Composable
 fun ApiConfigDialog(
     apiBaseUrl: String,

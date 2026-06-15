@@ -29,8 +29,7 @@ data class LoginUiState(
     val submitting: Boolean = false,
     val loggedIn: Boolean = false,
     val needsVerificationEmail: String? = null,
-    // Server connection dialog: the API address must be changeable before
-    // logging in, otherwise an unreachable server locks the user out.
+    // La dirección de la API debe poder cambiarse antes de loguearse, si no un servidor inalcanzable deja afuera al usuario.
     val showApiConfig: Boolean = false,
     val apiBaseUrl: String = "",
     val apiKey: String = "",
@@ -90,8 +89,6 @@ class LoginViewModel(private val container: AppContainer) : ViewModel() {
     fun onNeedsVerificationHandled() {
         _uiState.update { it.copy(needsVerificationEmail = null) }
     }
-
-    // ── Server connection (API address and key) ──
 
     fun openApiConfig() {
         viewModelScope.launch {

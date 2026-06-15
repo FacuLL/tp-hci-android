@@ -15,14 +15,9 @@ private val Context.dataStore by preferencesDataStore(name = "lumina_settings")
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
-/** SYSTEM follows the device locale; ES/EN force that language regardless of it. */
+// SYSTEM sigue el locale del dispositivo; ES/EN fuerzan ese idioma sin importarlo.
 enum class AppLanguage { SYSTEM, ES, EN }
 
-/**
- * Persistent user preferences. Includes the API connection settings required
- * by the chair (changeable IP and port) and the personalization options
- * (theme, session persistence).
- */
 class AppPreferences(private val context: Context) {
 
     companion object {
@@ -42,9 +37,8 @@ class AppPreferences(private val context: Context) {
         private const val BOOTSTRAP_LANGUAGE = "language"
     }
 
-    // The chosen language must be read synchronously inside Activity.attachBaseContext,
-    // which runs before any coroutine can read DataStore. We mirror it into a plain
-    // SharedPreferences so the locale can be applied at cold start without blocking.
+    // El idioma debe leerse sincronicamente en attachBaseContext, antes de que una corutina pueda leer DataStore.
+    // Lo espejamos en un SharedPreferences plano para aplicar el locale en arranque en frio sin bloquear.
     private val bootstrapPrefs =
         context.getSharedPreferences(BOOTSTRAP_PREFS, Context.MODE_PRIVATE)
 
@@ -82,10 +76,7 @@ class AppPreferences(private val context: Context) {
         }
         .distinctUntilChanged()
 
-    /**
-     * Notification categories the user wants to receive. Absent key means the
-     * default: all categories enabled.
-     */
+    // Categorias de notificacion que el usuario quiere recibir. Clave ausente significa el default: todas habilitadas.
     val enabledNotificationCategories: Flow<Set<NotificationCategory>> = context.dataStore.data
         .map { prefs ->
             val stored = prefs[NOTIF_CATEGORIES]
@@ -108,7 +99,7 @@ class AppPreferences(private val context: Context) {
         }
     }
 
-    /** Synchronous read of the persisted language for use in attachBaseContext. */
+    // Lectura sincronica del idioma persistido para usar en attachBaseContext.
     fun languageBlocking(): AppLanguage {
         val stored = bootstrapPrefs.getString(BOOTSTRAP_LANGUAGE, null)
         return AppLanguage.entries.firstOrNull { it.name == stored } ?: AppLanguage.SYSTEM
@@ -143,7 +134,7 @@ class AppPreferences(private val context: Context) {
     }
 
     suspend fun setLanguage(value: AppLanguage) {
-        // Keep the synchronous bootstrap mirror in sync with the DataStore value.
+        // Mantiene el espejo de bootstrap sincronizado con el valor de DataStore.
         bootstrapPrefs.edit().putString(BOOTSTRAP_LANGUAGE, value.name).apply()
         context.dataStore.edit { it[LANGUAGE] = value.name }
     }

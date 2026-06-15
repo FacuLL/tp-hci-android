@@ -18,7 +18,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.network.ApiException
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiProvider
 import tp3.grupo1.hci.itba.edu.ar.data.network.apiCall
 
-/** Result of creating or sharing a home: which invitations could not be sent. */
+// Resultado de crear o compartir un hogar: que invitaciones no se pudieron enviar.
 data class ShareOutcome(
     val home: Home,
     val failedEmails: List<String>,
@@ -54,11 +54,7 @@ class HomesRepository(
         preferences.setCurrentHomeId(homeId)
     }
 
-    /**
-     * Creates the home and then shares it with each guest individually, so a
-     * non-registered email does not abort the whole flow: the home is created
-     * and the caller learns exactly which invitations failed.
-     */
+    // Comparte con cada invitado individualmente para que un email no registrado no aborte todo el flujo y se sepa cuales fallaron.
     suspend fun create(name: String, inviteEmails: List<String>): ShareOutcome {
         val home = apiCall { api.homes.create(HomeCreateRequest(name)) }
         _homes.update { it + home }

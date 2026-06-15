@@ -42,11 +42,7 @@ class RoutinesRepository(private val api: ApiProvider) {
         _routines.update { current -> current.filterNot { it.id == id } }
     }
 
-    /**
-     * Executes the routine server-side. Device state changes arrive through
-     * WebSocket events, so no extra state queries are issued afterwards (the
-     * web version was marked down for that).
-     */
+    // Los cambios de estado llegan por eventos WebSocket, por eso no se hacen consultas de estado extra despues.
     suspend fun execute(routineId: String): List<RoutineActionResult> =
         apiCall { api.routines.execute(routineId, emptyBody()) }
 

@@ -63,10 +63,6 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.ConfirmDialog
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 
-/**
- * Home management (RF17-19): list of homes with the active one highlighted,
- * creation with optional invitations, members management and deletion.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomesScreen(
@@ -206,10 +202,6 @@ private fun HomesScreenDialogs(uiState: HomesUiState, viewModel: HomesViewModel)
     }
 }
 
-/**
- * RNF4/RNF5: phones show a single column, while medium and expanded widths
- * reorganize the homes into a two column grid of cards.
- */
 @Composable
 private fun HomesContent(
     homes: List<Home>,
@@ -241,8 +233,6 @@ private fun HomesContent(
         }
     } else {
         LazyVerticalGrid(
-            // Adaptive lets tablet landscape (EXPANDED) fit 3+ columns instead
-            // of capping at 2 like Fixed(2) used to.
             columns = GridCells.Adaptive(minSize = 320.dp),
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -376,8 +366,6 @@ private fun LoadErrorState(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // ErrorBanner uses fillMaxWidth() internally, so we cap the width here to
-    // avoid the banner stretching edge-to-edge on landscape / tablet.
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,

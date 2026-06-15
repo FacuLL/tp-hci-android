@@ -32,11 +32,6 @@ import tp3.grupo1.hci.itba.edu.ar.AppContainer
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
 
-/**
- * Circular profile avatar used in every screen's app bar for navigation to
- * settings, replacing the old gear icon for a consistent top bar. Shows the
- * user's initials, falling back to a person icon when the name is unknown.
- */
 @Composable
 fun ProfileAvatar(
     onClick: () -> Unit,

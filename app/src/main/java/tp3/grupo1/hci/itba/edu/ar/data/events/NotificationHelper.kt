@@ -13,7 +13,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.notifications.NotificationCategory
 import tp3.grupo1.hci.itba.edu.ar.data.notifications.NotificationType
 import java.util.concurrent.atomic.AtomicInteger
 
-/** Builds and posts the local notifications triggered by real-time events (RF20). */
+// Construye y publica las notificaciones locales disparadas por eventos en tiempo real (RF20).
 class NotificationHelper(private val context: Context) {
 
     companion object {
@@ -45,7 +45,7 @@ class NotificationHelper(private val context: Context) {
         )
     }
 
-    /** Posts the system notification for [type]; [arg] supplies the device/home name. */
+    // Publica la notificacion del sistema para type; arg aporta el nombre del dispositivo/hogar.
     fun show(type: NotificationType, arg: String?) {
         val title = context.getString(type.titleRes)
         val body = if (type.hasArg) {
@@ -81,7 +81,7 @@ class NotificationHelper(private val context: Context) {
         try {
             manager.notify(nextId.getAndIncrement(), notification)
         } catch (_: SecurityException) {
-            // The user denied the notifications permission; nothing to do.
+            // El usuario denego el permiso de notificaciones; nada que hacer.
         }
     }
 }

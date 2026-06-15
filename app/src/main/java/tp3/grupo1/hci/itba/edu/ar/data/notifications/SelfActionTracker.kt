@@ -2,16 +2,8 @@ package tp3.grupo1.hci.itba.edu.ar.data.notifications
 
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Suppresses notifications for actions the user performed from this app.
- *
- * Real-time events are broadcast to every client, including the one that
- * triggered them, so toggling a lock here would otherwise raise a notification
- * about your own action. Before issuing an action the repository [record]s a
- * signature; when the echoed event arrives the handler [consume]s it and skips
- * the notification. Signatures expire after [windowMillis] so a later event for
- * the same device (e.g. another user) still notifies.
- */
+// Suprime notificaciones de acciones que hizo el propio usuario: los eventos en tiempo real se emiten a todos los clientes, incluido el que las disparo.
+// El repositorio registra una firma antes de la accion y el handler la consume al llegar el evento; las firmas expiran tras windowMillis para que un evento posterior (ej. otro usuario) si notifique.
 class SelfActionTracker(private val windowMillis: Long = 10_000L) {
 
     private val recent = ConcurrentHashMap<String, Long>()
@@ -20,7 +12,7 @@ class SelfActionTracker(private val windowMillis: Long = 10_000L) {
         recent[key] = System.currentTimeMillis()
     }
 
-    /** Returns true when [key] was a recent self-action; removes it either way. */
+    // Devuelve true si key fue una self-action reciente; la elimina en cualquier caso.
     fun consume(key: String): Boolean {
         val recordedAt = recent.remove(key) ?: return false
         return System.currentTimeMillis() - recordedAt <= windowMillis

@@ -31,7 +31,6 @@ object DeviceTypeIds {
     const val SPEAKER = "fud5vmuy0fkh6zt9"
     const val VACUUM = "ofglvd9gqx8yfl3l"
 
-    /** Types offered when creating a device, in the same order as the web app. */
     val CREATABLE = listOf(LAMP, AC, ALARM, BLINDS, DOOR, FAUCET, OVEN, REFRIGERATOR, SPEAKER, VACUUM)
 }
 
@@ -67,7 +66,6 @@ fun deviceTypeIcon(typeId: String): ImageVector = when (typeId) {
     else -> Icons.Outlined.DevicesOther
 }
 
-/** Accent color per device type, carried over from the web app. */
 fun deviceTypeColor(typeId: String): Color = when (typeId) {
     DeviceTypeIds.AC -> Color(0xFF90D4FB)
     DeviceTypeIds.LAMP -> Color(0xFF10A2F7)
@@ -158,7 +156,7 @@ fun deviceValueRes(value: String): Int? = when (value) {
 fun deviceValueLabel(context: Context, value: String): String =
     deviceValueRes(value)?.let { context.getString(it) } ?: value
 
-/** Whether the device should be presented as "active" in lists and summaries. */
+// Indica si el dispositivo debe presentarse como "activo" en listas y resumenes.
 fun isDeviceActive(device: Device): Boolean {
     val status = device.state.status
     if (status == "armedStay" || status == "armedAway") return true
@@ -175,7 +173,6 @@ fun isDeviceActive(device: Device): Boolean {
 private fun formatNumber(value: Double): String =
     if (value % 1.0 == 0.0) value.toInt().toString() else value.toString()
 
-/** Short human-readable state line, mirroring the web app's logic. */
 fun deviceStateText(context: Context, device: Device): String {
     val state = device.state
     when (state.status) {

@@ -40,7 +40,6 @@ import tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.CreateDeviceDialog
 
 private const val MISSING_ROOM_NOTICE_MILLIS = 1500L
 
-/** Full screen room detail with its own contextual app bar (RNF2). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoomDetailScreen(
@@ -63,12 +62,11 @@ fun RoomDetailScreen(
         }
     }
 
-    // Leave the screen once the room is deleted from here.
     LaunchedEffect(state.deleted) {
         if (state.deleted) onNavigateUp()
     }
 
-    // The room vanished (deleted elsewhere): show a notice, then go back.
+    // La room desaparecio (borrada en otro lado): muestra un aviso y vuelve atras.
     LaunchedEffect(state.loading, state.room == null) {
         if (!state.loading && state.room == null && !state.deleted) {
             delay(MISSING_ROOM_NOTICE_MILLIS)

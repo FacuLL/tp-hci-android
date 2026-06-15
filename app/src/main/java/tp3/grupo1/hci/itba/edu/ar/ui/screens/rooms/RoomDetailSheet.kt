@@ -54,15 +54,7 @@ import tp3.grupo1.hci.itba.edu.ar.domain.deviceTypeColor
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceTypeIcon
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 
-/**
- * Devices of a room with quick toggle and add actions. Used both as the body of
- * the room detail screen and as the side panel on large tablets. Unlinking a
- * device is done from the device's "change room" modal, not here.
- *
- * In [editMode], the list becomes a drag-and-drop reorderable column powered by
- * sh.calvin.reorderable. Long-press the drag handle (or anywhere on the row)
- * to start dragging.
- */
+// En editMode la lista pasa a ser una columna reordenable por drag-and-drop.
 @Composable
 fun RoomDetailContent(
     room: Room,
@@ -73,19 +65,11 @@ fun RoomDetailContent(
     onToggleDevice: (Device) -> Unit,
     onAddDevice: () -> Unit,
     modifier: Modifier = Modifier,
-    /**
-     * Show the room name as a header above the device count. Full-screen usages
-     * (RoomDetailScreen) already show the name in their TopAppBar and should
-     * pass `false` to avoid the duplicate; the tablet side panel keeps it on.
-     */
+    // RoomDetailScreen ya muestra el nombre en su TopAppBar, pasa false para evitar el duplicado.
     showTitle: Boolean = true,
     editMode: Boolean = false,
     onMoveDevice: (from: Int, to: Int) -> Unit = { _, _ -> },
 ) {
-    // Cap the content width and center on wide screens so the device rows and
-    // the Add button don't stretch edge-to-edge in landscape / tablet. The
-    // 640dp cap is wider than the tablet side panel (360dp) so embedding in
-    // the rooms two-pane is unaffected.
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopCenter,
@@ -130,11 +114,6 @@ fun RoomDetailContent(
                 modifier = Modifier.weight(1f, fill = false),
             )
         } else {
-            // Grilla adaptive de cards cuadradas (en lugar de la fila
-            // alargada anterior): aprovecha el ancho disponible y muestra
-            // mas devices por pantalla en landscape / tablet. minSize=150dp
-            // -> 2 columnas en phone portrait, 3-4 en landscape, mas en
-            // tablet.
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 150.dp),
                 modifier = Modifier.weight(1f, fill = false),
@@ -154,8 +133,6 @@ fun RoomDetailContent(
             }
         }
         if (!editMode) {
-            // Width-capped + center so the CTA doesn't span the whole row on
-            // landscape, while still feeling like a primary action.
             Button(
                 onClick = onAddDevice,
                 modifier = Modifier
@@ -285,9 +262,7 @@ private fun RoomDeviceRow(
                 )
             }
             if (powerAtom != null) {
-                // Same safety rule as the device detail (DeviceControlAtoms): an
-                // open/close toggle is blocked while locked, and a lock toggle is
-                // blocked while the door is open.
+                // Misma regla de seguridad que el detalle: open/close bloqueado si esta locked, y lock bloqueado si la puerta esta abierta.
                 val togglesOpening = powerAtom.onAction == "open" || powerAtom.offAction == "open"
                 val blocked = (togglesOpening && device.state.lock == "locked") ||
                     (powerAtom.onAction == "lock" && device.state.status == "opened")
@@ -377,7 +352,6 @@ private fun RoomDeviceSquareCard(
     }
 }
 
-/** Device type icon over its accent color, shared by the room device lists. */
 @Composable
 fun DeviceTypeBadge(typeId: String, modifier: Modifier = Modifier) {
     val color = deviceTypeColor(typeId)

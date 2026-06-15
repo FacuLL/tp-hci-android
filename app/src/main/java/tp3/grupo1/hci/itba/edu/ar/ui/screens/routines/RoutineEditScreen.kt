@@ -69,7 +69,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LuminaTextField
 
-/** Day codes persisted by the API inside routine metadata, in week order. */
+// Codigos de dia que persiste la API en la metadata de la rutina, en orden semanal.
 private val DAY_ORDER = listOf("lu", "ma", "mi", "ju", "vi", "sa", "do")
 
 @StringRes
@@ -125,8 +125,6 @@ fun RoutineEditScreen(
             return@Scaffold
         }
 
-        // Cap + center: on landscape / tablet the form keeps a readable column
-        // width instead of stretching every input and button edge-to-edge.
         Box(
             modifier = Modifier
                 .padding(innerPadding)
@@ -143,7 +141,6 @@ fun RoutineEditScreen(
         ) {
             state.apiErrorRes?.let { ErrorBanner(stringResource(it)) }
 
-            // Nombre
             LuminaTextField(
                 value = state.name,
                 onValueChange = viewModel::setName,
@@ -156,7 +153,6 @@ fun RoutineEditScreen(
                 },
             )
 
-            // Programación
             SectionLabel(stringResource(R.string.routine_section_schedule))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
@@ -196,7 +192,6 @@ fun RoutineEditScreen(
                 }
             }
 
-            // Acciones
             SectionLabel(stringResource(R.string.routine_section_actions))
             Text(
                 stringResource(R.string.routine_actions_subtitle),
@@ -295,7 +290,6 @@ private fun ActionRowItem(
                 }
             }
 
-            // Dispositivo
             DropdownField(
                 label = stringResource(R.string.routine_field_device),
                 selectedText = devices.firstOrNull { it.id == form.deviceId }?.name.orEmpty(),
@@ -304,7 +298,7 @@ private fun ActionRowItem(
                 onSelect = { onDeviceChange(it.id) },
             )
 
-            // Acción (deshabilitada hasta elegir dispositivo)
+            // Deshabilitada hasta elegir dispositivo.
             DropdownField(
                 label = stringResource(R.string.routine_field_action),
                 selectedText = form.actionName.takeIf { it.isNotBlank() }
@@ -316,7 +310,6 @@ private fun ActionRowItem(
                 enabled = form.deviceId.isNotBlank(),
             )
 
-            // Parámetros dinámicos
             paramDefs.forEachIndexed { pIdx, def ->
                 ParamInput(
                     def = def,
@@ -389,7 +382,6 @@ private fun boolLabel(context: Context, value: String): String =
 private fun formatNumber(value: Double): String =
     if (value % 1.0 == 0.0) value.toInt().toString() else value.toString()
 
-/** Generic read-only dropdown backed by an [ExposedDropdownMenuBox]. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun <T> DropdownField(
@@ -481,8 +473,7 @@ private fun TimeField(
                 }
             },
             text = {
-                // In landscape the analog TimePicker gets cropped; switch to
-                // the numeric TimeInput which fits comfortably in a short dialog.
+                // En landscape el TimePicker analogico se corta; se usa el TimeInput numerico que entra en un dialog corto.
                 val isLandscape = LocalConfiguration.current.orientation ==
                     android.content.res.Configuration.ORIENTATION_LANDSCAPE
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {

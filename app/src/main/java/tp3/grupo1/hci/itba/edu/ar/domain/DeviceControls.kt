@@ -7,12 +7,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceState
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceType
 import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceTypeAction
 
-/**
- * Dynamic control "atoms": given a device type's action catalog and the
- * current device state, this module decides which controls the detail screen
- * shows. Direct port of the web app's deviceHelpers.ts so both clients behave
- * identically.
- */
+// Dado el catalogo de acciones de un tipo y el estado actual, decide que controles muestra la pantalla de detalle (port de deviceHelpers.ts del cliente web).
 sealed interface ControlAtom
 
 data class PowerAtom(
@@ -74,7 +69,7 @@ data class AlarmArmAction(
     @field:StringRes val labelRes: Int,
 )
 
-/** Alarm arm/disarm selector. Every transition requires the security code. */
+// Selector de armado/desarmado de alarma; toda transicion requiere el codigo de seguridad.
 data class AlarmAtom(
     val armActions: List<AlarmArmAction>,
     val disarmAction: String,
@@ -105,16 +100,11 @@ data class PlaylistAtom(
     val action: String,
 ) : ControlAtom
 
-/**
- * Vacuum "send to room" action: a string param without supported values that
- * is populated with the rooms of the current home at render time.
- */
+// Accion "enviar a habitacion" del aspirador: param string sin valores soportados que se llena con las habitaciones del hogar al renderizar.
 data class SetLocationAtom(
     val action: String,
     val paramName: String,
 ) : ControlAtom
-
-// ── Detection tables ─────────────────────────────────────────────────────────
 
 private val POWER_PAIRS: List<Pair<String, String>> = listOf(
     "turnOn" to "turnOff",
@@ -135,7 +125,7 @@ private val TOGGLE_LABELS: Map<String, Pair<Int, Int>> = mapOf(
     "start" to (R.string.device_state_on to R.string.device_state_off),
 )
 
-// Semantically equivalent pairs: when one is detected the others are consumed
+// Pares semanticamente equivalentes: al detectar uno, los demas se consumen.
 private val REDUNDANT_PAIRS: Map<String, List<String>> = mapOf(
     "turnOn" to listOf("start", "play"),
     "start" to listOf("turnOn", "play"),
@@ -144,7 +134,7 @@ private val REDUNDANT_PAIRS: Map<String, List<String>> = mapOf(
     "up" to listOf("open"),
 )
 
-// Param-less actions that are handled by dedicated atoms, not generic buttons
+// Acciones sin params manejadas por atoms dedicados, no por botones genericos.
 private val SKIP_AS_BUTTON = setOf("getPlaylist")
 
 private fun findAction(actions: List<DeviceTypeAction>, name: String): DeviceTypeAction? =
@@ -172,8 +162,6 @@ private fun numericStateValue(state: DeviceState, key: String): Int? = when (key
     "volume" -> state.volume
     else -> null
 }
-
-// ── Detectors (same order and semantics as the web app) ─────────────────────
 
 private fun detectAlarm(actions: List<DeviceTypeAction>, device: Device): List<ControlAtom>? {
     val armStay = findAction(actions, "armStay")
@@ -234,7 +222,7 @@ private fun detectPower(
             if (findAction(actions, redundantOn) != null) used.add(redundantOn)
             if (redundantOff != null && findAction(actions, redundantOff) != null) used.add(redundantOff)
         }
-        // Doors invert the toggle: "active" means safely closed
+        // Las puertas invierten el toggle: "activo" significa cerrada de forma segura.
         if (on == "open" && device.type.id == DeviceTypeIds.DOOR) {
             return PowerAtom(
                 onAction = "close",
@@ -390,8 +378,6 @@ private fun detectSetLocation(actions: List<DeviceTypeAction>, used: MutableSet<
         paramName = action.params.firstOrNull()?.name ?: "roomId",
     )
 }
-
-// ── Public API ───────────────────────────────────────────────────────────────
 
 fun deviceControls(deviceType: DeviceType, device: Device): List<ControlAtom> {
     val actions = deviceType.actions

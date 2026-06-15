@@ -30,7 +30,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.repository.RoomsRepository
 import tp3.grupo1.hci.itba.edu.ar.data.repository.RoutinesRepository
 import tp3.grupo1.hci.itba.edu.ar.domain.DeviceTypeIds
 
-/** Manual dependency container, created once in [LuminaApplication]. */
+// Contenedor manual de dependencias, creado una vez en LuminaApplication.
 class AppContainer(context: Context) {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -65,8 +65,7 @@ class AppContainer(context: Context) {
     val notificationStore = NotificationStore(context, applicationScope)
 
     init {
-        // Any connection-setting change rebuilds the API stack and reconnects
-        // the socket once, with a consistent URL + key pair.
+        // Cualquier cambio de conexion reconstruye el stack de API y reconecta el socket con un par URL+key consistente.
         applicationScope.launch {
             combine(preferences.apiBaseUrl, preferences.apiKey) { url, key -> url to key }
                 .distinctUntilChanged()
@@ -82,7 +81,7 @@ class AppContainer(context: Context) {
                     }
                 }
         }
-        // The socket lives while there is a session; local caches die with it.
+        // El socket vive mientras hay sesion; los caches locales se limpian con ella.
         applicationScope.launch {
             sessionManager.token.collect { token ->
                 if (token == null) {
@@ -90,14 +89,11 @@ class AppContainer(context: Context) {
                     devicesRepository.clear()
                     roomsRepository.clear()
                     routinesRepository.clear()
-                    // Drop the notification history so it does not carry over to
-                    // the next account on this device.
+                    // Limpia el historial de notificaciones para que no pase a la proxima cuenta en este dispositivo.
                     notificationStore.clear()
                 } else {
                     eventsClient.connect(cachedBaseUrl, cachedApiKey, token)
-                    // Load the profile as soon as a session exists (resumed token or
-                    // fresh login) so the app-bar avatar shows initials on every
-                    // screen, not only after opening Settings.
+                    // Carga el perfil apenas hay sesion para que el avatar de la app-bar muestre iniciales en toda pantalla.
                     runCatching { authRepository.loadProfile() }
                 }
             }
@@ -105,7 +101,7 @@ class AppContainer(context: Context) {
         applicationScope.launch {
             eventsClient.events.collect { handleEvent(it) }
         }
-        // Keep the rooms cache aligned with the selected home.
+        // Mantiene el cache de habitaciones alineado con el hogar seleccionado.
         applicationScope.launch {
             homesRepository.currentHome.collect { home ->
                 if (home == null) {
@@ -138,9 +134,7 @@ class AppContainer(context: Context) {
             }
             is AppEvent.DeviceStateChanged -> {
                 devicesRepository.applyStateEvent(event.deviceId, event.args)
-                // RF20: surface the security-relevant state changes (door, alarm,
-                // end of cycle). The cache was just updated, so look up the device
-                // there for its name and type; ignore unknown ids silently.
+                // RF20: notifica los cambios de estado relevantes para seguridad (puerta, alarma, fin de ciclo).
                 val device = devicesRepository.devices.value.firstOrNull { it.id == event.deviceId }
                 classifyStateEvent(device?.type?.id, event.args)?.let { type ->
                     raise(type, device?.name, selfKey = SelfActionTracker.deviceState(event.deviceId))
@@ -157,10 +151,7 @@ class AppContainer(context: Context) {
         }
     }
 
-    /**
-     * Posts a notification and stores it in the local history, unless it was
-     * triggered by this app ([selfKey]) or its category is disabled in settings.
-     */
+    // Publica una notificacion y la guarda en el historial, salvo que la haya disparado esta app o su categoria este deshabilitada.
     private suspend fun raise(type: NotificationType, arg: String?, selfKey: String?) {
         if (selfKey != null && selfActionTracker.consume(selfKey)) return
         val enabled = preferences.enabledNotificationCategories.first()
@@ -176,12 +167,8 @@ class AppContainer(context: Context) {
         notificationHelper.show(type, arg)
     }
 
-    /**
-     * Maps a `deviceEvent` payload to the RF20 notification it deserves, or null
-     * when it is not security-relevant (e.g. brightness/volume/temperature
-     * sliders), so those frequent changes do not spam notifications. Reads only
-     * the discrete `newStatus`/`newLock` args, never the numeric ones.
-     */
+    // Mapea un payload deviceEvent a la notificacion RF20 correspondiente, o null si no es relevante para seguridad.
+    // Lee solo los args discretos newStatus/newLock, nunca los numericos, para no spamear con cambios frecuentes.
     private fun classifyStateEvent(typeId: String?, args: JsonObject): NotificationType? {
         fun arg(key: String): String? =
             runCatching { args[key]?.jsonPrimitive?.contentOrNull }.getOrNull()
@@ -193,10 +180,9 @@ class AppContainer(context: Context) {
             "armedStay", "armedAway" -> return NotificationType.ALARM_ARMED
             "disarmed" -> return NotificationType.ALARM_DISARMED
             "triggered", "alarm", "sounding" -> return NotificationType.ALARM_TRIGGERED
-            // A vacuum returning to its dock signals the cleaning cycle finished.
+            // Una aspiradora que vuelve a su dock indica que termino el ciclo de limpieza.
             "docked" -> return NotificationType.CYCLE_FINISHED
-            // Only doors report "opened" as a security event; blinds/faucets share
-            // the value but are not relevant, so scope it to the door type.
+            // Solo las puertas reportan "opened" como evento de seguridad; persianas/canillas comparten el valor pero no aplican.
             "opened" -> if (typeId == DeviceTypeIds.DOOR) {
                 return NotificationType.DOOR_OPENED
             }

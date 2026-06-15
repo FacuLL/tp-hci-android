@@ -36,7 +36,6 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LuminaTextField
 
-/** Creation form: home name. */
 @Composable
 fun CreateHomeDialog(
     form: CreateHomeForm,
@@ -126,7 +125,6 @@ fun RenameHomeDialog(
     )
 }
 
-/** Members of a home: current guests with removal, plus an invite field. */
 @Composable
 fun MembersDialog(
     home: Home,
@@ -193,7 +191,7 @@ fun MembersDialog(
                 )
             }
         },
-        // Close is the X in the title; AlertDialog requires a confirmButton slot.
+        // El cierre es la X del titulo; AlertDialog igual requiere el slot confirmButton.
         confirmButton = {},
     )
 }
@@ -236,10 +234,7 @@ private fun MemberRow(user: HomeSharedUser, enabled: Boolean, onRemove: () -> Un
     }
 }
 
-/**
- * Explicit warning when some invitations could not be sent because no account
- * exists with that email, so a home is never shared silently with nobody.
- */
+// Aviso explicito cuando algunas invitaciones no pudieron enviarse porque no existe cuenta con ese email.
 @Composable
 fun FailedInvitesDialog(failedInvites: FailedInvites, onDismiss: () -> Unit) {
     AlertDialog(

@@ -28,7 +28,6 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.RoutineUpsertRequest
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiException
 import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
 
-/** One row of the "Actions" section: a device, one of its actions and its params. */
 data class ActionForm(
     val deviceId: String = "",
     val actionName: String = "",
@@ -39,7 +38,7 @@ data class RoutineEditUiState(
     val loading: Boolean = true,
     val isEditing: Boolean = false,
     val name: String = "",
-    // false = ejecutar manualmente, true = programar horario
+    // false = ejecutar manualmente, true = programar horario.
     val scheduled: Boolean = false,
     val time: String = "08:00",
     val days: List<String> = emptyList(),
@@ -66,8 +65,7 @@ class RoutineEditViewModel(
     private val _uiState = MutableStateFlow(RoutineEditUiState(isEditing = routineId != null))
     val uiState: StateFlow<RoutineEditUiState> = _uiState.asStateFlow()
 
-    // Preserved across an edit so toggling the schedule never silently
-    // reactivates a routine the user had disabled from the web.
+    // Se preserva en la edicion para que togglear el horario no reactive una rutina que el usuario habia desactivado desde la web.
     private var activa: Boolean = true
 
     init {
@@ -112,8 +110,6 @@ class RoutineEditViewModel(
         }
     }
 
-    // ── Catalog helpers ──────────────────────────────────────────────────────
-
     fun actionsForDevice(deviceId: String): List<DeviceTypeAction> {
         val device = _uiState.value.devices.firstOrNull { it.id == deviceId } ?: return emptyList()
         return _uiState.value.typesById[device.type.id]?.actions ?: emptyList()
@@ -132,8 +128,6 @@ class RoutineEditViewModel(
                 else -> ""
             }
         }
-
-    // ── Form mutations ───────────────────────────────────────────────────────
 
     fun setName(value: String) = _uiState.update { it.copy(name = value) }
 
@@ -175,13 +169,9 @@ class RoutineEditViewModel(
         }
     }
 
-    // ── Save ─────────────────────────────────────────────────────────────────
-
     fun save() {
         val state = _uiState.value
-        // Evita el doble alta: una vez que se esta guardando o ya se guardo, se
-        // ignoran taps repetidos (la animacion de salida deja el boton clickeable
-        // un instante y permitia crear la rutina dos veces).
+        // Evita el doble alta: ignora taps repetidos mientras guarda o ya guardo (la animacion de salida dejaba el boton clickeable un instante).
         if (state.saving || state.saved) return
         _uiState.update { it.copy(submitted = true) }
         if (!state.canSave) return

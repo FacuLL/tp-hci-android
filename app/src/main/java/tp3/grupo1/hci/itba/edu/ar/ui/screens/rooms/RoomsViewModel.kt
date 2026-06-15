@@ -23,7 +23,6 @@ import tp3.grupo1.hci.itba.edu.ar.domain.Validators
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceControls
 import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
 
-/** Modal flows of the rooms tab (dialogs and confirmations). */
 sealed interface RoomsDialog {
     data object Create : RoomsDialog
     data class Rename(val room: Room) : RoomsDialog
@@ -40,20 +39,17 @@ data class RoomsUiState(
     val devices: List<Device> = emptyList(),
     val types: Map<String, DeviceType> = emptyMap(),
     val currentHome: Home? = null,
-    /** Room selected in the two-pane side panel (large tablets only). */
     val selectedRoomId: String? = null,
-    /** One-shot: a newly created room the screen should open. */
+    // One-shot: una room recien creada que la pantalla debe abrir.
     val roomToOpen: String? = null,
     val dialog: RoomsDialog? = null,
-    // Create / rename form
     val nameInput: String = "",
     @field:StringRes val nameErrorRes: Int? = null,
     val submitAttempted: Boolean = false,
     val saving: Boolean = false,
     @field:StringRes val dialogErrorRes: Int? = null,
-    /** Devices with an action in flight, to disable their row controls. */
+    // Devices con una accion en curso, para deshabilitar sus controles.
     val pendingDeviceIds: Set<String> = emptySet(),
-    // Create-device form
     val creatingDevice: Boolean = false,
     @field:StringRes val createDeviceErrorRes: Int? = null,
     @field:StringRes val snackbarMessageRes: Int? = null,
@@ -92,7 +88,7 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
                         devices = snapshot.devices,
                         types = snapshot.types,
                         currentHome = snapshot.currentHome,
-                        // Drop the selection if the room disappeared (e.g. deleted elsewhere)
+                        // Descarta la seleccion si la room desaparecio (p.ej. borrada en otro lado).
                         selectedRoomId = state.selectedRoomId
                             ?.takeIf { id -> snapshot.rooms.any { it.id == id } },
                     )
@@ -103,7 +99,6 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
 
     fun retry() = loadInitialData()
 
-    /** Pull-to-refresh: force a re-fetch keeping current content visible. */
     fun refresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(refreshing = true, loadErrorRes = null) }
@@ -133,8 +128,6 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
         }
     }
 
-    // ── Selection ──
-
     fun selectRoom(roomId: String?) {
         _uiState.update { it.copy(selectedRoomId = roomId) }
     }
@@ -142,8 +135,6 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
     fun onRoomOpened() {
         _uiState.update { it.copy(roomToOpen = null) }
     }
-
-    // ── Dialogs ──
 
     fun openCreateDialog() {
         if (_uiState.value.currentHome == null) return
@@ -179,7 +170,6 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
         _uiState.update { it.copy(dialog = RoomsDialog.CreateDevice(room), createDeviceErrorRes = null) }
     }
 
-    /** Creates a device already assigned to [roomId] (preselected to the room). */
     fun createDevice(name: String, typeId: String, roomId: String?) {
         viewModelScope.launch {
             _uiState.update { it.copy(creatingDevice = true, createDeviceErrorRes = null) }
@@ -203,13 +193,11 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
         _uiState.update { it.copy(dialog = null) }
     }
 
-    // ── Create / rename form ──
-
     fun onNameChange(value: String) {
         _uiState.update {
             it.copy(
                 nameInput = value,
-                // Live revalidation only after the first submit attempt
+                // Revalida en vivo solo despues del primer intento de submit.
                 nameErrorRes = if (it.submitAttempted) Validators.name(value) else null,
             )
         }
@@ -234,7 +222,7 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
             _uiState.update { it.copy(saving = true, dialogErrorRes = null) }
             try {
                 val room = roomsRepository.create(name, homeId)
-                // Open the new room right away so devices can be added to it
+                // Abre la room nueva enseguida para poder agregarle devices.
                 _uiState.update { it.copy(saving = false, dialog = null, roomToOpen = room.id) }
             } catch (e: ApiException) {
                 _uiState.update { it.copy(saving = false, dialogErrorRes = e.userMessageRes) }
@@ -254,15 +242,12 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
         }
     }
 
-    // ── Room and device actions ──
-
     fun deleteRoom(room: Room) {
         _uiState.update { it.copy(dialog = null) }
         viewModelScope.launch {
             try {
                 roomsRepository.delete(room.id)
-                // Devices of the deleted room are reassigned server side, so the
-                // cached list must be reloaded once to stay coherent.
+                // Los devices de la room borrada se reasignan en el server, hay que recargar la lista cacheada.
                 devicesRepository.refresh()
             } catch (e: ApiException) {
                 _uiState.update { it.copy(snackbarMessageRes = e.userMessageRes) }
@@ -270,7 +255,6 @@ class RoomsViewModel(container: AppContainer) : ViewModel() {
         }
     }
 
-    /** Quick toggle, same behavior as the other screens: PowerAtom -> execute. */
     fun toggleDevice(device: Device) {
         val type = _uiState.value.types[device.type.id] ?: return
         val power = deviceControls(type, device).filterIsInstance<PowerAtom>().firstOrNull() ?: return

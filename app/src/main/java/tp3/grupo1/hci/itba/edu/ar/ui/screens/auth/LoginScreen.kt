@@ -118,8 +118,7 @@ fun LoginScreen(
             }
         }
         }
-        // The server address must be editable before logging in: with an
-        // unreachable API there would be no way to fix the configuration.
+        // La dirección del servidor debe poder editarse antes de loguearse: con una API inalcanzable no habría forma de corregir la configuración.
         IconButton(
             onClick = viewModel::openApiConfig,
             modifier = Modifier

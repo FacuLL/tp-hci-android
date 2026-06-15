@@ -4,11 +4,7 @@ import androidx.annotation.StringRes
 import kotlinx.serialization.Serializable
 import tp3.grupo1.hci.itba.edu.ar.R
 
-/**
- * User-selectable notification categories (Settings). Each [NotificationType]
- * belongs to exactly one. A category disabled in preferences is neither posted
- * as a system notification nor stored in the in-app list.
- */
+// Categorias de notificacion seleccionables en Ajustes; una categoria deshabilitada no se postea ni se guarda en la lista in-app.
 enum class NotificationCategory(@StringRes val labelRes: Int, @StringRes val descriptionRes: Int) {
     CRITICAL(R.string.notif_cat_critical, R.string.notif_cat_critical_desc),
     SIMPLE(R.string.notif_cat_simple, R.string.notif_cat_simple_desc),
@@ -16,11 +12,7 @@ enum class NotificationCategory(@StringRes val labelRes: Int, @StringRes val des
     HOME(R.string.notif_cat_home, R.string.notif_cat_home_desc),
 }
 
-/**
- * Every kind of notification the app can raise, mapping the real-time event to
- * its category and localized strings. [hasArg] marks the bodies that expect a
- * device/home name argument.
- */
+// Cada tipo de notificacion mapea el evento en tiempo real a su categoria y strings; hasArg marca los cuerpos que esperan un nombre de dispositivo/hogar.
 enum class NotificationType(
     val category: NotificationCategory,
     @StringRes val titleRes: Int,
@@ -39,10 +31,7 @@ enum class NotificationType(
     HOME_UNSHARED(NotificationCategory.HOME, R.string.notif_home_unshared_title, R.string.notif_home_unshared_body, false),
 }
 
-/**
- * A notification persisted in the local history shown on the Notifications
- * screen. [arg] is the device/home name when the type expects one.
- */
+// Notificacion persistida en el historial local; arg es el nombre de dispositivo/hogar cuando el tipo lo requiere.
 @Serializable
 data class StoredNotification(
     val id: String,

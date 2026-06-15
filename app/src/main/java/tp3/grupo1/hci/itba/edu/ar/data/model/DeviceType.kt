@@ -24,11 +24,10 @@ data class DeviceTypeAction(
 data class DeviceTypeActionParam(
     val name: String? = null,
     val type: String,
-    // minValue/maxValue are numbers for sliders but hex strings for setColor,
-    // so they are kept raw and exposed through the numeric accessors below.
+    // minValue/maxValue son numeros para sliders pero strings hex para setColor, por eso se guardan crudos
     val minValue: JsonPrimitive? = null,
     val maxValue: JsonPrimitive? = null,
-    // The API sends either a space-separated string or an array of strings
+    // La API manda un string separado por espacios o un array de strings
     val supportedValues: JsonElement? = null,
     val description: String? = null,
 ) {

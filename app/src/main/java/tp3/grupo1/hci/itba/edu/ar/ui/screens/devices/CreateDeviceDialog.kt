@@ -56,11 +56,6 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LuminaTextField
 
-/**
- * Creation form mirroring the web app's stepper as a single dialog: name,
- * device type (required, with the catalog icon and accent color) and an
- * optional room of the current home.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateDeviceDialog(
@@ -77,7 +72,7 @@ fun CreateDeviceDialog(
     var submitted by rememberSaveable { mutableStateOf(false) }
     var roomMenuExpanded by remember { mutableStateOf(false) }
 
-    // After the first submit attempt every field revalidates as it changes.
+    // Despues del primer submit, cada campo se revalida al cambiar.
     val nameError = if (submitted) Validators.name(name)?.let { stringResource(it) } else null
     val showTypeError = submitted && selectedTypeId == null
 
