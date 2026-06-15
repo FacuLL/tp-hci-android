@@ -10,7 +10,9 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,7 +63,14 @@ fun MainScreen(
     // Filtro de un solo uso que se pasa a la pestaña Dispositivos al abrirla desde una sección del dashboard ("Cerraduras", "Alarmas"); se consume al llegar.
     var pendingDevicesFilter by rememberSaveable { mutableStateOf<String?>(null) }
 
+    // Pinea explicitamente el layoutType: en compact ancho usa NavigationBar
+    // (bottom), en medium/expanded usa NavigationRail (lateral). Es lo que ya
+    // hace el default pero al hacerlo explicito Material3 1.3 propaga insets
+    // de forma consistente y permite a los Scaffold internos zero-ear su
+    // contentWindowInsets sin perder padding.
+    val adaptiveInfo = currentWindowAdaptiveInfo()
     NavigationSuiteScaffold(
+        layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo),
         navigationSuiteItems = {
             MainTab.entries.forEach { tab ->
                 item(

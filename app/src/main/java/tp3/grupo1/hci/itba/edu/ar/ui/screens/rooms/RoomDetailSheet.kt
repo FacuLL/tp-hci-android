@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -281,6 +279,13 @@ private fun RoomDeviceRow(
     }
 }
 
+/**
+ * Card de device para la grilla de la habitacion. Sin aspect ratio fijo:
+ * la altura la define el contenido para no desperdiciar el centro de la
+ * card (la version anterior con `aspectRatio(1f)` dejaba un hueco grande
+ * entre el icono+switch arriba y el nombre+estado abajo). Asi entran
+ * mas devices por pantalla y la card se ve mas compacta.
+ */
 @Composable
 private fun RoomDeviceSquareCard(
     device: Device,
@@ -296,18 +301,18 @@ private fun RoomDeviceSquareCard(
     val active = powerAtom?.active == true
     Surface(
         onClick = onOpen,
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f),
+        modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            // Fila superior: icono accent a la izquierda + switch (si el
+            // device tiene power atom) a la derecha.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -330,26 +335,19 @@ private fun RoomDeviceSquareCard(
                     )
                 }
             }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.Bottom,
-            ) {
-                Text(
-                    text = device.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = deviceStateText(context, device),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+            Text(
+                text = device.name,
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = deviceStateText(context, device),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }

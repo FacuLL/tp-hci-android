@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -43,7 +44,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import tp3.grupo1.hci.itba.edu.ar.ui.components.FloatingTopBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -111,8 +112,10 @@ fun RoomsScreen(
     }
 
     Scaffold(
+        // El outer NavigationSuiteScaffold ya consumio los insets del sistema.
+        contentWindowInsets = WindowInsets(0),
         topBar = {
-            TopAppBar(
+            FloatingTopBar(
                 title = { Text(stringResource(R.string.rooms_title)) },
                 actions = {
                     if (state.currentHome != null) {
@@ -244,8 +247,7 @@ private fun RoomsContent(
     if (widthClass == WindowWidthSizeClass.COMPACT) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            // Bottom 96dp para no quedar tapado por la NavigationSuiteScaffold.
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(state.rooms, key = { it.id }) { room ->
@@ -260,6 +262,9 @@ private fun RoomsContent(
             }
         }
     } else {
+        // Capeamos el ancho a 880dp para que en landscape phone / tablet las
+        // cards no se estiren edge-to-edge — quedan centradas con margen
+        // a los costados.
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
@@ -272,8 +277,9 @@ private fun RoomsContent(
                 onRenameRoom = onRenameRoom,
                 onDeleteRoom = onDeleteRoom,
                 modifier = Modifier
-                    .widthIn(max = 960.dp)
+                    .widthIn(max = 880.dp)
                     .fillMaxSize(),
+                horizontalPadding = 32.dp,
             )
         }
     }
@@ -288,12 +294,15 @@ private fun RoomsGrid(
     onRenameRoom: (Room) -> Unit,
     onDeleteRoom: (Room) -> Unit,
     modifier: Modifier = Modifier,
+    // Horizontal padding extra para el caso non-COMPACT: el widthIn cap
+    // recorta en tablets, pero en landscape phone (viewport < 880dp) hace
+    // falta padding lateral explicito para que las cards no toquen el borde.
+    horizontalPadding: androidx.compose.ui.unit.Dp = 16.dp,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 200.dp),
         modifier = modifier,
-        // Bottom 96dp para no quedar tapado por la NavigationSuiteScaffold.
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
+        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
