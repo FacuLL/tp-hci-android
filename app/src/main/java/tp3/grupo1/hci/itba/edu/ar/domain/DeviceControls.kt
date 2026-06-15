@@ -94,6 +94,11 @@ data class PlaybackAtom(
     val next: String?,
     val prev: String?,
     val status: String?,
+    // Datos de solo lectura para la cabecera del reproductor; el estado del parlante no expone la cancion actual.
+    val genre: String?,
+    val volume: Int?,
+    // Accion getPlaylist plegada dentro del reproductor (si el tipo la soporta).
+    val playlistAction: String?,
 ) : ControlAtom
 
 data class PlaylistAtom(
@@ -196,6 +201,10 @@ private fun detectPlayback(
     if (findAction(actions, "nextSong") == null && findAction(actions, "previousSong") == null) return null
     val names = listOf("play", "stop", "pause", "resume", "nextSong", "previousSong")
     names.forEach { if (findAction(actions, it) != null) used.add(it) }
+    // La lista de reproduccion se integra en la cabecera del reproductor: la consumimos aca para no
+    // renderizarla ademas como una card suelta.
+    val playlistAction = "getPlaylist".takeIf { findAction(actions, it) != null }
+    if (playlistAction != null) used.add(playlistAction)
     return PlaybackAtom(
         play = "play".takeIf { findAction(actions, it) != null },
         stop = "stop".takeIf { findAction(actions, it) != null },
@@ -204,6 +213,9 @@ private fun detectPlayback(
         next = "nextSong".takeIf { findAction(actions, it) != null },
         prev = "previousSong".takeIf { findAction(actions, it) != null },
         status = device.state.status,
+        genre = device.state.genre,
+        volume = device.state.volume,
+        playlistAction = playlistAction,
     )
 }
 

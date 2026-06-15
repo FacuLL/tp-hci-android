@@ -1,11 +1,18 @@
 package tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.controls
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.QueueMusic
@@ -15,6 +22,7 @@ import androidx.compose.material.icons.outlined.Stop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -31,8 +39,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +53,7 @@ import tp3.grupo1.hci.itba.edu.ar.domain.AlarmAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.AlarmStatusAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.DispenseAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.PlaybackAtom
+import tp3.grupo1.hci.itba.edu.ar.domain.deviceValueLabel
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 import tp3.grupo1.hci.itba.edu.ar.ui.screens.devices.DeviceDetailDialog
 import kotlin.math.roundToInt
@@ -209,7 +220,9 @@ internal fun PlaybackControl(
     atom: PlaybackAtom,
     accent: Color,
     onExecute: (String, List<JsonElement>) -> Unit,
+    onOpenDialog: (DeviceDetailDialog) -> Unit,
 ) {
+    val context = LocalContext.current
     val playing = atom.status == "playing" || atom.status == "on" || atom.status == "active"
     val paused = atom.status == "paused"
     val toggleAction = when {
@@ -217,7 +230,47 @@ internal fun PlaybackControl(
         paused -> atom.resume ?: atom.play
         else -> atom.play
     }
+    val statusRes = when {
+        playing -> R.string.device_state_playing
+        paused -> R.string.device_state_paused
+        else -> R.string.device_state_stopped
+    }
+    // El estado del parlante solo expone genero y volumen (no la cancion actual): mostramos eso, sin inventar un track.
+    val details = listOfNotNull(
+        atom.genre?.let { deviceValueLabel(context, it) },
+        atom.volume?.let { stringResource(R.string.device_detail_player_volume, it) },
+    ).joinToString(" · ")
     ControlCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(accent.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.MusicNote,
+                    contentDescription = null,
+                    tint = accent,
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(statusRes),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                if (details.isNotEmpty()) {
+                    Text(
+                        text = details,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
@@ -262,6 +315,23 @@ internal fun PlaybackControl(
                         contentDescription = actionLabel(next),
                     )
                 }
+            }
+        }
+        atom.playlistAction?.let {
+            HorizontalDivider()
+            OutlinedButton(
+                onClick = { onOpenDialog(DeviceDetailDialog.Playlist) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.QueueMusic,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Text(
+                    text = stringResource(R.string.device_action_get_playlist),
+                    modifier = Modifier.padding(start = 8.dp),
+                )
             }
         }
     }

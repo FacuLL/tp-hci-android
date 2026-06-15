@@ -109,6 +109,7 @@
     <string name="device_action_dock">Return to dock</string>
     <string name="device_action_dispense">Dispense</string>
     <string name="device_action_get_playlist">View playlist</string>
+    <string name="device_detail_player_volume">Volume %1$d</string>
 
     <!-- Device option values -->
     <string name="device_value_cool">Cool</string>
@@ -153,6 +154,7 @@
     <string name="device_state_unlocked">Unlocked</string>
     <string name="device_state_playing">Playing</string>
     <string name="device_state_stopped">Stopped</string>
+    <string name="device_state_paused">Paused</string>
     <string name="device_state_up">Up</string>
     <string name="device_state_down">Down</string>
     <string name="device_state_opened_level">Open · %1$d%%</string>

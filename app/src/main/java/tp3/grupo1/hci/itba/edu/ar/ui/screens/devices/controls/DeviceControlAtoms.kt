@@ -107,7 +107,7 @@ internal fun ControlAtomCard(
         is AlarmAtom -> AlarmControl(atom, deviceStatus, onOpenDialog)
         ChangeCodeAtom -> ChangeCodeControl(onOpenDialog)
         is DispenseAtom -> DispenseControl(atom, accent, deviceStatus, dispensing, onDispense)
-        is PlaybackAtom -> PlaybackControl(atom, accent, onExecute)
+        is PlaybackAtom -> PlaybackControl(atom, accent, onExecute, onOpenDialog)
         is PlaylistAtom -> PlaylistControl(onOpenDialog)
         is SetLocationAtom -> SetLocationControl(atom, rooms, onExecute)
     }

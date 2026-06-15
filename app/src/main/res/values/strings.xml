@@ -109,6 +109,7 @@
     <string name="device_action_dock">Volver a la base</string>
     <string name="device_action_dispense">Dispensar</string>
     <string name="device_action_get_playlist">Ver lista de reproducción</string>
+    <string name="device_detail_player_volume">Volumen %1$d</string>
 
     <!-- Device option values -->
     <string name="device_value_cool">Frío</string>
@@ -153,6 +154,7 @@
     <string name="device_state_unlocked">Desbloqueada</string>
     <string name="device_state_playing">Reproduciendo</string>
     <string name="device_state_stopped">Detenido</string>
+    <string name="device_state_paused">Pausado</string>
     <string name="device_state_up">Arriba</string>
     <string name="device_state_down">Abajo</string>
     <string name="device_state_opened_level">Abierta · %1$d%%</string>
