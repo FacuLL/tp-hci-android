@@ -96,8 +96,7 @@ class RegisterViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch {
             _uiState.update { it.copy(submitting = true) }
             try {
-                // The API already emails the verification code as part of the
-                // register call, so no extra send-verification request is made.
+                // La API ya envía el código de verificación por mail dentro del register, así que no se hace un pedido extra de envío.
                 container.authRepository.register(state.name.trim(), state.email.trim(), state.password)
                 _uiState.update { it.copy(submitting = false, registeredEmail = state.email.trim()) }
             } catch (e: ApiException) {

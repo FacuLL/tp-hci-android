@@ -65,12 +65,6 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LuminaTextField
 import tp3.grupo1.hci.itba.edu.ar.ui.components.PasswordTextField
 
-/**
- * Full settings screen: profile, security, personalization (RNF3), API
- * connection (changeable address and key) and session. On medium/expanded
- * widths the content is centered with a bounded width instead of stretching
- * the forms across the whole screen (RNF4).
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -352,7 +346,6 @@ fun SettingsScreen(
     }
 }
 
-/** Card with an icon + title header, shared by every settings section. */
 @Composable
 private fun SettingsSection(
     icon: ImageVector,

@@ -25,10 +25,7 @@ sealed interface AppEvent {
     data class HomeUnshared(val homeId: String) : AppEvent
 }
 
-/**
- * Socket.IO client for the API's real-time events. Uses the polling
- * transport, matching the configuration the API supports.
- */
+// Cliente Socket.IO para los eventos en tiempo real de la API. Usa el transporte polling segun lo que soporta la API.
 class EventsClient {
 
     private val json = Json {
@@ -111,7 +108,7 @@ class EventsClient {
     private fun JsonObject.stringField(key: String): String? =
         runCatching { this[key]?.jsonPrimitive?.contentOrNull }.getOrNull()
 
-    /** The Socket.IO server lives at the API host without the `/api` path. */
+    // El servidor de Socket.IO vive en el host de la API sin el path /api.
     private fun serverUrlFrom(apiBaseUrl: String): String? = runCatching {
         val uri = URI.create(apiBaseUrl.trim())
         val port = if (uri.port != -1) ":${uri.port}" else ""

@@ -22,8 +22,6 @@ android {
     }
 
     signingConfigs {
-        // Self-signed key checked into the repo so the chair can rebuild the
-        // exact same installable APK (course project, not a store release).
         create("release") {
             storeFile = file("lumina-release.jks")
             storePassword = "lumina2026"
@@ -53,15 +51,12 @@ android {
         compose = true
     }
     lint {
-        // Every translatable string must exist in all locales (es default + en).
         error += listOf("MissingTranslation", "ExtraTranslation")
         abortOnError = true
     }
 }
 
-// ── i18n enforcement ─────────────────────────────────────────────────────────
-// Hard gate run before every build: fails compilation when a user-facing string
-// is hardcoded in the UI, or when the es/en string catalogs drift apart.
+// Regla para evitar strings hardcodeadas en el código y obligar a traducir todo.
 val verifyI18n by tasks.registering {
     group = "verification"
     description = "Fails on hardcoded UI strings and on es/en string-resource mismatches."
@@ -74,9 +69,6 @@ val verifyI18n by tasks.registering {
     doLast {
         val problems = mutableListOf<String>()
 
-        // 1) Hardcoded user-facing string literals in Compose code.
-        //    Matches Text("…"), Text(text = "…") and contentDescription = "…".
-        //    Add `// i18n-ok` on a line to whitelist a deliberate exception.
         val hardcoded = Regex("""Text\s*\(\s*(text\s*=\s*)?"|contentDescription\s*=\s*"""")
         uiDir.asFile.walkTopDown()
             .filter { it.isFile && it.extension == "kt" }
@@ -88,7 +80,6 @@ val verifyI18n by tasks.registering {
                 }
             }
 
-        // 2) String-resource parity between the default (es) and en catalogs.
         fun keysIn(dirName: String): Set<String> {
             val dir = resDir.dir(dirName).asFile
             val files = dir.listFiles { f -> f.name.startsWith("strings") && f.extension == "xml" }

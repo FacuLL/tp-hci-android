@@ -31,7 +31,6 @@ import tp3.grupo1.hci.itba.edu.ar.domain.ControlAtom
 import tp3.grupo1.hci.itba.edu.ar.domain.deviceControls
 import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
 
-/** Dialogs the detail screen can show, opened from the app bar or the atoms. */
 sealed interface DeviceDetailDialog {
     data object Rename : DeviceDetailDialog
     data object AssignRoom : DeviceDetailDialog
@@ -81,7 +80,6 @@ class DeviceDetailViewModel(
     private val _uiState = MutableStateFlow(DeviceDetailUiState())
     val uiState: StateFlow<DeviceDetailUiState> = _uiState.asStateFlow()
 
-    /** One-shot snackbar messages (string resource ids) for action errors. */
     private val _messages = MutableSharedFlow<Int>(extraBufferCapacity = 4)
     val messages: SharedFlow<Int> = _messages.asSharedFlow()
 
@@ -89,8 +87,7 @@ class DeviceDetailViewModel(
         viewModelScope.launch {
             try {
                 container.deviceTypesRepository.ensureLoaded()
-                // Only fetch when the cache is empty (direct entry); the repos
-                // keep themselves up to date after every action.
+                // Solo pedimos si el cache esta vacio (entrada directa); los repos se mantienen actualizados solos.
                 if (container.devicesRepository.devices.value.isEmpty()) {
                     container.devicesRepository.refresh()
                 }
@@ -124,7 +121,6 @@ class DeviceDetailViewModel(
         }
     }
 
-    /** Pull-to-refresh: re-fetch device state from the server. */
     fun refresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(refreshing = true) }
@@ -192,11 +188,7 @@ class DeviceDetailViewModel(
         runDialogAction(onSuccess = onDeleted) { container.devicesRepository.delete(deviceId) }
     }
 
-    /**
-     * Alarm arm/disarm with security code. The API answers `{"result": false}`
-     * (not an HTTP error) when the code is wrong, so the result is inspected
-     * instead of updating the state optimistically with a possibly wrong code.
-     */
+    // La API responde {"result": false} (no error HTTP) cuando el codigo es incorrecto, asi que inspeccionamos el resultado.
     fun executeWithCode(action: String, code: String) {
         runCodeAction(action, listOf(JsonPrimitive(code)), ALARM_ACTION_STATUS[action])
     }
@@ -256,7 +248,7 @@ class DeviceDetailViewModel(
     private fun resultIsFalse(payload: JsonElement): Boolean =
         ((payload as? JsonObject)?.get("result") as? JsonPrimitive)?.booleanOrNull == false
 
-    /** Defensive parsing: accepts `{"result": [...]}` or a bare array. */
+    // Parseo defensivo: acepta {"result": [...]} o un array pelado.
     private fun parsePlaylist(payload: JsonElement): List<PlaylistEntry>? {
         val array = when (payload) {
             is JsonArray -> payload
@@ -269,7 +261,7 @@ class DeviceDetailViewModel(
                     val fields = item.entries
                         .mapNotNull { (key, value) -> (value as? JsonPrimitive)?.contentOrNull?.let { key to it } }
                         .toMap()
-                    // The API names the song field "song"; "title" kept as fallback
+                    // La API nombra el campo como "song"; "title" queda como fallback.
                     val title = fields["song"] ?: fields["title"] ?: fields.values.firstOrNull()
                         ?: return@mapNotNull null
                     val subtitle = listOfNotNull(fields["artist"], fields["album"])

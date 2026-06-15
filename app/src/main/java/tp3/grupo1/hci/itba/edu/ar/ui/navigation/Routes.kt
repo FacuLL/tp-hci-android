@@ -16,7 +16,6 @@ object Routes {
     const val SETTINGS = "settings"
     const val NOTIFICATIONS = "notifications"
 
-    // Tabs inside the main screen
     const val TAB_DASHBOARD = "tab_dashboard"
     const val TAB_DEVICES = "tab_devices"
     const val TAB_ROOMS = "tab_rooms"

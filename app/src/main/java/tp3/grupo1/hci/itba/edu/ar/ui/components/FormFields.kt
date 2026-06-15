@@ -23,11 +23,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import tp3.grupo1.hci.itba.edu.ar.R
 
-/**
- * Standard form field. Required fields are marked with an asterisk and the
- * error is shown inline below the field, keeping validation feedback
- * consistent across every form in the app.
- */
 @Composable
 fun LuminaTextField(
     value: String,
@@ -54,9 +49,7 @@ fun LuminaTextField(
         keyboardOptions = keyboardOptions,
         visualTransformation = visualTransformation,
         trailingIcon = trailingIcon,
-        // Default `outline` border is too faint against card/dialog surfaces
-        // (e.g. Settings sections). Use onSurfaceVariant so the contour is
-        // always visible at rest.
+        // El borde outline por defecto es muy tenue sobre cards/diálogos: se usa onSurfaceVariant para que el contorno siempre se vea.
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
         ),

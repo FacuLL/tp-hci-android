@@ -7,12 +7,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 
-/**
- * Builds and holds the Retrofit services. The base URL can be changed at
- * runtime from the settings screen (the chair requires being able to point
- * the app to a local API instance by IP and port), in which case the whole
- * stack is rebuilt.
- */
 class ApiProvider(
     initialBaseUrl: String,
     private val apiKeyProvider: () -> String?,

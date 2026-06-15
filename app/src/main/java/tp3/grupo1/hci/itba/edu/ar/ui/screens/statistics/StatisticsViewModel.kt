@@ -47,12 +47,9 @@ data class StatisticsUiState(
     val hourly: List<HourPoint> = emptyList(),
 )
 
-/**
- * The HCI API does not expose energy measurements, so this ViewModel derives
- * KPI values from `DevicesRepository.devices` (active count + powerUsage of
- * their DeviceType). The hourly series is a deterministic synthetic curve
- * scaled by the period's total — clearly demo data, not a real metering feed.
- */
+// La API no expone mediciones de energia, asi que este ViewModel deriva los KPI desde
+// `DevicesRepository.devices` (cantidad activa + powerUsage de su DeviceType). La serie
+// horaria es una curva sintetica determinista escalada por el total del periodo: datos demo.
 class StatisticsViewModel(container: AppContainer) : ViewModel() {
 
     private val homesRepository = container.homesRepository
@@ -103,7 +100,7 @@ class StatisticsViewModel(container: AppContainer) : ViewModel() {
 
     init { refresh() }
 
-    /** [manual] is true for pull-to-refresh, keeping content visible. */
+    // [manual] es true en pull-to-refresh, mantiene el contenido visible.
     fun refresh(manual: Boolean = false) {
         viewModelScope.launch {
             if (manual) manualRefreshing.value = true else refreshing.value = true
@@ -122,12 +119,12 @@ class StatisticsViewModel(container: AppContainer) : ViewModel() {
     fun setPeriod(period: StatsPeriod) { periodFlow.value = period }
 
     companion object {
-        // Roughly average "on time" per active device per day. The API does not
-        // expose duty cycles, so we apply the same heuristic the web dashboard
-        // uses (8 h) to keep both surfaces aligned.
+        // Promedio aproximado de horas encendido por dispositivo activo al dia. La API no
+        // expone ciclos de uso, asi que aplicamos la misma heuristica que el dashboard web
+        // (8 h) para mantener ambas superficies alineadas.
         private const val HOURS_ON_PER_DAY = 8.0
 
-        // Demo tariff. Real rates per agency aren't exposed by the API.
+        // Tarifa demo. La API no expone las tarifas reales por agencia.
         private const val COST_PER_KWH_ARS = 200.0
 
         val Factory = viewModelFactory {
@@ -150,12 +147,12 @@ class StatisticsViewModel(container: AppContainer) : ViewModel() {
             return if (watts > 0) RoomUsage(name, watts) else null
         }
 
-        // Deterministic synthetic series so the chart looks plausible without
-        // a metering backend. Higher in the morning and evening, lower at night.
+        // Serie sintetica determinista para que el grafico sea plausible sin un backend
+        // de medicion. Mas alta en la manana y la tarde, mas baja de noche.
         private fun syntheticHourly(period: StatsPeriod, totalKwh: Double): List<HourPoint> {
             val daily = if (period == StatsPeriod.HOY) totalKwh else totalKwh / period.days
             return (0 until 24).map { hour ->
-                // Two-bump curve: peak ~ 8h and ~ 20h, valley ~ 3h.
+                // Curva de dos picos: maximos ~ 8h y ~ 20h, valle ~ 3h.
                 val morning = cos((hour - 8) * 2 * PI / 24).coerceAtLeast(0.0)
                 val evening = cos((hour - 20) * 2 * PI / 24).coerceAtLeast(0.0)
                 val baseline = 0.15
@@ -166,7 +163,7 @@ class StatisticsViewModel(container: AppContainer) : ViewModel() {
         }
 
         private fun syntheticDelta(period: StatsPeriod, activeCount: Int): Int {
-            // Stable per-period demo delta; not a real measurement.
+            // Delta demo estable por periodo; no es una medicion real.
             val seed = period.days * 7 + activeCount
             return ((seed % 11) - 5).let { if (it == 0) 5 else it }
         }

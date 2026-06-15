@@ -123,7 +123,7 @@ class ForgotPasswordViewModel(private val container: AppContainer) : ViewModel()
         }
     }
 
-    /** Goes back to the email step keeping the address, e.g. to fix a typo. */
+    // Vuelve al paso de email conservando la dirección, por ejemplo para corregir un typo.
     fun backToEmailStep() {
         _uiState.update {
             it.copy(

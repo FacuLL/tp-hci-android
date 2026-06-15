@@ -98,10 +98,7 @@ fun RoomsScreen(
         }
     }
 
-    // A freshly created room opens right away by navigating to its detail.
-    // The old two-pane layout (grid + side panel on EXPANDED widths) was
-    // removed for consistency with the dashboard — see RoomsContent — so
-    // even on tablets we navigate instead of just selecting in state.
+    // Una room recien creada navega directo a su detalle, incluso en tablets.
     LaunchedEffect(state.roomToOpen) {
         state.roomToOpen?.let { roomId ->
             viewModel.onRoomOpened()
@@ -109,11 +106,6 @@ fun RoomsScreen(
         }
     }
 
-    // Tapping a room always navigates to its detail. Previously this branched
-    // on `isExpanded` and called `viewModel.selectRoom` for tablets/landscape,
-    // which became a no-op once the two-pane layout was removed — landscape
-    // phones report EXPANDED in some configurations and the tap silently
-    // did nothing.
     val openRoom: (String) -> Unit = { roomId ->
         onOpenRoom(roomId)
     }
@@ -249,11 +241,6 @@ private fun RoomsContent(
     onToggleDevice: (Device) -> Unit,
     onAddDevice: (Room) -> Unit,
 ) {
-    // Always single-pane vertical scroll, regardless of width. Phones use a
-    // simple list; landscape / tablet uses the adaptive grid but with a width
-    // cap so the content doesn't stretch edge-to-edge. The previous two-pane
-    // layout (grid + fixed 360dp detail panel) was removed for consistency
-    // with the dashboard.
     if (widthClass == WindowWidthSizeClass.COMPACT) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -303,8 +290,6 @@ private fun RoomsGrid(
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
-        // 200dp lets EXPANDED layouts squeeze in 3 columns alongside the 360dp
-        // detail pane; MEDIUM still resolves to 2 columns at ~640-720dp.
         columns = GridCells.Adaptive(minSize = 200.dp),
         modifier = modifier,
         // Bottom 96dp para no quedar tapado por la NavigationSuiteScaffold.

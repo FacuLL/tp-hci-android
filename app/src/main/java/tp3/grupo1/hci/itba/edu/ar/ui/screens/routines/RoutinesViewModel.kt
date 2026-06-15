@@ -26,7 +26,7 @@ data class RoutinesUiState(
     val routines: List<Routine> = emptyList(),
     val devicesById: Map<String, Device> = emptyMap(),
     val executingId: String? = null,
-    /** Scheduled routines whose enable/disable toggle is in flight. */
+    // Rutinas programadas cuyo toggle activar/desactivar esta en curso.
     val togglingIds: Set<String> = emptySet(),
     @StringRes val loadErrorRes: Int? = null,
     @StringRes val snackbarMessageRes: Int? = null,
@@ -51,7 +51,7 @@ class RoutinesViewModel(private val container: AppContainer) : ViewModel() {
         refresh()
     }
 
-    /** [manual] is true for pull-to-refresh, keeping content visible. */
+    // [manual] es true en pull-to-refresh, manteniendo el contenido visible.
     fun refresh(manual: Boolean = false) {
         viewModelScope.launch {
             _uiState.update {
@@ -60,7 +60,7 @@ class RoutinesViewModel(private val container: AppContainer) : ViewModel() {
             }
             try {
                 container.routinesRepository.refresh()
-                // Devices and types are needed to render each action row.
+                // Se necesitan dispositivos y tipos para renderizar cada fila de accion.
                 if (container.devicesRepository.devices.value.isEmpty()) {
                     container.devicesRepository.refresh()
                 }
@@ -74,10 +74,8 @@ class RoutinesViewModel(private val container: AppContainer) : ViewModel() {
         }
     }
 
-    /**
-     * Runs the routine server-side. Device state is not re-queried afterwards:
-     * WebSocket events reconcile the local caches on their own.
-     */
+    // Ejecuta la rutina en el servidor. No se reconsulta el estado de dispositivos:
+    // los eventos WebSocket reconcilian los caches locales por su cuenta.
     fun execute(routineId: String) {
         if (_uiState.value.executingId != null) return
         viewModelScope.launch {
@@ -95,10 +93,8 @@ class RoutinesViewModel(private val container: AppContainer) : ViewModel() {
         }
     }
 
-    /**
-     * Enables/disables a scheduled routine by flipping the "activa" flag in its
-     * metadata. Manual routines have no enabled state and never call this.
-     */
+    // Activa/desactiva una rutina programada invirtiendo el flag "activa" en su metadata.
+    // Las rutinas manuales no tienen estado activo y nunca llaman a esto.
     fun setEnabled(routine: Routine, enabled: Boolean) {
         if (routine.id in _uiState.value.togglingIds) return
         viewModelScope.launch {

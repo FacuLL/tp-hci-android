@@ -41,10 +41,9 @@ class DevicesRepository(
             room = roomId?.let { EntityRef(it) },
         )
         val device = apiCall { api.devices.create(request) }
-        // Suppress the notification for the deviceCreated event this triggers.
+        // Suprime la notificacion del evento deviceCreated que esto dispara.
         selfActions.record(SelfActionTracker.deviceCreated(device.id))
-        // The socket may broadcast deviceCreated before this response arrives,
-        // so insert defensively to avoid duplicating the device in the list.
+        // El socket puede emitir deviceCreated antes de esta respuesta, por eso se inserta de forma defensiva para evitar duplicados.
         upsertDevice(device)
         return device
     }
@@ -61,14 +60,9 @@ class DevicesRepository(
         _devices.update { list -> list.filterNot { it.id == deviceId } }
     }
 
-    /**
-     * Executes an action and updates the local state optimistically instead
-     * of re-querying the device (the web version was marked down for issuing
-     * extra state requests after each action). WebSocket events reconcile the
-     * real state shortly after.
-     */
+    // Actualiza el estado local de forma optimista en vez de reconsultar el dispositivo; los eventos WebSocket reconcilian el estado real despues.
     suspend fun execute(deviceId: String, action: String, params: List<JsonElement> = emptyList()) {
-        // Suppress notifications for the deviceEvent this action will echo back.
+        // Suprime notificaciones del deviceEvent que esta accion va a reenviar.
         selfActions.record(SelfActionTracker.deviceState(deviceId))
         apiCall { api.devices.executeAction(deviceId, action, JsonArray(params)) }
         _devices.update { list ->
@@ -82,19 +76,11 @@ class DevicesRepository(
         }
     }
 
-    /**
-     * Executes an action whose response payload matters (e.g. getPlaylist)
-     * and returns it raw.
-     */
+    // Ejecuta una accion cuya respuesta importa (ej. getPlaylist) y la devuelve sin procesar.
     suspend fun executeForResult(deviceId: String, action: String, params: List<JsonElement> = emptyList()): JsonElement =
         apiCall { api.devices.executeAction(deviceId, action, JsonArray(params)) }
 
-    /**
-     * Moves a device between rooms enforcing the API rule that a device must
-     * be detached from its current room before joining another one. If the
-     * re-assignment fails after a successful detach, the original room is
-     * restored on a best-effort basis before rethrowing.
-     */
+    // La API exige desvincular el dispositivo de su habitacion actual antes de asignarlo a otra; si la reasignacion falla se restaura la original.
     suspend fun moveToRoom(device: Device, roomId: String?): Device {
         val currentRoomId = device.room?.id
         if (roomId == currentRoomId) return device
@@ -116,15 +102,12 @@ class DevicesRepository(
     }
 
     suspend fun removeFromRoom(deviceId: String): Device {
-        // The endpoint returns void, so the cached device is updated with its
-        // room cleared instead of relying on the (empty) response body.
+        // El endpoint no devuelve cuerpo, por eso se actualiza el dispositivo cacheado limpiando su habitacion.
         apiCall { api.rooms.removeDevice(deviceId).close() }
         val updated = _devices.value.firstOrNull { it.id == deviceId }?.copy(room = null)
         if (updated != null) replaceDevice(updated)
         return updated ?: throw ApiException.network()
     }
-
-    // ── WebSocket reconciliation ──
 
     fun applyDeviceCreated(device: Device) {
         upsertDevice(device)

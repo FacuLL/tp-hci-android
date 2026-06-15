@@ -31,7 +31,7 @@ data class DevicesUiState(
     @StringRes val loadErrorRes: Int? = null,
     val query: String = "",
     val selectedTypeId: String? = null,
-    /** When true, show only devices that expose a lock (the "Cerraduras" filter). */
+    // Cuando es true muestra solo devices con cerradura (filtro "Cerraduras").
     val lockOnly: Boolean = false,
     val creating: Boolean = false,
     @StringRes val createErrorRes: Int? = null,
@@ -40,7 +40,6 @@ data class DevicesUiState(
     @StringRes val snackbarRes: Int? = null,
 )
 
-/** Devices visible with the current filters, plus the unfiltered total. */
 data class DeviceListState(
     val devices: List<Device> = emptyList(),
     val totalCount: Int = 0,
@@ -56,7 +55,7 @@ class DevicesViewModel(container: AppContainer) : ViewModel() {
 
     val deviceTypes: StateFlow<Map<String, DeviceType>> = deviceTypesRepository.types
 
-    /** Rooms of the selected home, defensively filtered like the web app. */
+    // Rooms del home actual, filtradas defensivamente como en la web.
     val rooms: StateFlow<List<Room>> =
         combine(container.roomsRepository.rooms, container.homesRepository.currentHome) { rooms, home ->
             if (home == null) rooms else rooms.filter { it.home == null || it.home.id == home.id }
@@ -86,7 +85,6 @@ class DevicesViewModel(container: AppContainer) : ViewModel() {
         }
     }
 
-    /** Pull-to-refresh: re-fetch the device list without the full-screen loader. */
     fun refresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(refreshing = true, loadErrorRes = null) }
@@ -105,7 +103,7 @@ class DevicesViewModel(container: AppContainer) : ViewModel() {
     }
 
     fun onTypeSelected(typeId: String?) {
-        // Type and lock filters are mutually exclusive in the UI.
+        // Los filtros de tipo y de cerradura son mutuamente excluyentes en la UI.
         _uiState.update { it.copy(selectedTypeId = typeId, lockOnly = false) }
     }
 
@@ -113,7 +111,7 @@ class DevicesViewModel(container: AppContainer) : ViewModel() {
         _uiState.update { it.copy(lockOnly = !it.lockOnly, selectedTypeId = null) }
     }
 
-    /** Apply a one-shot filter requested from the dashboard ("locks", "alarms"). */
+    // Aplica un filtro pedido una sola vez desde el dashboard ("locks", "alarms").
     fun applyInitialFilter(filter: String) {
         when (filter) {
             "locks" -> _uiState.update { it.copy(lockOnly = true, selectedTypeId = null) }
@@ -121,7 +119,6 @@ class DevicesViewModel(container: AppContainer) : ViewModel() {
         }
     }
 
-    /** Quick power toggle from the list, using the same atom as the dashboard. */
     fun toggleDevice(device: Device) {
         val type = deviceTypes.value[device.type.id] ?: return
         val power = deviceControls(type, device).filterIsInstance<PowerAtom>().firstOrNull() ?: return

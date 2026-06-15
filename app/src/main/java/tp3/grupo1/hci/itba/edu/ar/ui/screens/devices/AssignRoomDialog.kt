@@ -30,11 +30,6 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.Room
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 
-/**
- * Single room picker shared by the devices list and the device detail: moves
- * a device into a room of the current home or takes it out of any room. The
- * caller performs the assignment and closes the dialog on success.
- */
 @Composable
 fun AssignRoomDialog(
     deviceName: String,
@@ -45,7 +40,7 @@ fun AssignRoomDialog(
     onDismiss: () -> Unit,
     onConfirm: (roomId: String?) -> Unit,
 ) {
-    // Empty string represents the "no room" choice so the state is saveable.
+    // String vacio representa "sin habitacion" para que el estado sea saveable.
     var selectedRoomId by rememberSaveable { mutableStateOf(currentRoomId.orEmpty()) }
 
     AlertDialog(

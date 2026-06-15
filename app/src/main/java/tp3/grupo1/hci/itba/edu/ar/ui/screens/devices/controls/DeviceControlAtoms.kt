@@ -80,7 +80,6 @@ import kotlin.math.roundToInt
 
 private const val MAX_SEGMENTED_OPTIONS = 4
 
-/** Renders the matching control for a [ControlAtom] produced by deviceControls(). */
 @Composable
 internal fun ControlAtomCard(
     atom: ControlAtom,
@@ -110,7 +109,6 @@ internal fun ControlAtomCard(
     }
 }
 
-/** Vacuum "send to room": room picker that fires setLocation on selection. */
 @Composable
 private fun SetLocationControl(
     atom: SetLocationAtom,
@@ -127,8 +125,7 @@ private fun SetLocationControl(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         } else {
-            // The API has no state field for the vacuum location, so only the
-            // selection made in this screen is remembered.
+            // La API no expone la ubicacion del vacuum, asi que solo recordamos la seleccion de esta pantalla.
             var selectedRoomId by remember { mutableStateOf<String?>(null) }
             DropdownSelect(
                 label = stringResource(R.string.device_detail_set_location),
@@ -143,8 +140,6 @@ private fun SetLocationControl(
         }
     }
 }
-
-// ── Shared building blocks ───────────────────────────────────────────────────
 
 @Composable
 internal fun ControlCard(content: @Composable ColumnScope.() -> Unit) {
@@ -221,8 +216,6 @@ internal fun parseHexColor(hex: String): Color = try {
     Color.White
 }
 
-// ── Atom controls ────────────────────────────────────────────────────────────
-
 @Composable
 private fun PowerControl(
     atom: PowerAtom,
@@ -231,8 +224,7 @@ private fun PowerControl(
     deviceLock: String?,
     onExecute: (String, List<JsonElement>) -> Unit,
 ) {
-    // Same safety rules as the web app: an open/close toggle is blocked while
-    // locked, and a lock toggle is blocked while the door is open.
+    // No se puede abrir/cerrar mientras esta bloqueado, ni bloquear mientras esta abierto.
     val togglesOpening = atom.onAction == "open" || atom.offAction == "open"
     val blocked = (togglesOpening && deviceLock == "locked") ||
         (atom.onAction == "lock" && deviceStatus == "opened")
@@ -253,8 +245,7 @@ private fun PowerControl(
                 colors = SwitchDefaults.colors(
                     checkedTrackColor = accent,
                     uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    // Card surface ~ default track tone, so off-state blends in.
-                    // Force contrast that holds regardless of background.
+                    // El track off por defecto se confunde con la card, asi que forzamos contraste.
                     uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
                     uncheckedBorderColor = MaterialTheme.colorScheme.outline,
                 ),
@@ -270,9 +261,7 @@ private fun SliderControl(
     onExecute: (String, List<JsonElement>) -> Unit,
 ) {
     val label = atom.labelRes?.let { stringResource(it) } ?: atom.rawName
-    // Local value while dragging; the API call goes out only on release.
-    // Socket events may deliver a new value mid-drag, so external updates are
-    // applied only while the user is not interacting.
+    // Valor local mientras se arrastra; la API solo se llama al soltar y los updates externos se ignoran durante el drag.
     var sliderValue by remember { mutableFloatStateOf(atom.value.toFloat()) }
     var dragging by remember { mutableStateOf(false) }
     LaunchedEffect(atom.value) {
@@ -355,10 +344,7 @@ private fun SelectControl(
     }
 }
 
-/**
- * Named color swatches instead of a free hex picker: the user chooses by
- * visible color and each swatch announces its name for accessibility.
- */
+// Swatches con nombre en vez de un picker hex libre, para que cada color se anuncie por accesibilidad.
 private val COLOR_SWATCHES: List<Pair<String, Int>> = listOf(
     "#FFFFFF" to R.string.device_color_white,
     "#FFE4B5" to R.string.device_color_warm_white,

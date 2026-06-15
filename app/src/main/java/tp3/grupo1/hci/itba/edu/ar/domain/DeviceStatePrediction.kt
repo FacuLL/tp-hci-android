@@ -18,11 +18,7 @@ private fun firstInt(params: List<JsonElement>): Int? =
 private fun firstDouble(params: List<JsonElement>): Double? =
     (params.firstOrNull() as? JsonPrimitive)?.doubleOrNull
 
-/**
- * Predicts the device state after an action succeeds, so the UI updates
- * immediately without re-querying the API. WebSocket events deliver the
- * authoritative state right after.
- */
+// Predice el estado tras una accion exitosa para actualizar la UI sin reconsultar la API; los eventos WebSocket traen el estado autoritativo despues.
 fun predictStateChange(state: DeviceState, action: String, params: List<JsonElement>): DeviceState =
     when (action) {
         "turnOn" -> state.copy(status = "on")
@@ -56,10 +52,7 @@ fun predictStateChange(state: DeviceState, action: String, params: List<JsonElem
         else -> state
     }
 
-/**
- * Applies the `args` of a WebSocket `deviceEvent` ("newStatus", "newBrightness",
- * etc.) onto the current state.
- */
+// Aplica los args de un deviceEvent de WebSocket ("newStatus", "newBrightness", etc.) sobre el estado actual.
 fun DeviceState.applyEventArgs(args: JsonObject): DeviceState {
     var state = this
     for ((key, value) in args) {

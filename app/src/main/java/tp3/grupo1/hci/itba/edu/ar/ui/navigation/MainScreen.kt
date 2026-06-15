@@ -43,11 +43,6 @@ enum class MainTab(
     STATISTICS(Routes.TAB_STATISTICS, R.string.nav_statistics, Icons.Outlined.BarChart),
 }
 
-/**
- * Shell of the logged-in experience. NavigationSuiteScaffold renders a bottom
- * bar on phones and a navigation rail on tablets / landscape expanded widths
- * (RNF4), while each tab provides its own contextual app bar (RNF2).
- */
 @Composable
 fun MainScreen(
     onOpenDevice: (String) -> Unit,
@@ -62,8 +57,7 @@ fun MainScreen(
     val backStackEntry by tabNavController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
-    // One-shot filter handed to the Devices tab when opened from a dashboard
-    // section ("Cerraduras", "Alarmas"); consumed on arrival.
+    // Filtro de un solo uso que se pasa a la pestaña Dispositivos al abrirla desde una sección del dashboard ("Cerraduras", "Alarmas"); se consume al llegar.
     var pendingDevicesFilter by rememberSaveable { mutableStateOf<String?>(null) }
 
     NavigationSuiteScaffold(
@@ -84,7 +78,7 @@ fun MainScreen(
                     label = {
                         Text(
                             text = stringResource(tab.labelRes),
-                            // Smaller so long labels ("Estadísticas") fit on one line.
+                            // Más chico para que etiquetas largas ("Estadísticas") entren en una línea.
                             style = MaterialTheme.typography.labelSmall,
                             maxLines = 1,
                             softWrap = false,
@@ -159,7 +153,6 @@ fun MainScreen(
     }
 }
 
-/** Switch to the Devices tab, optionally carrying an initial filter route. */
 private fun androidx.navigation.NavController.navigateToDevices(
     route: String = Routes.TAB_DEVICES,
 ) {

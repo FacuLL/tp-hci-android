@@ -28,7 +28,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import tp3.grupo1.hci.itba.edu.ar.R
 
-/** Primary button with a progress indicator while the action is running. */
 @Composable
 fun LoadingButton(
     text: String,
@@ -54,7 +53,6 @@ fun LoadingButton(
     }
 }
 
-/** Inline error banner used to surface API errors near the related content. */
 @Composable
 fun ErrorBanner(message: String?, modifier: Modifier = Modifier) {
     if (message == null) return
@@ -82,10 +80,6 @@ fun CenteredLoading(modifier: Modifier = Modifier) {
     }
 }
 
-/**
- * Consistent empty state: icon, explanation and (when applicable) a shortcut
- * to create the first element.
- */
 @Composable
 fun EmptyState(
     icon: ImageVector,
@@ -129,7 +123,6 @@ fun EmptyState(
     }
 }
 
-/** Confirmation dialog for destructive actions. */
 @Composable
 fun ConfirmDialog(
     title: String,

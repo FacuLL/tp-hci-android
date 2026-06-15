@@ -16,11 +16,6 @@ data class Routine(
     val actions: List<RoutineAction> = emptyList(),
     val metadata: JsonObject? = null,
 ) {
-    /**
-     * Schedule info stored by the web app inside `metadata`. The keys are in
-     * Spanish because that is the data contract already persisted by the
-     * existing web client ("activa", "tipo", "hora", "dias").
-     */
     val schedule: RoutineSchedule
         get() {
             val enabled = (metadata?.get("activa") as? JsonPrimitive)?.booleanOrNull ?: true
@@ -52,11 +47,6 @@ data class RoutineAction(
     val params: JsonArray = JsonArray(emptyList()),
 )
 
-/**
- * Result of executing a routine: the API returns one entry per action with the
- * device id and whether it succeeded (e.g.
- * `[{"device":"...","success":true,"result":false}]`).
- */
 @Serializable
 data class RoutineActionResult(
     val device: String,
@@ -64,11 +54,6 @@ data class RoutineActionResult(
     val result: JsonElement? = null,
 )
 
-/**
- * Body for creating and updating a routine. The schedule lives inside
- * [metadata] using the same Spanish keys the web client persists
- * ("activa", "tipo", "hora", "dias").
- */
 @Serializable
 data class RoutineUpsertRequest(
     val name: String,

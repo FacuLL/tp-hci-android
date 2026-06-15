@@ -19,7 +19,6 @@ class NotificationsViewModel(container: AppContainer) : ViewModel() {
     val notifications: StateFlow<List<StoredNotification>> = store.notifications
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), store.notifications.value)
 
-    /** Marks every notification read; called when the screen is opened. */
     fun markAllRead() {
         viewModelScope.launch { store.markAllRead() }
     }

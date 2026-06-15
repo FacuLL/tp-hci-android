@@ -12,11 +12,7 @@ import retrofit2.HttpException
 import tp3.grupo1.hci.itba.edu.ar.R
 import java.io.IOException
 
-/**
- * Error raised by any API call. Carries the raw backend description (always in
- * English) plus a localized message resource resolved from it, so the UI never
- * shows mixed-language text.
- */
+// Lleva la descripcion cruda del backend (en ingles) y un recurso localizado para que la UI no mezcle idiomas
 class ApiException(
     val httpStatus: Int,
     val apiCode: Int? = null,
@@ -31,7 +27,6 @@ class ApiException(
 }
 
 private val errorTranslations: List<Pair<Regex, Int>> = listOf(
-    // Auth: login / register
     Regex("invalid (email|user(name)?) or password|invalid credentials|wrong password", RegexOption.IGNORE_CASE)
         to R.string.error_invalid_credentials,
     Regex("not verified|account.*not.*verified|user.*not.*verified|email.*not.*verified", RegexOption.IGNORE_CASE)
@@ -42,22 +37,18 @@ private val errorTranslations: List<Pair<Regex, Int>> = listOf(
         to R.string.error_email_taken,
     Regex("user( with email .*)? not found|no user|account not found|email not found", RegexOption.IGNORE_CASE)
         to R.string.error_user_not_found,
-    // OTP / verification / reset codes
     Regex("(invalid|wrong) (otp|code|verification code|reset code)", RegexOption.IGNORE_CASE)
         to R.string.error_invalid_code,
     Regex("(otp|code).*expired|expired (otp|code)", RegexOption.IGNORE_CASE)
         to R.string.error_code_expired,
-    // Change password
     Regex("(old|current) password.*incorrect|incorrect (old|current) password", RegexOption.IGNORE_CASE)
         to R.string.error_wrong_old_password,
     Regex("password.*too short|password must.*characters", RegexOption.IGNORE_CASE)
         to R.string.error_password_short,
-    // Permissions / session
     Regex("unauthorized|invalid token|token expired|session expired|no token provided", RegexOption.IGNORE_CASE)
         to R.string.error_session_expired,
     Regex("forbidden|not allowed|no permission", RegexOption.IGNORE_CASE)
         to R.string.error_forbidden,
-    // Device actions
     Regex("action '?\\w+'? is not valid for device", RegexOption.IGNORE_CASE)
         to R.string.error_action_unavailable,
     Regex("device.*not found", RegexOption.IGNORE_CASE)
@@ -68,7 +59,6 @@ private val errorTranslations: List<Pair<Regex, Int>> = listOf(
         to R.string.error_home_not_found,
     Regex("routine.*not found", RegexOption.IGNORE_CASE)
         to R.string.error_routine_not_found,
-    // Generic
     Regex("validation error|invalid (input|data|request|body)|bad request", RegexOption.IGNORE_CASE)
         to R.string.error_invalid_data,
     Regex("internal server error|server error", RegexOption.IGNORE_CASE)
@@ -98,15 +88,12 @@ fun HttpException.toApiException(): ApiException {
             description = error?.get("description")?.jsonPrimitive?.contentOrNull
         }
     } catch (_: Exception) {
-        // Body was not the expected JSON; fall back to the HTTP status.
+        // El body no era el JSON esperado; se usa el status HTTP como fallback
     }
     return ApiException(status, apiCode, description ?: "HTTP $status", translateApiError(description))
 }
 
-/**
- * Runs an API call mapping every failure to [ApiException], so ViewModels deal
- * with a single error type.
- */
+// Mapea cualquier fallo a ApiException para que los ViewModels manejen un solo tipo de error
 suspend fun <T> apiCall(block: suspend () -> T): T = try {
     block()
 } catch (e: ApiException) {

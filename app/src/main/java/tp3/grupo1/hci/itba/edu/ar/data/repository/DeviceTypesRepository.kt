@@ -9,7 +9,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.DeviceType
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiProvider
 import tp3.grupo1.hci.itba.edu.ar.data.network.apiCall
 
-/** Device types are static catalog data, fetched once and cached in memory. */
+// Los tipos de dispositivo son datos de catalogo estaticos: se traen una vez y se cachean en memoria.
 class DeviceTypesRepository(private val api: ApiProvider) {
 
     private val mutex = Mutex()

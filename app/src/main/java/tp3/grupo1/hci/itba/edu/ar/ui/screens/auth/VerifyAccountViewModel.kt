@@ -26,7 +26,7 @@ data class VerifyAccountUiState(
     val resending: Boolean = false,
     val resendCooldownSeconds: Int = 0,
     val resendSuccess: Boolean = false,
-    /** OTP echoed by the testing API, shown so the user need not open email. */
+    // OTP que devuelve la API de pruebas, se muestra para que el usuario no tenga que abrir el mail.
     val displayedCode: String? = null,
 )
 
@@ -42,14 +42,13 @@ class VerifyAccountViewModel(
     private var cooldownJob: Job? = null
 
     init {
-        // Fetch and surface the verification code right away so the user does
-        // not have to open their email (the testing API returns it directly).
+        // Pide y muestra el código de verificación enseguida para que el usuario no tenga que abrir el mail (la API de pruebas lo devuelve directo).
         viewModelScope.launch {
             try {
                 val code = container.authRepository.resendVerification(email)
                 _uiState.update { it.copy(displayedCode = code) }
             } catch (_: ApiException) {
-                // It failed silently: the user can still resend manually.
+                // Falla en silencio: el usuario igual puede reenviar manualmente.
             }
         }
     }

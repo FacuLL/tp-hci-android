@@ -14,10 +14,9 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.RoomUpdateRequest
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiProvider
 import tp3.grupo1.hci.itba.edu.ar.data.network.apiCall
 
-/** Key under [Room.metadata] that holds the preferred device order. */
+// Clave dentro de Room.metadata que guarda el orden preferido de dispositivos.
 const val ROOM_META_DEVICE_ORDER = "deviceOrder"
 
-/** Rooms of the currently selected home. */
 class RoomsRepository(private val api: ApiProvider) {
 
     private val _rooms = MutableStateFlow<List<Room>>(emptyList())
@@ -48,12 +47,7 @@ class RoomsRepository(private val api: ApiProvider) {
         _rooms.update { list -> list.filterNot { it.id == roomId } }
     }
 
-    /**
-     * Persists the user-defined device order under [Room.metadata]'s
-     * [ROOM_META_DEVICE_ORDER] key. The API does not expose ordering as a
-     * first-class field, so we piggyback on the same metadata mechanism the
-     * web client uses for routines.
-     */
+    // La API no expone el orden como campo propio, asi que se persiste dentro de metadata igual que el cliente web.
     suspend fun setDeviceOrder(room: Room, deviceIds: List<String>): Room {
         val merged = mergeOrderIntoMetadata(room.metadata, deviceIds)
         val updated = apiCall {

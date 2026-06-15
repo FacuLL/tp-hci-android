@@ -29,11 +29,7 @@ class AuthRepository(
         _currentUser.value = response.user
     }
 
-    /**
-     * Registers the account. The API already emails the verification code as
-     * part of this call, so no extra send-verification request is made (the
-     * web version was marked down for sending the code twice).
-     */
+    // El registro ya dispara el envio del codigo de verificacion, por eso no se hace un request extra.
     suspend fun register(name: String, email: String, password: String) {
         apiCall { api.users.register(RegisterRequest(name, email, password)) }
     }
@@ -42,7 +38,7 @@ class AuthRepository(
         apiCall { api.users.verifyAccount(VerifyAccountRequest(code)) }
     }
 
-    /** Returns the OTP code (the testing API echoes it back), or null. */
+    // Devuelve el codigo OTP (la API de testing lo reenvia), o null.
     suspend fun resendVerification(email: String): String? =
         apiCall { api.users.sendVerification(EmailRequest(email)).code }
 
@@ -74,7 +70,7 @@ class AuthRepository(
         try {
             apiCall { api.users.logout() }
         } catch (_: ApiException) {
-            // The local session is cleared even if the server call fails.
+            // Se limpia la sesion local aunque falle la llamada al servidor.
         } finally {
             session.clearSession()
             _currentUser.value = null

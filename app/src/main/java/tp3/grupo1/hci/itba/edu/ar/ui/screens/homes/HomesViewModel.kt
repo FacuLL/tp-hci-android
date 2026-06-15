@@ -59,7 +59,7 @@ data class InviteMemberForm(
     @StringRes val errorRes: Int? = null,
 )
 
-/** Invitations the API rejected (no account registered with that email). */
+// Invitaciones que la API rechazo (no hay cuenta registrada con ese email).
 data class FailedInvites(
     val emails: List<String>,
     val homeCreated: Boolean,
@@ -99,7 +99,6 @@ class HomesViewModel(container: AppContainer) : ViewModel() {
 
     fun retry() = load()
 
-    /** Pull-to-refresh: re-fetch homes keeping content visible. */
     fun refresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(refreshing = true, loadErrorRes = null) }

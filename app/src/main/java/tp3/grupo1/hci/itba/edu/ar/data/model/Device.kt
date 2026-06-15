@@ -13,7 +13,6 @@ data class Device(
     val metadata: JsonObject? = null,
 )
 
-/** Room data embedded in a device response. */
 @Serializable
 data class RoomSummary(
     val id: String,
@@ -21,7 +20,6 @@ data class RoomSummary(
     val home: HomeSummary? = null,
 )
 
-/** Home data embedded in a room response. */
 @Serializable
 data class HomeSummary(
     val id: String,

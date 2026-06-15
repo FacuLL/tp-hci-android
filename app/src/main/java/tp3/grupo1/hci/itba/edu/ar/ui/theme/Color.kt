@@ -2,8 +2,7 @@ package tp3.grupo1.hci.itba.edu.ar.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Lumina palette — softer pastel sky-blue (friendlier than the web prototype's
-// deeper #2890D0). Primary lightened, containers shifted toward pale celeste.
+// Paleta Lumina: celeste pastel más suave que el #2890D0 del prototipo web, con primario aclarado y contenedores hacia el celeste pálido.
 val LuminaPrimary = Color(0xFF5FB4E2)
 val LuminaPrimaryLight = Color(0xFF9AD6F2)
 val LuminaBackground = Color(0xFFFBFDFE)
@@ -18,7 +17,7 @@ val LuminaDanger = Color(0xFFE84040)
 val LuminaSuccess = Color(0xFF3CAB5E)
 val LuminaWarning = Color(0xFFFFE066)
 
-// Dark variants (same hue family, adjusted for dark surfaces)
+// Variantes oscuras: misma familia de tono, ajustadas para superficies oscuras.
 val LuminaDarkBackground = Color(0xFF0B1620)
 val LuminaDarkSurface = Color(0xFF12222E)
 val LuminaDarkSurfaceVariant = Color(0xFF1B2F3D)

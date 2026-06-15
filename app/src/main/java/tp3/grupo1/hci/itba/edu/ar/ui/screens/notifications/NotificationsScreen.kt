@@ -42,11 +42,7 @@ import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.data.notifications.NotificationCategory
 import tp3.grupo1.hci.itba.edu.ar.data.notifications.StoredNotification
 
-/**
- * Local notification history opened from the dashboard bell. Lists the events
- * received and stored on the device, newest first. Opening the screen marks
- * everything as read, clearing the unread badge.
- */
+// Al abrir la pantalla se marca todo como leido, limpiando el badge de no leidos.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsScreen(

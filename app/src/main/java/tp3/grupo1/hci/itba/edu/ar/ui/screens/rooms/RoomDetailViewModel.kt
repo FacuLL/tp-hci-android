@@ -29,7 +29,6 @@ import tp3.grupo1.hci.itba.edu.ar.domain.devicesInRoom
 import tp3.grupo1.hci.itba.edu.ar.domain.unassignedDevices
 import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
 
-/** Dialogs of the room detail screen. */
 sealed interface RoomDetailDialog {
     data object Rename : RoomDetailDialog
     data object ConfirmDelete : RoomDetailDialog
@@ -42,27 +41,24 @@ data class RoomDetailUiState(
     val refreshing: Boolean = false,
     val room: Room? = null,
     val rooms: List<Room> = emptyList(),
-    /** Devices in this room, sorted by the saved order (unknown ids append). */
+    // Devices de la room, ordenados segun el orden guardado (ids desconocidos al final).
     val roomDevices: List<Device> = emptyList(),
     val unassignedDevices: List<Device> = emptyList(),
     val types: Map<String, DeviceType> = emptyMap(),
     val pendingDeviceIds: Set<String> = emptySet(),
     val dialog: RoomDetailDialog? = null,
-    // Reorder mode
     val editMode: Boolean = false,
-    /** Working copy shown while editing. Empty when not in editMode. */
+    // Copia de trabajo mostrada mientras se edita. Vacia cuando no esta en editMode.
     val draftOrder: List<Device> = emptyList(),
     val savingOrder: Boolean = false,
-    // Create-device form
     val creatingDevice: Boolean = false,
     @field:StringRes val createDeviceErrorRes: Int? = null,
-    // Rename form
     val nameInput: String = "",
     @field:StringRes val nameErrorRes: Int? = null,
     val submitAttempted: Boolean = false,
     val saving: Boolean = false,
     @field:StringRes val dialogErrorRes: Int? = null,
-    /** Set once the room is deleted so the screen can navigate back. */
+    // Se marca cuando la room se borra para que la pantalla pueda volver atras.
     val deleted: Boolean = false,
     @field:StringRes val snackbarMessageRes: Int? = null,
 )
@@ -73,7 +69,6 @@ private data class RoomSnapshot(
     val types: Map<String, DeviceType>,
 )
 
-/** Scoped to a single room; mirrors the actions available in the rooms tab. */
 class RoomDetailViewModel(
     private val container: AppContainer,
     private val roomId: String,
@@ -92,8 +87,7 @@ class RoomDetailViewModel(
                 deviceTypesRepository.ensureLoaded()
                 if (devicesRepository.devices.value.isEmpty()) devicesRepository.refresh()
             } catch (_: ApiException) {
-                // The observed flows keep the screen updated; a load failure
-                // here only means an empty initial list, surfaced as such.
+                // Los flows observados mantienen la pantalla actualizada; un fallo aca solo deja una lista inicial vacia.
             } finally {
                 _uiState.update { it.copy(loading = false) }
             }
@@ -115,9 +109,7 @@ class RoomDetailViewModel(
                         room = room,
                         rooms = snapshot.rooms,
                         roomDevices = ordered,
-                        // Edit mode keeps its draft but reflects added/removed devices
-                        // by syncing draftOrder against the live set, preserving the
-                        // user's in-progress ordering.
+                        // En edit mode se sincroniza el draft contra el set vivo para reflejar altas/bajas sin perder el orden en progreso.
                         draftOrder = if (it.editMode) syncDraft(it.draftOrder, ordered) else emptyList(),
                         unassignedDevices = unassignedDevices(snapshot.devices),
                         types = snapshot.types,
@@ -152,7 +144,6 @@ class RoomDetailViewModel(
         return kept + newcomers
     }
 
-    /** Pull-to-refresh: re-fetch rooms and devices keeping content visible. */
     fun refresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(refreshing = true) }
@@ -169,8 +160,6 @@ class RoomDetailViewModel(
             }
         }
     }
-
-    // ── Dialogs ──
 
     fun openRenameDialog() {
         _uiState.update {
@@ -197,7 +186,6 @@ class RoomDetailViewModel(
         _uiState.update { it.copy(dialog = RoomDetailDialog.CreateDevice, createDeviceErrorRes = null) }
     }
 
-    /** Creates a device already assigned to [roomId] (preselected to this room). */
     fun createDevice(name: String, typeId: String, roomId: String?) {
         viewModelScope.launch {
             _uiState.update { it.copy(creatingDevice = true, createDeviceErrorRes = null) }
@@ -220,8 +208,6 @@ class RoomDetailViewModel(
         if (_uiState.value.saving) return
         _uiState.update { it.copy(dialog = null) }
     }
-
-    // ── Rename ──
 
     fun onNameChange(value: String) {
         _uiState.update {
@@ -249,14 +235,12 @@ class RoomDetailViewModel(
         }
     }
 
-    // ── Delete ──
-
     fun deleteRoom() {
         _uiState.update { it.copy(dialog = null) }
         viewModelScope.launch {
             try {
                 roomsRepository.delete(roomId)
-                // Devices of the deleted room are reassigned server side.
+                // Los devices de la room borrada se reasignan del lado del servidor.
                 devicesRepository.refresh()
                 _uiState.update { it.copy(deleted = true) }
             } catch (e: ApiException) {
@@ -264,8 +248,6 @@ class RoomDetailViewModel(
             }
         }
     }
-
-    // ── Device actions ──
 
     fun toggleDevice(device: Device) {
         val type = _uiState.value.types[device.type.id] ?: return
@@ -296,8 +278,6 @@ class RoomDetailViewModel(
         _uiState.update { it.copy(snackbarMessageRes = null) }
     }
 
-    // ── Reorder ──
-
     fun enterReorderMode() {
         val current = _uiState.value
         if (current.editMode || current.roomDevices.isEmpty()) return
@@ -309,7 +289,6 @@ class RoomDetailViewModel(
         _uiState.update { it.copy(editMode = false, draftOrder = emptyList()) }
     }
 
-    /** Drag-to-reorder: move the device at [from] to position [to] in the draft. */
     fun moveDevice(from: Int, to: Int) {
         val draft = _uiState.value.draftOrder
         if (from == to || from !in draft.indices || to !in draft.indices) return

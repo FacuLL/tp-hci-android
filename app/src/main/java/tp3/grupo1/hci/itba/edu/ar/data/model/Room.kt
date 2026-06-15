@@ -25,7 +25,7 @@ data class RoomUpdateRequest(
     val metadata: JsonObject? = null,
 )
 
-/** Generic `{ "id": ... }` reference used by the API to link entities. */
+// Referencia generica { "id": ... } que usa la API para vincular entidades
 @Serializable
 data class EntityRef(
     val id: String,

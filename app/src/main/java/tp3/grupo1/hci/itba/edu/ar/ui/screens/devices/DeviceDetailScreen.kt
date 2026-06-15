@@ -78,7 +78,6 @@ private const val MISSING_DEVICE_NOTICE_MILLIS = 1500L
 
 private fun deviceDetailViewModelKey(deviceId: String) = "device_detail_$deviceId"
 
-/** Full screen device detail with its own contextual app bar (RNF2). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceDetailScreen(
@@ -91,7 +90,7 @@ fun DeviceDetailScreen(
     )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Device deleted (or unknown id): the body shows the notice, then go back.
+    // Device borrado (o id desconocido): el body muestra el aviso y despues volvemos atras.
     LaunchedEffect(state.loading, state.device == null) {
         if (!state.loading && state.device == null) {
             delay(MISSING_DEVICE_NOTICE_MILLIS)
@@ -136,11 +135,6 @@ fun DeviceDetailScreen(
     }
 }
 
-/**
- * Embeddable detail content without scaffold, used by the devices list in
- * two-pane layouts (RNF4/RNF5). Management actions appear as an inline icon
- * row because there is no dedicated app bar in that context.
- */
 @Composable
 fun DeviceDetailContent(
     deviceId: String,
@@ -256,10 +250,6 @@ private fun DeviceDetailBody(
     }
 }
 
-/**
- * RNF4/RNF5: single column on compact widths, two-column grid of controls on
- * medium/expanded widths with the header spanning the full width.
- */
 @Composable
 private fun DeviceDetailLayout(
     state: DeviceDetailUiState,
@@ -271,14 +261,10 @@ private fun DeviceDetailLayout(
 ) {
     val accent = deviceTypeColor(device.type.id)
 
-    // Columns depend on the LOCAL pane width, not the window class: embedded
-    // in the two-pane devices list the pane can be narrow even on a wide
-    // window (e.g. phone landscape).
+    // Las columnas dependen del ancho LOCAL del pane, no de la window class.
     BoxWithConstraints {
         val compact = maxWidth < 600.dp
         LazyVerticalGrid(
-            // Below 600dp force 1 column; above, let Adaptive pick the column
-            // count whose card width ≥ minSize so EXPANDED panes use 3+ cols.
             columns = if (compact) GridCells.Fixed(1) else GridCells.Adaptive(minSize = 280.dp),
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),

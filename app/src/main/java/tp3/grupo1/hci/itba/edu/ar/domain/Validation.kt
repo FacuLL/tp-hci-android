@@ -4,10 +4,7 @@ import android.util.Patterns
 import androidx.annotation.StringRes
 import tp3.grupo1.hci.itba.edu.ar.R
 
-/**
- * Form validators. Each returns the error message resource, or null when the
- * value is valid, so screens can validate early and show every error inline.
- */
+// Validadores de formulario: cada uno devuelve el recurso del mensaje de error, o null si el valor es valido.
 object Validators {
 
     @StringRes
@@ -36,7 +33,7 @@ object Validators {
         else -> null
     }
 
-    /** Names of users, homes, rooms and devices: 3 to 100 characters. */
+    // Nombres de usuarios, hogares, habitaciones y dispositivos: de 3 a 100 caracteres.
     @StringRes
     fun name(value: String): Int? = when {
         value.isBlank() -> R.string.validation_required

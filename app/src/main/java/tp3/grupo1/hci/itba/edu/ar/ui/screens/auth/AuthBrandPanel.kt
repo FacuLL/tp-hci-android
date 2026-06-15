@@ -68,11 +68,6 @@ private fun BrandLogo(modifier: Modifier = Modifier) {
     }
 }
 
-/**
- * Lumina brand presentation shared by the authentication screens, carried
- * over from the web app: logo plus tagline, and on wide windows the full
- * side panel with the product pitch.
- */
 @Composable
 fun AuthBrandPanel(expanded: Boolean, modifier: Modifier = Modifier) {
     if (expanded) {
@@ -131,20 +126,8 @@ fun AuthBrandPanel(expanded: Boolean, modifier: Modifier = Modifier) {
     }
 }
 
-/**
- * Adaptive body shared by the authentication screens (RNF5).
- *
- * - COMPACT (phone portrait): brand header stacked above the form.
- * - MEDIUM (phone landscape, small tablet): same stacked layout — splitting
- *   600-840dp into a brand panel + form ends up cramped, the brand panel can't
- *   fit its features on the available height anyway.
- * - EXPANDED (tablet landscape): web-style split with brand panel left + form
- *   right.
- *
- * In all stacked variants the form column uses `.imePadding()` so the keyboard
- * doesn't push the inputs out of view, which is the worst case on phone
- * landscape (where ~360dp of vertical is already tight).
- */
+// MEDIUM usa el mismo layout apilado que COMPACT porque partir 600-840dp en panel + formulario queda apretado y el panel no entra en alto.
+// En las variantes apiladas el formulario usa imePadding() para que el teclado no tape los inputs, el peor caso en landscape de teléfono.
 @Composable
 fun AuthLayout(
     modifier: Modifier = Modifier,

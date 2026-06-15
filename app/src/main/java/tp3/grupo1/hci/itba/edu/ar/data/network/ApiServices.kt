@@ -39,8 +39,7 @@ import tp3.grupo1.hci.itba.edu.ar.data.model.User
 import tp3.grupo1.hci.itba.edu.ar.data.model.VerifyAccountRequest
 
 interface UserService {
-    // Per the API contract register returns the created (unverified) User, not
-    // an auth session — login is a separate call.
+    // Por contrato register devuelve el User creado (sin verificar), no una sesion: el login es aparte
     @POST("users/register")
     suspend fun register(@Body body: RegisterRequest): User
 
@@ -85,8 +84,7 @@ interface HomeService {
     @PUT("homes/{id}")
     suspend fun update(@Path("id") id: String, @Body body: HomeUpdateRequest): Home
 
-    // Raw body: the delete endpoints answer with an empty/non-JSON body, which
-    // would make the JSON converter throw and abort the local state update.
+    // Body crudo: los endpoints de delete responden con body vacio/no-JSON que rompe el converter y aborta la actualizacion local
     @DELETE("homes/{id}")
     suspend fun delete(@Path("id") id: String): ResponseBody
 
@@ -107,15 +105,14 @@ interface RoomService {
     @PUT("rooms/{id}")
     suspend fun update(@Path("id") id: String, @Body body: RoomUpdateRequest): Room
 
-    // Raw body: empty 200 response would otherwise break the JSON converter.
+    // Body crudo: una respuesta 200 vacia rompe el converter de JSON
     @DELETE("rooms/{id}")
     suspend fun delete(@Path("id") id: String): ResponseBody
 
     @POST("rooms/{roomId}/devices/{deviceId}")
     suspend fun addDevice(@Path("roomId") roomId: String, @Path("deviceId") deviceId: String): Device
 
-    // Per the API contract this returns void (empty body), so the result is the
-    // raw body and the caller rebuilds the device from its cache.
+    // Por contrato devuelve void (body vacio), por eso el resultado es el body crudo y el caller reconstruye el device desde su cache
     @DELETE("rooms/devices/{deviceId}")
     suspend fun removeDevice(@Path("deviceId") deviceId: String): ResponseBody
 }
@@ -133,11 +130,7 @@ interface DeviceService {
     @DELETE("devices/{id}")
     suspend fun delete(@Path("id") id: String): ResponseBody
 
-    /**
-     * Executes an action on a device. Params travel as a positional JSON
-     * array, which is the format preferred by the API. The return value
-     * varies per action (boolean, string or number), so it is kept raw.
-     */
+    // Los params viajan como array JSON posicional (formato que prefiere la API) y el retorno varia por accion (boolean, string o number), por eso se deja crudo
     @PATCH("devices/{id}/{action}")
     suspend fun executeAction(
         @Path("id") id: String,

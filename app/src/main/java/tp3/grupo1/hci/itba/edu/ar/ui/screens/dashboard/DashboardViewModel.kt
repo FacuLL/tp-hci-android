@@ -31,7 +31,7 @@ data class DashboardUiState(
     val homes: List<Home> = emptyList(),
     val currentHome: Home? = null,
     val rooms: List<Room> = emptyList(),
-    /** Devices already scoped to the current home (its rooms plus unassigned ones). */
+    // Devices ya filtrados al home actual (sus rooms mas los sin asignar).
     val devices: List<Device> = emptyList(),
     val deviceTypes: Map<String, DeviceType> = emptyMap(),
     val userName: String? = null,
@@ -46,7 +46,6 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
     private val authRepository = container.authRepository
     private val notificationStore = container.notificationStore
 
-    /** Unread notification count for the dashboard bell badge. */
     val unreadNotifications: StateFlow<Int> = notificationStore.unreadCount
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
@@ -56,7 +55,6 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
 
     private val _toggleErrorRes = MutableStateFlow<Int?>(null)
 
-    /** Localized message for a failed power toggle, shown as a snackbar. */
     val toggleErrorRes: StateFlow<Int?> = _toggleErrorRes.asStateFlow()
 
     val uiState: StateFlow<DashboardUiState> = combine(
@@ -93,8 +91,7 @@ class DashboardViewModel(container: AppContainer) : ViewModel() {
         refresh()
     }
 
-    /** [manual] is true for pull-to-refresh, which keeps content visible and
-     *  shows the pull indicator instead of the full-screen loader. */
+    // manual = true es pull-to-refresh: mantiene el contenido visible y muestra el indicador en vez del loader.
     fun refresh(manual: Boolean = false) {
         viewModelScope.launch {
             if (manual) manualRefreshing.value = true else refreshing.value = true

@@ -107,8 +107,8 @@ private fun StatisticsContent(
     contentPadding: PaddingValues,
 ) {
     val widthClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
-    // Cap + center: KPI cards and the chart stay readable instead of stretching
-    // edge-to-edge on landscape / tablet (chart aspect would distort otherwise).
+    // Limitar y centrar: las tarjetas KPI y el grafico quedan legibles en vez de estirarse
+    // de borde a borde en horizontal / tablet (el aspecto del grafico se distorsionaria).
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter,
@@ -222,7 +222,7 @@ private fun KpiGrid(state: StatisticsUiState, widthClass: WindowWidthSizeClass) 
             )
         },
     )
-    // EXPANDED uses a single row of 4; everything else falls back to 2x2.
+    // EXPANDED usa una sola fila de 4; el resto cae a 2x2.
     if (widthClass == WindowWidthSizeClass.EXPANDED) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             cards.forEach { it(Modifier.weight(1f)) }
@@ -312,8 +312,8 @@ private fun HourlyChartCard(points: List<HourPoint>) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            // Aspect-based height keeps the chart from looking squashed in
-            // landscape (180dp fixed was too short at ~1.5+:1 width ratios).
+            // Altura basada en el aspecto: evita que el grafico se vea aplastado en
+            // horizontal (180dp fijo quedaba muy corto en relaciones de ancho ~1.5+:1).
             BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                 val chartHeight = (maxWidth * 0.35f).coerceIn(180.dp, 280.dp)
                 if (points.isEmpty() || points.all { it.kWh == 0.0 }) {
@@ -358,7 +358,6 @@ private fun LineChart(points: List<HourPoint>, height: androidx.compose.ui.unit.
         val ys = points.map { p ->
             size.height - (p.kWh / yMax).toFloat() * size.height
         }
-        // Horizontal grid.
         for (g in 0..gridLines) {
             val y = size.height * (g.toFloat() / gridLines)
             drawLine(
@@ -368,7 +367,6 @@ private fun LineChart(points: List<HourPoint>, height: androidx.compose.ui.unit.
                 strokeWidth = 1f,
             )
         }
-        // Filled area under the curve.
         val areaPath = Path().apply {
             moveTo(xs.first(), size.height)
             for (i in points.indices) lineTo(xs[i], ys[i])
@@ -376,7 +374,6 @@ private fun LineChart(points: List<HourPoint>, height: androidx.compose.ui.unit.
             close()
         }
         drawPath(path = areaPath, brush = fillBrush)
-        // Line itself.
         val linePath = Path().apply {
             moveTo(xs.first(), ys.first())
             for (i in 1 until points.size) lineTo(xs[i], ys[i])
@@ -386,7 +383,6 @@ private fun LineChart(points: List<HourPoint>, height: androidx.compose.ui.unit.
             color = accent,
             style = Stroke(width = 3.5f),
         )
-        // Dots.
         for (i in points.indices) {
             drawCircle(
                 color = accent,
