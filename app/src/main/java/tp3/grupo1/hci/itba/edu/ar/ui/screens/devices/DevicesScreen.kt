@@ -24,7 +24,6 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -79,6 +78,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.CenteredLoading
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ConfirmDialog
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
+import tp3.grupo1.hci.itba.edu.ar.ui.components.ProfileAvatar
 
 /**
  * Devices tab: searchable and filterable list of every device of the selected
@@ -137,9 +137,7 @@ fun DevicesScreen(
                     IconButton(onClick = { showCreateDialog = true }) {
                         Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.devices_cd_add))
                     }
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.cd_open_settings))
-                    }
+                    ProfileAvatar(onClick = onOpenSettings)
                 },
             )
         },

@@ -31,14 +31,12 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -87,6 +85,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.ConfirmDialog
 import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
+import tp3.grupo1.hci.itba.edu.ar.ui.components.ProfileAvatar
 
 /**
  * Routines tab (RF11/RF12): routines are listed, executed, created, edited
@@ -128,19 +127,15 @@ fun RoutinesScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onOpenSettings) {
+                    IconButton(onClick = onCreateRoutine) {
                         Icon(
-                            imageVector = Icons.Outlined.Settings,
-                            contentDescription = stringResource(R.string.cd_open_settings),
+                            imageVector = Icons.Outlined.Add,
+                            contentDescription = stringResource(R.string.routine_cd_add),
                         )
                     }
+                    ProfileAvatar(onClick = onOpenSettings)
                 },
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onCreateRoutine) {
-                Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.routine_cd_add))
-            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->

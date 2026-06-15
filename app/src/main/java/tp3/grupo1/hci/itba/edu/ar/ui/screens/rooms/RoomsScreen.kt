@@ -25,7 +25,6 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.HomeWork
 import androidx.compose.material.icons.outlined.MeetingRoom
 import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -75,6 +74,7 @@ import tp3.grupo1.hci.itba.edu.ar.ui.components.EmptyState
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LoadingButton
 import tp3.grupo1.hci.itba.edu.ar.ui.components.LuminaTextField
+import tp3.grupo1.hci.itba.edu.ar.ui.components.ProfileAvatar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,12 +125,7 @@ fun RoomsScreen(
                             )
                         }
                     }
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(
-                            imageVector = Icons.Outlined.Settings,
-                            contentDescription = stringResource(R.string.cd_open_settings),
-                        )
-                    }
+                    ProfileAvatar(onClick = onOpenSettings)
                 },
             )
         },

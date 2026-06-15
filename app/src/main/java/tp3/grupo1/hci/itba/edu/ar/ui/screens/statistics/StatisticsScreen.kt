@@ -14,13 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -46,6 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.ui.components.CenteredLoading
 import tp3.grupo1.hci.itba.edu.ar.ui.components.ErrorBanner
+import tp3.grupo1.hci.itba.edu.ar.ui.components.ProfileAvatar
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -92,12 +89,7 @@ private fun StatisticsScaffold(
             TopAppBar(
                 title = { Text(stringResource(R.string.statistics_title)) },
                 actions = {
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(
-                            imageVector = Icons.Outlined.Settings,
-                            contentDescription = stringResource(R.string.cd_open_settings),
-                        )
-                    }
+                    ProfileAvatar(onClick = onOpenSettings)
                 },
             )
         },
