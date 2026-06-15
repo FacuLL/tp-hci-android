@@ -33,6 +33,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import kotlinx.serialization.json.JsonElement
 import tp3.grupo1.hci.itba.edu.ar.R
 import tp3.grupo1.hci.itba.edu.ar.domain.AlarmAtom
@@ -164,6 +166,16 @@ internal fun DispenseControl(
     val canDispense = deviceStatus == "closed"
     var quantity by remember(atom) { mutableFloatStateOf(atom.quantityMin.toFloat()) }
     var unit by remember(atom) { mutableStateOf(atom.units.firstOrNull().orEmpty()) }
+    // La API no avisa cuándo termina de dispensar, así que mantenemos un cooldown mínimo de 1s
+    // tras el tap para evitar re-disparos instantáneos y dar feedback de carga.
+    var cooldown by remember(atom) { mutableStateOf(false) }
+    LaunchedEffect(cooldown) {
+        if (cooldown) {
+            delay(1000)
+            cooldown = false
+        }
+    }
+    val busy = dispensing || cooldown
     ControlCard {
         SectionLabel(stringResource(R.string.device_action_dispense))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -184,7 +196,7 @@ internal fun DispenseControl(
             onValueChange = { quantity = it },
             valueRange = atom.quantityMin.toFloat()..atom.quantityMax.toFloat(),
             steps = (atom.quantityMax - atom.quantityMin - 1).coerceAtLeast(0),
-            enabled = !dispensing && canDispense,
+            enabled = !busy && canDispense,
             colors = SliderDefaults.colors(thumbColor = accent, activeTrackColor = accent),
         )
         if (atom.units.isNotEmpty()) {
@@ -194,14 +206,17 @@ internal fun DispenseControl(
                 value = unit,
                 optionLabel = { it },
                 onSelect = { unit = it },
-                enabled = !dispensing && canDispense,
+                enabled = !busy && canDispense,
             )
         }
         LoadingButton(
             text = stringResource(R.string.device_action_dispense),
-            loading = dispensing,
+            loading = busy,
             enabled = canDispense,
-            onClick = { onDispense(atom.action, quantity.roundToInt(), unit) },
+            onClick = {
+                cooldown = true
+                onDispense(atom.action, quantity.roundToInt(), unit)
+            },
             modifier = Modifier.fillMaxWidth(),
         )
         if (!canDispense) {
