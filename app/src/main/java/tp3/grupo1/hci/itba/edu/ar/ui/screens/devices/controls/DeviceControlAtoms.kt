@@ -216,6 +216,49 @@ internal fun DropdownSelect(
     }
 }
 
+// Variante de DropdownSelect con item custom: cada opcion (y el anchor seleccionado) muestra un
+// icono opcional + el label formateado. Se usa para FAN_SPEED y SWING_* en el AC.
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun DropdownSelectCustom(
+    label: String,
+    options: List<String>,
+    value: String,
+    optionLabel: @Composable (String) -> String,
+    leadingIcon: (@Composable (String) -> Unit)? = null,
+    onSelect: (String) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+    ) {
+        OutlinedTextField(
+            value = optionLabel(value),
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            leadingIcon = leadingIcon?.let { icon -> { icon(value) } },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth(),
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(optionLabel(option)) },
+                    leadingIcon = leadingIcon?.let { icon -> { icon(option) } },
+                    onClick = {
+                        expanded = false
+                        onSelect(option)
+                    },
+                )
+            }
+        }
+    }
+}
+
 internal fun parseHexColor(hex: String): Color = try {
     Color(android.graphics.Color.parseColor(hex))
 } catch (_: IllegalArgumentException) {
@@ -345,29 +388,23 @@ private fun SelectControl(
                 }
             }
             SelectKind.FAN_SPEED -> {
-                SectionLabel(label)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    atom.options.forEach { option ->
-                        FilterChip(
-                            selected = option == atom.value,
-                            onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
-                            label = { Text(fanSpeedLabel(option)) },
-                        )
-                    }
-                }
+                DropdownSelectCustom(
+                    label = label,
+                    options = atom.options,
+                    value = atom.value,
+                    optionLabel = { fanSpeedLabel(it) },
+                    onSelect = { onExecute(atom.action, listOf(JsonPrimitive(it))) },
+                )
             }
             SelectKind.SWING_VERTICAL, SelectKind.SWING_HORIZONTAL -> {
-                SectionLabel(label)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    atom.options.forEach { option ->
-                        FilterChip(
-                            selected = option == atom.value,
-                            onClick = { onExecute(atom.action, listOf(JsonPrimitive(option))) },
-                            leadingIcon = { SwingOptionIcon(option, atom.kind) },
-                            label = { Text(swingLabel(option)) },
-                        )
-                    }
-                }
+                DropdownSelectCustom(
+                    label = label,
+                    options = atom.options,
+                    value = atom.value,
+                    optionLabel = { swingLabel(it) },
+                    leadingIcon = { SwingOptionIcon(it, atom.kind) },
+                    onSelect = { onExecute(atom.action, listOf(JsonPrimitive(it))) },
+                )
             }
             SelectKind.GENERIC -> {
                 DropdownSelect(
