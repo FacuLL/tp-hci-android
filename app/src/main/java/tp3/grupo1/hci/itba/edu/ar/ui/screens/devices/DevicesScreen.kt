@@ -19,8 +19,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.DevicesOther
+import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Search
@@ -56,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -295,54 +298,74 @@ private fun DevicesListPane(
     onAddDevice: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // En landscape phone (alto < 480dp) la fila de chips + la barra de
+    // busqueda comen casi todo el viewport disponible y queda 1 device
+    // visible. Compactamos a una sola fila: search a la izquierda + boton
+    // de filtro a la derecha que abre un dropdown con las mismas opciones.
+    val configuration = LocalConfiguration.current
+    val isCompactLandscape =
+        configuration.screenWidthDp > configuration.screenHeightDp &&
+        configuration.screenHeightDp < 480
+    val verticalSpacing = if (isCompactLandscape) 8.dp else 12.dp
     Column(
         modifier = modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(verticalSpacing),
     ) {
         uiState.loadErrorRes?.let { ErrorBanner(stringResource(it)) }
-        OutlinedTextField(
-            value = uiState.query,
-            onValueChange = onQueryChange,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(stringResource(R.string.devices_search_placeholder)) },
-            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-            singleLine = true,
-        )
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            FilterChip(
-                selected = uiState.selectedTypeId == null && !uiState.lockOnly,
-                onClick = { onTypeSelected(null) },
-                label = { Text(stringResource(R.string.devices_filter_all)) },
+        if (isCompactLandscape) {
+            CompactSearchFilterRow(
+                query = uiState.query,
+                selectedTypeId = uiState.selectedTypeId,
+                lockOnly = uiState.lockOnly,
+                onQueryChange = onQueryChange,
+                onTypeSelected = onTypeSelected,
+                onLockFilterToggle = onLockFilterToggle,
             )
-            FilterChip(
-                selected = uiState.lockOnly,
-                onClick = { onLockFilterToggle() },
-                label = { Text(stringResource(R.string.dashboard_locks_title)) },
-                leadingIcon = {
-                    Icon(
-                        Icons.Outlined.Lock,
-                        contentDescription = null,
-                        modifier = Modifier.size(FilterChipDefaults.IconSize),
-                    )
-                },
+        } else {
+            OutlinedTextField(
+                value = uiState.query,
+                onValueChange = onQueryChange,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.devices_search_placeholder)) },
+                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                singleLine = true,
             )
-            DeviceTypeIds.CREATABLE.forEach { typeId ->
-                val nameRes = deviceTypeNameRes(typeId) ?: return@forEach
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 FilterChip(
-                    selected = uiState.selectedTypeId == typeId,
-                    onClick = { onTypeSelected(if (uiState.selectedTypeId == typeId) null else typeId) },
-                    label = { Text(stringResource(nameRes)) },
+                    selected = uiState.selectedTypeId == null && !uiState.lockOnly,
+                    onClick = { onTypeSelected(null) },
+                    label = { Text(stringResource(R.string.devices_filter_all)) },
+                )
+                FilterChip(
+                    selected = uiState.lockOnly,
+                    onClick = { onLockFilterToggle() },
+                    label = { Text(stringResource(R.string.dashboard_locks_title)) },
                     leadingIcon = {
                         Icon(
-                            deviceTypeIcon(typeId),
+                            Icons.Outlined.Lock,
                             contentDescription = null,
                             modifier = Modifier.size(FilterChipDefaults.IconSize),
                         )
                     },
                 )
+                DeviceTypeIds.CREATABLE.forEach { typeId ->
+                    val nameRes = deviceTypeNameRes(typeId) ?: return@forEach
+                    FilterChip(
+                        selected = uiState.selectedTypeId == typeId,
+                        onClick = { onTypeSelected(if (uiState.selectedTypeId == typeId) null else typeId) },
+                        label = { Text(stringResource(nameRes)) },
+                        leadingIcon = {
+                            Icon(
+                                deviceTypeIcon(typeId),
+                                contentDescription = null,
+                                modifier = Modifier.size(FilterChipDefaults.IconSize),
+                            )
+                        },
+                    )
+                }
             }
         }
         when {
@@ -361,7 +384,10 @@ private fun DevicesListPane(
             else -> LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 16.dp),
+                // Bottom padding extra para que el ultimo device no quede
+                // tapado por la NavigationSuiteScaffold (los insets del
+                // bottom nav no llegan al Scaffold interno).
+                contentPadding = PaddingValues(bottom = 96.dp),
             ) {
                 items(listState.devices, key = { it.id }) { device ->
                     DeviceListItem(
@@ -532,6 +558,114 @@ private fun DeviceDetailPane(
     } else {
         key(deviceId) {
             DeviceDetailContent(deviceId = deviceId, modifier = modifier, onDeleted = onDeleted)
+        }
+    }
+}
+
+/**
+ * Compact landscape layout for the search + filter controls. The full chip
+ * row + search field stack burns ~140dp vertically on phone landscape, which
+ * leaves the device list with room for ~1 card. We collapse to a single row:
+ * a slimmer search field on the left + a filter icon that opens a dropdown
+ * with the same options (All / Locks / each creatable type).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CompactSearchFilterRow(
+    query: String,
+    selectedTypeId: String?,
+    lockOnly: Boolean,
+    onQueryChange: (String) -> Unit,
+    onTypeSelected: (String?) -> Unit,
+    onLockFilterToggle: () -> Unit,
+) {
+    var menuOpen by remember { mutableStateOf(false) }
+    val activeFilterLabel = when {
+        lockOnly -> stringResource(R.string.dashboard_locks_title)
+        selectedTypeId != null -> deviceTypeNameRes(selectedTypeId)?.let { stringResource(it) }
+            ?: stringResource(R.string.devices_filter_all)
+        else -> stringResource(R.string.devices_filter_all)
+    }
+    val filterActive = lockOnly || selectedTypeId != null
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier.weight(1f),
+            placeholder = { Text(stringResource(R.string.devices_search_placeholder)) },
+            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+            singleLine = true,
+        )
+        Box {
+            FilterChip(
+                selected = filterActive,
+                onClick = { menuOpen = true },
+                label = {
+                    Text(
+                        text = activeFilterLabel,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.widthIn(max = 110.dp),
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.FilterList,
+                        contentDescription = null,
+                        modifier = Modifier.size(FilterChipDefaults.IconSize),
+                    )
+                },
+            )
+            DropdownMenu(
+                expanded = menuOpen,
+                onDismissRequest = { menuOpen = false },
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.devices_filter_all)) },
+                    onClick = {
+                        menuOpen = false
+                        // Asegurar reset completo: tipo null + apagar lockOnly
+                        // si estaba prendido (toggle si es true).
+                        if (lockOnly) onLockFilterToggle()
+                        onTypeSelected(null)
+                    },
+                    trailingIcon = if (!filterActive) {
+                        { Icon(Icons.Outlined.Check, contentDescription = null) }
+                    } else null,
+                )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.dashboard_locks_title)) },
+                    leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
+                    onClick = {
+                        menuOpen = false
+                        // El toggle se encarga de prender/apagar.
+                        if (!lockOnly) onLockFilterToggle()
+                    },
+                    trailingIcon = if (lockOnly) {
+                        { Icon(Icons.Outlined.Check, contentDescription = null) }
+                    } else null,
+                )
+                DeviceTypeIds.CREATABLE.forEach { typeId ->
+                    val nameRes = deviceTypeNameRes(typeId) ?: return@forEach
+                    DropdownMenuItem(
+                        text = { Text(stringResource(nameRes)) },
+                        leadingIcon = {
+                            Icon(deviceTypeIcon(typeId), contentDescription = null)
+                        },
+                        onClick = {
+                            menuOpen = false
+                            onTypeSelected(if (selectedTypeId == typeId) null else typeId)
+                        },
+                        trailingIcon = if (selectedTypeId == typeId) {
+                            { Icon(Icons.Outlined.Check, contentDescription = null) }
+                        } else null,
+                    )
+                }
+            }
         }
     }
 }

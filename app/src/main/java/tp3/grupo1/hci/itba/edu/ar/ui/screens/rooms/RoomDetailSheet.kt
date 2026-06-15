@@ -4,14 +4,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -126,12 +132,20 @@ fun RoomDetailContent(
                 modifier = Modifier.weight(1f, fill = false),
             )
         } else {
-            LazyColumn(
+            // Grilla adaptive de cards cuadradas (en lugar de la fila
+            // alargada anterior): aprovecha el ancho disponible y muestra
+            // mas devices por pantalla en landscape / tablet. minSize=150dp
+            // -> 2 columnas en phone portrait, 3-4 en landscape, mas en
+            // tablet.
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 150.dp),
                 modifier = Modifier.weight(1f, fill = false),
+                contentPadding = PaddingValues(0.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(devices, key = { it.id }) { device ->
-                    RoomDeviceRow(
+                gridItems(devices, key = { it.id }) { device ->
+                    RoomDeviceSquareCard(
                         device = device,
                         type = types[device.type.id],
                         pending = device.id in pendingDeviceIds,
@@ -286,6 +300,90 @@ private fun RoomDeviceRow(
                     colors = SwitchDefaults.colors(
                         uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     ),
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Square card used in the room detail grid. Same data as RoomDeviceRow
+ * (icon, name, state, optional power switch) but laid out vertically so a
+ * row of these forms a grid that uses the screen width better than a
+ * single-column list. Active devices get a tinted border to highlight
+ * them at a glance.
+ */
+@Composable
+private fun RoomDeviceSquareCard(
+    device: Device,
+    type: DeviceType?,
+    pending: Boolean,
+    onOpen: () -> Unit,
+    onToggle: () -> Unit,
+) {
+    val context = LocalContext.current
+    val powerAtom = remember(device, type) {
+        type?.let { deviceControls(it, device).filterIsInstance<PowerAtom>().firstOrNull() }
+    }
+    val active = powerAtom?.active == true
+    Surface(
+        onClick = onOpen,
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            // Fila superior: icono accent a la izquierda + switch (si el
+            // device tiene power atom) a la derecha. Sino, el lugar del
+            // switch queda libre para mantener el alineamiento de la card.
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                DeviceTypeBadge(typeId = device.type.id)
+                if (powerAtom != null) {
+                    val togglesOpening = powerAtom.onAction == "open" ||
+                        powerAtom.offAction == "open"
+                    val blocked =
+                        (togglesOpening && device.state.lock == "locked") ||
+                        (powerAtom.onAction == "lock" && device.state.status == "opened")
+                    Switch(
+                        checked = active,
+                        onCheckedChange = { onToggle() },
+                        enabled = !pending && !blocked,
+                        colors = SwitchDefaults.colors(
+                            uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                    )
+                }
+            }
+            // Nombre + estado al pie de la card.
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalArrangement = Arrangement.Bottom,
+            ) {
+                Text(
+                    text = device.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = deviceStateText(context, device),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }

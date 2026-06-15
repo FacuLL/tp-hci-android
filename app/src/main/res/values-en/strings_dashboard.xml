@@ -25,4 +25,5 @@
     <string name="dashboard_room_devices_label">DEVICES</string>
     <string name="dashboard_room_empty">No devices.</string>
     <string name="dashboard_room_view_detail">View detail →</string>
+    <string name="dashboard_chip_battery">Battery %1$d%%</string>
 </resources>

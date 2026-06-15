@@ -98,19 +98,24 @@ fun RoomsScreen(
         }
     }
 
-    // A freshly created room opens right away: navigate to its detail on
-    // phones / medium widths, or select it in the side panel on large tablets.
+    // A freshly created room opens right away by navigating to its detail.
+    // The old two-pane layout (grid + side panel on EXPANDED widths) was
+    // removed for consistency with the dashboard — see RoomsContent — so
+    // even on tablets we navigate instead of just selecting in state.
     LaunchedEffect(state.roomToOpen) {
         state.roomToOpen?.let { roomId ->
             viewModel.onRoomOpened()
-            if (isExpanded) viewModel.selectRoom(roomId) else onOpenRoom(roomId)
+            onOpenRoom(roomId)
         }
     }
 
-    // Tapping a room navigates to its detail, except on large tablets where the
-    // two-pane layout shows it in a side panel.
+    // Tapping a room always navigates to its detail. Previously this branched
+    // on `isExpanded` and called `viewModel.selectRoom` for tablets/landscape,
+    // which became a no-op once the two-pane layout was removed — landscape
+    // phones report EXPANDED in some configurations and the tap silently
+    // did nothing.
     val openRoom: (String) -> Unit = { roomId ->
-        if (isExpanded) viewModel.selectRoom(roomId) else onOpenRoom(roomId)
+        onOpenRoom(roomId)
     }
 
     Scaffold(
@@ -252,7 +257,8 @@ private fun RoomsContent(
     if (widthClass == WindowWidthSizeClass.COMPACT) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            // Bottom 96dp para no quedar tapado por la NavigationSuiteScaffold.
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(state.rooms, key = { it.id }) { room ->
@@ -301,7 +307,8 @@ private fun RoomsGrid(
         // detail pane; MEDIUM still resolves to 2 columns at ~640-720dp.
         columns = GridCells.Adaptive(minSize = 200.dp),
         modifier = modifier,
-        contentPadding = PaddingValues(16.dp),
+        // Bottom 96dp para no quedar tapado por la NavigationSuiteScaffold.
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
