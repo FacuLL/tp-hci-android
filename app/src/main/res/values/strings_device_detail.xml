@@ -33,7 +33,7 @@
     <!-- Dispense -->
     <string name="device_detail_quantity_label">Cantidad</string>
     <string name="device_detail_unit_label">Unidad</string>
-    <string name="device_detail_dispense_closed">Abrí el grifo para poder dispensar.</string>
+    <string name="device_detail_dispense_open">Cerrá el grifo para poder dispensar.</string>
 
     <!-- Playlist -->
     <string name="device_detail_playlist_title">Lista de reproducción</string>

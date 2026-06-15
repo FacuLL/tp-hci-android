@@ -33,7 +33,7 @@
     <!-- Dispense -->
     <string name="device_detail_quantity_label">Quantity</string>
     <string name="device_detail_unit_label">Unit</string>
-    <string name="device_detail_dispense_closed">Open the faucet to dispense.</string>
+    <string name="device_detail_dispense_open">Close the faucet to dispense.</string>
 
     <!-- Playlist -->
     <string name="device_detail_playlist_title">Playlist</string>

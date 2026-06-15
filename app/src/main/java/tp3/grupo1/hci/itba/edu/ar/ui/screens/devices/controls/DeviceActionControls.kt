@@ -159,8 +159,8 @@ internal fun DispenseControl(
     dispensing: Boolean,
     onDispense: (String, Int, String) -> Unit,
 ) {
-    // Una canilla cerrada no puede dispensar.
-    val closed = deviceStatus == "closed"
+    // Solo se puede dispensar con el grifo cerrado (sin agua corriendo); con el grifo abierto está deshabilitado.
+    val canDispense = deviceStatus == "closed"
     var quantity by remember(atom) { mutableFloatStateOf(atom.quantityMin.toFloat()) }
     var unit by remember(atom) { mutableStateOf(atom.units.firstOrNull().orEmpty()) }
     ControlCard {
@@ -183,7 +183,7 @@ internal fun DispenseControl(
             onValueChange = { quantity = it },
             valueRange = atom.quantityMin.toFloat()..atom.quantityMax.toFloat(),
             steps = (atom.quantityMax - atom.quantityMin - 1).coerceAtLeast(0),
-            enabled = !dispensing && !closed,
+            enabled = !dispensing && canDispense,
             colors = SliderDefaults.colors(thumbColor = accent, activeTrackColor = accent),
         )
         if (atom.units.isNotEmpty()) {
@@ -193,19 +193,19 @@ internal fun DispenseControl(
                 value = unit,
                 optionLabel = { it },
                 onSelect = { unit = it },
-                enabled = !dispensing && !closed,
+                enabled = !dispensing && canDispense,
             )
         }
         LoadingButton(
             text = stringResource(R.string.device_action_dispense),
             loading = dispensing,
-            enabled = !closed,
+            enabled = canDispense,
             onClick = { onDispense(atom.action, quantity.roundToInt(), unit) },
             modifier = Modifier.fillMaxWidth(),
         )
-        if (closed) {
+        if (!canDispense) {
             Text(
-                text = stringResource(R.string.device_detail_dispense_closed),
+                text = stringResource(R.string.device_detail_dispense_open),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
