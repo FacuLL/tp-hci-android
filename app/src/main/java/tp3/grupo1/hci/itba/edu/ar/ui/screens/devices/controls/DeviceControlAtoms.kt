@@ -368,6 +368,9 @@ private fun ColorControl(
     atom: ColorAtom,
     onExecute: (String, List<JsonElement>) -> Unit,
 ) {
+    // El API devuelve el color inicial como nombre ("white"), asi que lo normalizamos a Color
+    // (parseHexColor sabe parsear nombres) antes de compararlo con los swatches hex.
+    val selectedColor = parseHexColor(atom.value)
     ControlCard {
         SectionLabel(stringResource(R.string.device_action_set_color))
         FlowRow(
@@ -378,7 +381,7 @@ private fun ColorControl(
                 ColorSwatch(
                     hex = hex,
                     name = stringResource(nameRes),
-                    selected = atom.value.equals(hex, ignoreCase = true),
+                    selected = parseHexColor(hex) == selectedColor,
                     onClick = { onExecute(atom.action, listOf(JsonPrimitive(hex))) },
                 )
             }
@@ -437,9 +440,11 @@ private fun LampPreviewControl(atom: LampPreviewAtom) {
                 .size(112.dp)
                 .clip(CircleShape)
                 .background(fill)
+                // Borde sutil siempre presente: en modo claro con color blanco, sin borde el
+                // circulo se funde con el fondo y no se ve donde esta.
                 .border(
-                    width = 2.dp,
-                    color = if (atom.active) color else MaterialTheme.colorScheme.outline,
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline,
                     shape = CircleShape,
                 ),
         )
