@@ -1,0 +1,6 @@
+# Plantilla de configuracion local. Copiala a `local.properties` (que NO se versiona)
+# y completa los valores. Android Studio agrega `sdk.dir` automaticamente.
+
+# API key del backend de la catedra. Se inyecta en build time via BuildConfig.
+# No se commitea: pedisela al equipo o sacala de un commit viejo.
+API_KEY=tu_api_key_aca

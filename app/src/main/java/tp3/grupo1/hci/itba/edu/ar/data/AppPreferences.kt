@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import tp3.grupo1.hci.itba.edu.ar.BuildConfig
 import tp3.grupo1.hci.itba.edu.ar.data.notifications.NotificationCategory
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -22,7 +23,10 @@ class AppPreferences(private val context: Context) {
 
     companion object {
         const val DEFAULT_BASE_URL = "https://hci.it.itba.edu.ar/api"
-        const val DEFAULT_API_KEY = "sk_f9fd29ba6c848d6a0fcc2bb64ebd0783"
+
+        // Inyectada en build time desde local.properties / env (ver build.gradle.kts).
+        // Ya no se versiona: si falta, queda vacia y la app no autentica.
+        val DEFAULT_API_KEY: String = BuildConfig.API_KEY
 
         private val API_BASE_URL = stringPreferencesKey("api_base_url")
         private val API_KEY = stringPreferencesKey("api_key")

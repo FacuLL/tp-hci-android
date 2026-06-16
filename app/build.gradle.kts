@@ -1,8 +1,22 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+}
+
+// La API key se lee de local.properties (no versionado) o de la env var API_KEY.
+// Nunca se hardcodea ni se commitea. Ver local.properties.example.
+val apiKey: String = run {
+    val props = Properties()
+    val localFile = rootProject.file("local.properties")
+    if (localFile.exists()) localFile.inputStream().use { props.load(it) }
+    props.getProperty("API_KEY") ?: System.getenv("API_KEY") ?: ""
+}
+if (apiKey.isBlank()) {
+    logger.warn("WARNING: API_KEY no configurada (local.properties o env). La app no podra autenticarse.")
 }
 
 android {
@@ -19,6 +33,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Inyectada en build time desde local.properties / env (no versionada).
+        buildConfigField("String", "API_KEY", "\"$apiKey\"")
     }
 
     signingConfigs {
@@ -49,6 +66,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     lint {
         error += listOf("MissingTranslation", "ExtraTranslation")
