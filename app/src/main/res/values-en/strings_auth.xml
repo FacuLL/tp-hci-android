@@ -62,12 +62,7 @@
     <string name="auth_back_to_step_one">Back to previous step</string>
     <string name="auth_reset_success">Password updated. Sign in with your new password.</string>
 
-    <!-- Server connection (reachable without session) -->
-    <string name="auth_cd_api_config">Configure server connection</string>
-    <string name="auth_api_config_title">Server connection</string>
-    <string name="auth_api_config_description">Set the address of the Lumina API. Change it only if you use your own server.</string>
-    <string name="auth_api_url_label">Server address</string>
-    <string name="auth_api_key_label">API key</string>
-    <string name="auth_api_url_invalid">Enter a valid address starting with http:// or https://</string>
-    <string name="auth_api_defaults">Restore default values</string>
+    <!-- Language selector (only adjustable setting from the login screen) -->
+    <string name="auth_cd_language">Change language</string>
+    <string name="auth_language_title">Language</string>
 </resources>

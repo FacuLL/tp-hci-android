@@ -6,19 +6,18 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import tp3.grupo1.hci.itba.edu.ar.AppContainer
 import tp3.grupo1.hci.itba.edu.ar.R
-import tp3.grupo1.hci.itba.edu.ar.data.AppPreferences
+import tp3.grupo1.hci.itba.edu.ar.data.AppLanguage
 import tp3.grupo1.hci.itba.edu.ar.data.network.ApiException
 import tp3.grupo1.hci.itba.edu.ar.domain.Validators
 import tp3.grupo1.hci.itba.edu.ar.ui.luminaContainer
-import java.net.URI
-import java.net.URISyntaxException
 
 data class LoginUiState(
     val email: String = "",
@@ -29,17 +28,20 @@ data class LoginUiState(
     val submitting: Boolean = false,
     val loggedIn: Boolean = false,
     val needsVerificationEmail: String? = null,
-    // La dirección de la API debe poder cambiarse antes de loguearse, si no un servidor inalcanzable deja afuera al usuario.
-    val showApiConfig: Boolean = false,
-    val apiBaseUrl: String = "",
-    val apiKey: String = "",
-    @field:StringRes val apiUrlError: Int? = null,
+    // En el login solo se puede ajustar el idioma — la configuracion de
+    // API (URL + key) se removio del flujo de autenticacion (queda
+    // configurada via DEFAULT_BASE_URL / DEFAULT_API_KEY en AppPreferences).
+    val showLanguageDialog: Boolean = false,
 )
 
 class LoginViewModel(private val container: AppContainer) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+
+    // Exponemos el idioma actual para que el dialog marque la opcion seleccionada.
+    val language: StateFlow<AppLanguage> = container.preferences.language
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AppLanguage.SYSTEM)
 
     private var submitAttempted = false
 
@@ -90,56 +92,19 @@ class LoginViewModel(private val container: AppContainer) : ViewModel() {
         _uiState.update { it.copy(needsVerificationEmail = null) }
     }
 
-    fun openApiConfig() {
+    fun openLanguageDialog() {
+        _uiState.update { it.copy(showLanguageDialog = true) }
+    }
+
+    fun closeLanguageDialog() {
+        _uiState.update { it.copy(showLanguageDialog = false) }
+    }
+
+    fun setLanguage(value: AppLanguage) {
         viewModelScope.launch {
-            val url = container.preferences.apiBaseUrl.first()
-            val key = container.preferences.apiKey.first()
-            _uiState.update {
-                it.copy(showApiConfig = true, apiBaseUrl = url, apiKey = key, apiUrlError = null)
-            }
+            container.preferences.setLanguage(value)
+            _uiState.update { it.copy(showLanguageDialog = false) }
         }
-    }
-
-    fun closeApiConfig() {
-        _uiState.update { it.copy(showApiConfig = false) }
-    }
-
-    fun onApiBaseUrlChange(value: String) {
-        _uiState.update { it.copy(apiBaseUrl = value, apiUrlError = null) }
-    }
-
-    fun onApiKeyChange(value: String) {
-        _uiState.update { it.copy(apiKey = value) }
-    }
-
-    fun resetApiConfigDefaults() {
-        _uiState.update {
-            it.copy(
-                apiBaseUrl = AppPreferences.DEFAULT_BASE_URL,
-                apiKey = AppPreferences.DEFAULT_API_KEY,
-                apiUrlError = null,
-            )
-        }
-    }
-
-    fun saveApiConfig() {
-        val url = _uiState.value.apiBaseUrl.trim()
-        if (!isValidApiUrl(url)) {
-            _uiState.update { it.copy(apiUrlError = R.string.auth_api_url_invalid) }
-            return
-        }
-        viewModelScope.launch {
-            container.preferences.setApiBaseUrl(url)
-            container.preferences.setApiKey(_uiState.value.apiKey.trim())
-            _uiState.update { it.copy(showApiConfig = false) }
-        }
-    }
-
-    private fun isValidApiUrl(url: String): Boolean = try {
-        val uri = URI(url)
-        (uri.scheme == "http" || uri.scheme == "https") && !uri.host.isNullOrBlank()
-    } catch (_: URISyntaxException) {
-        false
     }
 
     companion object {

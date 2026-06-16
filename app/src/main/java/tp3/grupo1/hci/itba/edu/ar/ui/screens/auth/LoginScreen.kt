@@ -118,31 +118,28 @@ fun LoginScreen(
             }
         }
         }
-        // La dirección del servidor debe poder editarse antes de loguearse: con una API inalcanzable no habría forma de corregir la configuración.
+        // En el login solo se puede ajustar el idioma — la configuracion
+        // de API (URL + key) ya no es editable desde la UI de auth.
         IconButton(
-            onClick = viewModel::openApiConfig,
+            onClick = viewModel::openLanguageDialog,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(4.dp),
         ) {
             Icon(
                 imageVector = Icons.Outlined.Settings,
-                contentDescription = stringResource(R.string.auth_cd_api_config),
+                contentDescription = stringResource(R.string.auth_cd_language),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
 
-    if (uiState.showApiConfig) {
-        ApiConfigDialog(
-            apiBaseUrl = uiState.apiBaseUrl,
-            apiKey = uiState.apiKey,
-            urlError = uiState.apiUrlError,
-            onUrlChange = viewModel::onApiBaseUrlChange,
-            onKeyChange = viewModel::onApiKeyChange,
-            onResetDefaults = viewModel::resetApiConfigDefaults,
-            onSave = viewModel::saveApiConfig,
-            onDismiss = viewModel::closeApiConfig,
+    if (uiState.showLanguageDialog) {
+        val currentLanguage by viewModel.language.collectAsStateWithLifecycle()
+        LanguageDialog(
+            current = currentLanguage,
+            onSelect = viewModel::setLanguage,
+            onDismiss = viewModel::closeLanguageDialog,
         )
     }
 }
